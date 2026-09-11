@@ -8,6 +8,7 @@ import '../../../auth/presentation/bloc/auth_event.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
+import '../../domain/entities/attendance_log_entity.dart';
 import '../widgets/manual_override_dialog.dart';
 import '../widgets/status_badge.dart';
 import 'monthly_ledger_page.dart';
@@ -364,16 +365,19 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             ],
           ),
           const SizedBox(height: 10),
-          SwitchListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Simulate Mock Location (Fake GPS)'),
-            subtitle: const Text('PRD US-S01: Flags security alert if enabled'),
-            value: _simulateMockGps,
-            activeColor: AppColors.absent,
-            onChanged: (val) {
-              setState(() => _simulateMockGps = val);
-            },
+          Material(
+            color: Colors.transparent,
+            child: SwitchListTile(
+              dense: true,
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Simulate Mock Location (Fake GPS)'),
+              subtitle: const Text('PRD US-S01: Flags security alert if enabled'),
+              value: _simulateMockGps,
+              activeColor: AppColors.absent,
+              onChanged: (val) {
+                setState(() => _simulateMockGps = val);
+              },
+            ),
           ),
         ],
       ),
@@ -424,7 +428,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     );
   }
 
-  Widget _buildRecentCheckInCard(dynamic log) {
+  Widget _buildRecentCheckInCard(AttendanceLogEntity log) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(

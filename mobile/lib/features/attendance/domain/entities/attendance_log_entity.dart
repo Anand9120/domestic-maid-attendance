@@ -7,10 +7,18 @@ enum AttendanceStatus {
   halfDay,
 }
 
+extension AttendanceStatusExtension on AttendanceStatus {
+  String get name => toString().split('.').last;
+}
+
 enum EntryType {
   automatedGeofence,
   offlineSync,
   manualOverride,
+}
+
+extension EntryTypeExtension on EntryType {
+  String get name => toString().split('.').last;
 }
 
 class AttendanceLogEntity extends Equatable {

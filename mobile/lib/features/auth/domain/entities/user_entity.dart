@@ -6,6 +6,10 @@ enum UserRole {
   admin,
 }
 
+extension UserRoleExtension on UserRole {
+  String get name => toString().split('.').last;
+}
+
 class UserEntity extends Equatable {
   final int id;
   final String fullName;
