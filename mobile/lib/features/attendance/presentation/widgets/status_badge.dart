@@ -48,8 +48,10 @@ class StatusBadge extends StatelessWidget {
         break;
     }
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -74,8 +76,7 @@ class StatusBadge extends StatelessWidget {
             ],
           ),
         ),
-        if (entryType == EntryType.offlineSync) ...[
-          const SizedBox(width: 6),
+        if (entryType == EntryType.offlineSync)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -92,9 +93,7 @@ class StatusBadge extends StatelessWidget {
               ),
             ),
           ),
-        ],
-        if (isMock) ...[
-          const SizedBox(width: 6),
+        if (isMock)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
@@ -111,7 +110,6 @@ class StatusBadge extends StatelessWidget {
               ),
             ),
           ),
-        ],
       ],
     );
   }

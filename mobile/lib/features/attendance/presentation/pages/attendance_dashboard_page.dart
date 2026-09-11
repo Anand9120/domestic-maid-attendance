@@ -442,14 +442,19 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Latest Attendance Log',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              const Expanded(
+                child: Text(
+                  'Latest Attendance Log',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
               ),
-              StatusBadge(
-                status: log.status,
-                entryType: log.entryType,
-                isMock: log.isMockLocation,
+              const SizedBox(width: 8),
+              Flexible(
+                child: StatusBadge(
+                  status: log.status,
+                  entryType: log.entryType,
+                  isMock: log.isMockLocation,
+                ),
               ),
             ],
           ),
