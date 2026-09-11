@@ -1,5 +1,6 @@
 class ApiConstants {
-  static const String baseUrl = 'http://localhost:8080';
+  // Configured to laptop local Wi-Fi IP so real Android mobile devices can connect seamlessly
+  static const String baseUrl = 'http://192.168.0.114:8080';
 
   // Auth endpoints
   static const String verifyOtp = '/api/v1/auth/verify-otp';
