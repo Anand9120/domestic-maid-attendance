@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -46,7 +49,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     });
 
     _timer?.cancel();
-    // Simulate 3-minute dwell time counter (accelerated to 3 seconds for smooth interactive demo)
+    // Simulate 3-minute dwell time counter (accelerated for interactive demo)
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       setState(() {
@@ -81,170 +84,216 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final a11y = AccessibilityController.instance;
     final isEmployer = widget.user.role == UserRole.employer;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              isEmployer ? 'Employer Dashboard' : 'Maid Presence Dashboard',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${widget.user.fullName} (${widget.user.role.name.toUpperCase()})',
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.sync_rounded),
-            tooltip: 'Sync Offline Logs',
-            onPressed: () {
-              context.read<AttendanceBloc>().add(SyncOfflineLogsEvent());
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout_rounded),
-            tooltip: 'Logout',
-            onPressed: () {
-              context.read<AuthBloc>().add(LogoutRequested());
-            },
-          ),
-        ],
-      ),
-      body: BlocConsumer<AttendanceBloc, AttendanceState>(
-        listener: (context, state) {
-          if (state is CheckInSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('✅ ${state.message} (${state.log.status.name.toUpperCase()})'),
-                backgroundColor: AppColors.present,
-              ),
-            );
-          } else if (state is OfflineLogBuffered) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('📦 ${state.message} (Total Queued: ${state.totalQueued})'),
-                backgroundColor: Colors.blueGrey,
-              ),
-            );
-          } else if (state is SyncSuccessState) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('🔄 Synced ${state.syncedCount} offline record(s) to server!'),
-                backgroundColor: AppColors.primary,
-              ),
-            );
-          } else if (state is AttendanceFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('⚠️ ${state.error}'),
-                backgroundColor: AppColors.absent,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListenableBuilder(
+      listenable: a11y,
+      builder: (context, _) {
+        final isContrast = a11y.isHighContrast;
+
+        return Scaffold(
+          backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
+          appBar: AppBar(
+            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            title: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Geofence Radar Card
-                _buildGeofenceCard(),
-                const SizedBox(height: 20),
-
-                // Anti-Spoofing & Simulator Controls
-                _buildSimulationControls(),
-                const SizedBox(height: 20),
-
-                // Quick Navigation Cards
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildActionCard(
-                        title: 'Monthly Ledger',
-                        subtitle: 'Salary & Presence',
-                        icon: Icons.calendar_month_rounded,
-                        color: AppColors.primary,
-                        onTap: () {
-                          final maidIdToInspect = isEmployer ? 2 : widget.user.id;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<AttendanceBloc>(),
-                                child: MonthlyLedgerPage(
-                                  maidId: maidIdToInspect,
-                                  maidName: isEmployer ? 'Sunita Devi' : widget.user.fullName,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    if (isEmployer) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildActionCard(
-                          title: 'Manual Override',
-                          subtitle: 'Keypad phone fallback',
-                          icon: Icons.edit_calendar_rounded,
-                          color: AppColors.secondary,
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => BlocProvider.value(
-                                value: context.read<AttendanceBloc>(),
-                                child: ManualOverrideDialog(
-                                  employerId: widget.user.id,
-                                  householdId: _targetHouseholdId,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ],
+                Text(
+                  isEmployer ? a11y.tr('employer_dashboard') : a11y.tr('maid_dashboard'),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(height: 24),
-
-                // Recent Status Card
-                if (state is CheckInSuccess) ...[
-                  _buildRecentCheckInCard(state.log),
-                ] else if (state is OfflineLogBuffered) ...[
-                  _buildRecentCheckInCard(state.log),
-                ],
+                Text(
+                  '${widget.user.fullName} (${widget.user.role == UserRole.employer ? a11y.tr('employer_role') : a11y.tr('maid_role')})',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isContrast ? Colors.yellow : Colors.white70,
+                  ),
+                ),
               ],
             ),
-          );
-        },
-      ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.sync_rounded),
+                tooltip: a11y.tr('sync_offline'),
+                onPressed: () {
+                  context.read<AttendanceBloc>().add(SyncOfflineLogsEvent());
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.logout_rounded),
+                tooltip: a11y.tr('logout'),
+                onPressed: () {
+                  context.read<AuthBloc>().add(LogoutRequested());
+                },
+              ),
+            ],
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                // Top UX4G Civic Bar (Tricolor + GIGW Font/Contrast/Lang Controls)
+                const Ux4gCivicBar(),
+
+                Expanded(
+                  child: BlocConsumer<AttendanceBloc, AttendanceState>(
+                    listener: (context, state) {
+                      if (state is CheckInSuccess) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('✅ ${state.message} (${state.log.status.name.toUpperCase()})'),
+                            backgroundColor: AppColors.present,
+                          ),
+                        );
+                      } else if (state is OfflineLogBuffered) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('📦 ${state.message} (${state.totalQueued} ${a11y.tr('pending_sync')})'),
+                            backgroundColor: Colors.blueGrey,
+                          ),
+                        );
+                      } else if (state is SyncSuccessState) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('🔄 Synced ${state.syncedCount} offline record(s) to server!'),
+                            backgroundColor: AppColors.primary,
+                          ),
+                        );
+                      } else if (state is AttendanceFailure) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('⚠️ ${state.error}'),
+                            backgroundColor: AppColors.absent,
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Active Status Banners
+                              if (_isInsideGeofence && _dwellCountdown < 180) ...[
+                                Ux4gStatusBanner(
+                                  variant: Ux4gBannerVariant.warningLight,
+                                  title: '${a11y.tr('dwell_counting')} ($_dwellCountdown / 180s)...',
+                                  leadingIcon: const Icon(Icons.timer_outlined, color: Color(0xFFC47400)),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+
+                              if (_simulateMockGps) ...[
+                                const Ux4gStatusBanner(
+                                  variant: Ux4gBannerVariant.errorLight,
+                                  title: '⚠️ GIGW Security Alert: Mock GPS Location Simulation Active',
+                                  leadingIcon: Icon(Icons.security_outlined, color: Color(0xFFC5221F)),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+
+                              // Geofence Radar Card
+                              _buildGeofenceCard(a11y, isContrast),
+                              const SizedBox(height: 16),
+
+                              // Hardware & Location Simulator Card
+                              _buildSimulationControls(a11y, isContrast),
+                              const SizedBox(height: 16),
+
+                              // Quick Navigation Action Cards
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildActionCard(
+                                      title: a11y.tr('view_ledger'),
+                                      subtitle: 'Salary & Monthly Attendance',
+                                      icon: Icons.calendar_month_rounded,
+                                      color: AppColors.primary,
+                                      isContrast: isContrast,
+                                      onTap: () {
+                                        final maidIdToInspect = isEmployer ? 2 : widget.user.id;
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => BlocProvider.value(
+                                              value: context.read<AttendanceBloc>(),
+                                              child: MonthlyLedgerPage(
+                                                maidId: maidIdToInspect,
+                                                maidName: isEmployer ? 'Sunita Devi' : widget.user.fullName,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  if (isEmployer) ...[
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildActionCard(
+                                        title: a11y.tr('manual_override'),
+                                        subtitle: a11y.tr('override_hint'),
+                                        icon: Icons.edit_calendar_rounded,
+                                        color: AppColors.secondary,
+                                        isContrast: isContrast,
+                                        onTap: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => BlocProvider.value(
+                                              value: context.read<AttendanceBloc>(),
+                                              child: ManualOverrideDialog(
+                                                employerId: widget.user.id,
+                                                householdId: _targetHouseholdId,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+
+                              // Recent Attendance Log Card
+                              if (state is CheckInSuccess) ...[
+                                _buildRecentCheckInCard(state.log, a11y, isContrast),
+                              ] else if (state is OfflineLogBuffered) ...[
+                                _buildRecentCheckInCard(state.log, a11y, isContrast),
+                              ],
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildGeofenceCard() {
+  Widget _buildGeofenceCard(AccessibilityController a11y, bool isContrast) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: isContrast ? AppColors.hcSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isContrast ? AppColors.hcBorder : AppColors.border,
+          width: isContrast ? 2 : 1,
+        ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -252,37 +301,42 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: _isInsideGeofence
-                      ? AppColors.present.withOpacity(0.1)
-                      : AppColors.border,
+                      ? (isContrast ? Colors.yellow.withOpacity(0.2) : AppColors.present.withOpacity(0.1))
+                      : (isContrast ? Colors.white12 : AppColors.border),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   Icons.radar_rounded,
-                  size: 28,
-                  color: _isInsideGeofence ? AppColors.present : AppColors.textSecondary,
+                  size: 26,
+                  color: _isInsideGeofence
+                      ? (isContrast ? Colors.yellow : AppColors.present)
+                      : (isContrast ? Colors.white60 : AppColors.textSecondary),
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      '50m OS Geofence Boundary',
+                    Text(
+                      a11y.tr('live_presence_radar'),
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: isContrast ? Colors.white : AppColors.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       _isInsideGeofence
-                          ? 'Inside boundary: Sharma Residence'
-                          : 'Monitoring household targets...',
+                          ? a11y.tr('inside_geofence')
+                          : a11y.tr('outside_geofence'),
                       style: TextStyle(
-                        fontSize: 13,
-                        color: _isInsideGeofence ? AppColors.present : AppColors.textSecondary,
-                        fontWeight: _isInsideGeofence ? FontWeight.w600 : FontWeight.normal,
+                        fontSize: 12,
+                        color: _isInsideGeofence
+                            ? (isContrast ? Colors.yellow : AppColors.present)
+                            : (isContrast ? Colors.white70 : AppColors.textSecondary),
+                        fontWeight: _isInsideGeofence ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                   ],
@@ -290,34 +344,40 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          // Dwell Progress Indicator
           if (_isInsideGeofence) ...[
+            const SizedBox(height: 16),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
                 value: _dwellCountdown / 180.0,
-                minHeight: 10,
-                backgroundColor: AppColors.border,
+                minHeight: 8,
+                backgroundColor: isContrast ? Colors.white24 : AppColors.border,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  _dwellCountdown >= 180 ? AppColors.present : AppColors.late,
+                  _dwellCountdown >= 180
+                      ? (isContrast ? Colors.yellow : AppColors.present)
+                      : (isContrast ? Colors.amber : AppColors.late),
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  '3-Minute Dwell Validator:',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                Text(
+                  _dwellCountdown >= 180 ? a11y.tr('dwell_completed') : a11y.tr('dwell_counting'),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                  ),
                 ),
                 Text(
-                  '$_dwellCountdown / 180s (${(_dwellCountdown / 180 * 100).toInt()}%)',
+                  '$_dwellCountdown / 180s',
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: _dwellCountdown >= 180 ? AppColors.present : AppColors.late,
+                    color: _dwellCountdown >= 180
+                        ? (isContrast ? Colors.yellow : AppColors.present)
+                        : (isContrast ? Colors.amber : AppColors.late),
                   ),
                 ),
               ],
@@ -328,52 +388,74 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     );
   }
 
-  Widget _buildSimulationControls() {
+  Widget _buildSimulationControls(AccessibilityController a11y, bool isContrast) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: isContrast ? AppColors.hcSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isContrast ? AppColors.hcBorder : AppColors.border,
+          width: isContrast ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Hardware & Location Simulator',
-            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          Text(
+            '50m OS Geofence & Location Simulator',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isContrast ? Colors.white : AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Test real-time OS geofence trigger, dwell filtering, and spoof detection.',
-            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          Text(
+            'Simulate device location entry into 50m radius with 3-minute dwell verification.',
+            style: TextStyle(
+              fontSize: 12,
+              color: isContrast ? Colors.white70 : AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isInsideGeofence ? AppColors.absent : AppColors.present,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                  ),
-                  icon: Icon(_isInsideGeofence ? Icons.exit_to_app : Icons.login),
-                  label: Text(_isInsideGeofence ? 'Exit 50m Boundary' : 'Enter 50m Boundary'),
-                  onPressed: _isInsideGeofence ? _simulateGeofenceExit : _simulateGeofenceEntry,
-                ),
-              ),
-            ],
+
+          // Primary Simulator Button (Ux4gButton)
+          SizedBox(
+            width: double.infinity,
+            child: Ux4gButton(
+              text: _isInsideGeofence ? a11y.tr('exit_geofence') : a11y.tr('enter_geofence'),
+              variant: _isInsideGeofence ? Ux4gButtonVariant.secondary : Ux4gButtonVariant.primary,
+              size: Ux4gButtonSize.large,
+              leadingIcon: _isInsideGeofence ? Icons.exit_to_app : Icons.login,
+              onPressed: _isInsideGeofence ? _simulateGeofenceExit : _simulateGeofenceEntry,
+            ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+
+          // Mock Location Switch
           Material(
             color: Colors.transparent,
             child: SwitchListTile(
               dense: true,
               contentPadding: EdgeInsets.zero,
-              title: const Text('Simulate Mock Location (Fake GPS)'),
-              subtitle: const Text('PRD US-S01: Flags security alert if enabled'),
+              title: Text(
+                'Simulate Fake / Mock GPS Location',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              subtitle: Text(
+                'PRD US-S01: Flags security alert if spoofing detected',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                ),
+              ),
               value: _simulateMockGps,
-              activeColor: AppColors.absent,
+              activeColor: isContrast ? Colors.yellow : AppColors.absent,
               onChanged: (val) {
                 setState(() => _simulateMockGps = val);
               },
@@ -389,52 +471,78 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     required String subtitle,
     required IconData icon,
     required Color color,
+    required bool isContrast,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+    return Semantics(
+      button: true,
+      label: '$title: $subtitle',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isContrast ? AppColors.hcSurface : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isContrast ? AppColors.hcBorder : AppColors.border,
+              width: isContrast ? 2 : 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isContrast ? Colors.yellow.withOpacity(0.2) : color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  icon,
+                  color: isContrast ? Colors.yellow : color,
+                  size: 22,
+                ),
               ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-            ),
-          ],
+              const SizedBox(height: 12),
+              Text(
+                title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRecentCheckInCard(AttendanceLogEntity log) {
+  Widget _buildRecentCheckInCard(AttendanceLogEntity log, AccessibilityController a11y, bool isContrast) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: isContrast ? AppColors.hcSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isContrast ? AppColors.hcBorder : AppColors.border,
+          width: isContrast ? 2 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,10 +550,14 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Latest Attendance Log',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  a11y.tr('latest_log'),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
@@ -458,15 +570,22 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               ),
             ],
           ),
-          const Divider(height: 20),
+          Divider(height: 20, color: isContrast ? Colors.white24 : AppColors.border),
           Text(
-            'Check-in Time: ${log.checkInTime ?? "Recorded"}',
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            '${a11y.tr('checkin_time')}: ${log.checkInTime ?? "Recorded"}',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isContrast ? Colors.white : AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
-            'Entry Type: ${log.entryType.name.toUpperCase()}',
-            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            '${a11y.tr('entry_type')}: ${log.entryType.name.toUpperCase()}',
+            style: TextStyle(
+              fontSize: 12,
+              color: isContrast ? Colors.white70 : AppColors.textSecondary,
+            ),
           ),
         ],
       ),

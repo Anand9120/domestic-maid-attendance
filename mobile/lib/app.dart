@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import 'core/accessibility/accessibility_controller.dart';
 import 'core/theme/app_theme.dart';
 import 'features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'features/attendance/presentation/pages/attendance_dashboard_page.dart';
@@ -19,23 +21,41 @@ class MaidAttendanceApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final a11y = AccessibilityController.instance;
+
     return MultiBlocProvider(
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<AttendanceBloc>.value(value: attendanceBloc),
       ],
-      child: MaterialApp(
-        title: 'Maid Attendance Tracker',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: BlocBuilder<AuthBloc, AuthState>(
-          builder: (context, state) {
-            if (state is AuthAuthenticated) {
-              return AttendanceDashboardPage(user: state.user);
-            }
-            return const LoginPage();
-          },
-        ),
+      child: ListenableBuilder(
+        listenable: a11y,
+        builder: (context, _) {
+          return Ux4gTheme(
+            isDark: a11y.isHighContrast,
+            child: MaterialApp(
+              title: 'Domestic Maid Attendance System (UX4G / GIGW)',
+              debugShowCheckedModeBanner: false,
+              theme: a11y.isHighContrast ? AppTheme.highContrastTheme : AppTheme.lightTheme,
+              builder: (context, child) {
+                return MediaQuery(
+                  data: MediaQuery.of(context).copyWith(
+                    textScaler: TextScaler.linear(a11y.textScaleFactor),
+                  ),
+                  child: child ?? const SizedBox.shrink(),
+                );
+              },
+              home: BlocBuilder<AuthBloc, AuthState>(
+                builder: (context, state) {
+                  if (state is AuthAuthenticated) {
+                    return AttendanceDashboardPage(user: state.user);
+                  }
+                  return const LoginPage();
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }

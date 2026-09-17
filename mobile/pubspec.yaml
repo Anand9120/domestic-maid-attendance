@@ -16,6 +16,7 @@ dependencies:
   hive_flutter: ^1.1.0
   intl: ^0.19.0
   geolocator: ^11.0.0
+  ux4g_flutter_components: ^1.4.0
 
 dev_dependencies:
   flutter_test:

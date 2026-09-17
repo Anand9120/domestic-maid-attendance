@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
+import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../domain/entities/attendance_log_entity.dart';
 
 class StatusBadge extends StatelessWidget {
@@ -16,101 +17,75 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color bg;
-    Color fg;
+    final a11y = AccessibilityController.instance;
     String label;
     IconData icon;
+    Ux4gTagColor colorScheme;
 
     switch (status) {
       case AttendanceStatus.present:
-        bg = AppColors.presentBg;
-        fg = AppColors.present;
-        label = 'Present';
+        label = a11y.tr('status_present');
         icon = Icons.check_circle_rounded;
+        colorScheme = Ux4gTagColor.success;
         break;
       case AttendanceStatus.late:
-        bg = AppColors.lateBg;
-        fg = AppColors.late;
-        label = 'Late';
+        label = a11y.tr('status_late');
         icon = Icons.access_time_rounded;
+        colorScheme = Ux4gTagColor.warning;
         break;
       case AttendanceStatus.halfDay:
-        bg = AppColors.halfDayBg;
-        fg = AppColors.halfDay;
-        label = 'Half-Day';
+        label = a11y.tr('status_half_day');
         icon = Icons.hourglass_bottom_rounded;
+        colorScheme = Ux4gTagColor.brand;
         break;
       case AttendanceStatus.absent:
-        bg = AppColors.absentBg;
-        fg = AppColors.absent;
-        label = 'Absent';
+        label = a11y.tr('status_absent');
         icon = Icons.cancel_rounded;
+        colorScheme = Ux4gTagColor.error;
         break;
     }
 
-    return Wrap(
-      spacing: 6,
-      runSpacing: 4,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: fg.withOpacity(0.3)),
+    return Semantics(
+      label: 'Attendance Status: $label',
+      child: Wrap(
+        spacing: 6,
+        runSpacing: 4,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Ux4gTag(
+            text: label,
+            leadingContent: Icon(icon, size: 14),
+            colorScheme: colorScheme,
+            size: Ux4gTagSize.m,
+            shape: Ux4gTagShape.circular,
+            style: Ux4gTagStyle.tonal,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 14, color: fg),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-        if (entryType == EntryType.offlineSync)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.blue.shade300),
-            ),
-            child: const Text(
-              'Offline',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+          if (entryType == EntryType.offlineSync)
+            Semantics(
+              label: 'Entry logged via offline synchronization',
+              child: Ux4gTag(
+                text: a11y.tr('status_offline'),
+                leadingContent: const Icon(Icons.cloud_off_rounded, size: 13),
+                colorScheme: Ux4gTagColor.info,
+                size: Ux4gTagSize.m,
+                shape: Ux4gTagShape.circular,
+                style: Ux4gTagStyle.tonal,
               ),
             ),
-          ),
-        if (isMock)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Colors.red.shade50,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.red.shade300),
-            ),
-            child: const Text(
-              '⚠️ Mock GPS',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
+          if (isMock)
+            Semantics(
+              label: 'Warning: Mock GPS location detected',
+              child: Ux4gTag(
+                text: a11y.tr('status_mock_gps'),
+                leadingContent: const Icon(Icons.warning_amber_rounded, size: 13),
+                colorScheme: Ux4gTagColor.error,
+                size: Ux4gTagSize.m,
+                shape: Ux4gTagShape.circular,
+                style: Ux4gTagStyle.filled,
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }

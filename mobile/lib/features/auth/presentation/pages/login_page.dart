@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../widgets/custom_button.dart';
-import '../widgets/phone_input_field.dart';
 import 'otp_verification_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -17,27 +18,20 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _phoneController = TextEditingController(text: '9811122233');
-  final TextEditingController _nameController = TextEditingController(text: 'Sunita Devi');
+  String _phone = '9811122233';
+  String _name = 'Sunita Devi';
   UserRole _selectedRole = UserRole.maid;
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
-    _nameController.dispose();
-    super.dispose();
-  }
-
   void _onGetOtpPressed() {
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty || phone.length < 10) {
+    final cleanPhone = _phone.trim();
+    if (cleanPhone.isEmpty || cleanPhone.length < 10) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid 10-digit mobile number')),
       );
       return;
     }
 
-    final formattedPhone = phone.startsWith('+') ? phone : '+91$phone';
+    final formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : '+91$cleanPhone';
 
     context.read<AuthBloc>().add(SendOtpRequested(formattedPhone));
 
@@ -49,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
           child: OtpVerificationPage(
             phoneNumber: formattedPhone,
             role: _selectedRole,
-            fullName: _nameController.text.trim(),
+            fullName: _name.trim(),
           ),
         ),
       ),
@@ -58,205 +52,259 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+    final a11y = AccessibilityController.instance;
+
+    return ListenableBuilder(
+      listenable: a11y,
+      builder: (context, _) {
+        final isContrast = a11y.isHighContrast;
+
+        return Scaffold(
+          backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
+          body: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Top Icon Badge
-                Center(
-                  child: Container(
-                    width: 72,
-                    height: 72,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.location_on_rounded,
-                      size: 38,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
+                // UX4G Civic Accessibility Bar (Tricolor + A-/A/A+ + High Contrast + Bilingual)
+                const Ux4gCivicBar(),
 
-                // Title & Subtitle
-                const Text(
-                  'Maid Attendance',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Zero-touch presence tracking with 50m geofence & offline sync',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 36),
-
-                // Card Container
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.border),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 16,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Role Selector Tabs
-                      const Text(
-                        'Select Your Role',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _buildRoleChip(
-                              role: UserRole.maid,
-                              label: 'Maid / Helper',
-                              icon: Icons.person_rounded,
+                // Scrollable Login Content
+                Expanded(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 480),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // Civic Portal Header
+                            Center(
+                              child: Container(
+                                width: 68,
+                                height: 68,
+                                decoration: BoxDecoration(
+                                  color: isContrast
+                                      ? Colors.yellow.withOpacity(0.2)
+                                      : AppColors.primary.withOpacity(0.08),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: isContrast ? Colors.yellow : AppColors.primary,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Icon(
+                                  Icons.account_balance_rounded,
+                                  size: 36,
+                                  color: isContrast ? Colors.yellow : AppColors.primary,
+                                ),
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _buildRoleChip(
-                              role: UserRole.employer,
-                              label: 'Employer',
-                              icon: Icons.home_rounded,
+                            const SizedBox(height: 16),
+
+                            Text(
+                              a11y.tr('gov_portal_title'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: isContrast ? Colors.white : AppColors.textPrimary,
+                                letterSpacing: -0.3,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                            const SizedBox(height: 6),
+                            Text(
+                              a11y.tr('zero_touch_desc'),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
 
-                      // Name Field
-                      const Text(
-                        'Full Name',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                            // UX4G Styled Form Card
+                            Container(
+                              padding: const EdgeInsets.all(22),
+                              decoration: BoxDecoration(
+                                color: isContrast ? AppColors.hcSurface : Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isContrast ? AppColors.hcBorder : AppColors.border,
+                                  width: isContrast ? 2 : 1,
+                                ),
+                                boxShadow: isContrast
+                                    ? []
+                                    : [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.04),
+                                          blurRadius: 14,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Role Selector
+                                  Text(
+                                    a11y.tr('select_role'),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: isContrast ? Colors.white : AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _buildRoleButton(
+                                          role: UserRole.maid,
+                                          label: a11y.tr('maid_role'),
+                                          icon: Icons.person_outline_rounded,
+                                          isContrast: isContrast,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _buildRoleButton(
+                                          role: UserRole.employer,
+                                          label: a11y.tr('employer_role'),
+                                          icon: Icons.home_work_outlined,
+                                          isContrast: isContrast,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Full Name Field (Ux4gInputField)
+                                  Ux4gInputField(
+                                    value: _name,
+                                    onValueChange: (val) => setState(() => _name = val),
+                                    label: a11y.tr('full_name'),
+                                    required: true,
+                                    placeholder: 'e.g. Sunita Devi',
+                                    leadingIcon: Icons.badge_outlined,
+                                    size: Ux4gInputFieldSize.large,
+                                  ),
+                                  const SizedBox(height: 18),
+
+                                  // Phone Number Field (Ux4gInputField)
+                                  Ux4gInputField(
+                                    value: _phone,
+                                    onValueChange: (val) => setState(() => _phone = val),
+                                    label: a11y.tr('phone_number'),
+                                    required: true,
+                                    placeholder: '9811122233',
+                                    prefixText: '+91 ',
+                                    type: Ux4gInputFieldType.number,
+                                    leadingIcon: Icons.phone_android_rounded,
+                                    size: Ux4gInputFieldSize.large,
+                                  ),
+                                  const SizedBox(height: 26),
+
+                                  // Submit Button (Ux4gButton)
+                                  BlocBuilder<AuthBloc, AuthState>(
+                                    builder: (context, state) {
+                                      return SizedBox(
+                                        width: double.infinity,
+                                        child: Ux4gButton(
+                                          text: a11y.tr('get_otp'),
+                                          variant: Ux4gButtonVariant.primary,
+                                          size: Ux4gButtonSize.large,
+                                          isLoading: state is AuthLoading,
+                                          leadingIcon: Icons.verified_user_outlined,
+                                          onPressed: _onGetOtpPressed,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          hintText: 'e.g. Sunita Devi',
-                          prefixIcon: Icon(Icons.badge_outlined, color: AppColors.primary),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Mobile Number
-                      const Text(
-                        'Phone Number',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      PhoneInputField(controller: _phoneController),
-                      const SizedBox(height: 28),
-
-                      // Submit Button
-                      BlocBuilder<AuthBloc, AuthState>(
-                        builder: (context, state) {
-                          return CustomButton(
-                            text: 'Get Verification Code',
-                            isLoading: state is AuthLoading,
-                            icon: Icons.arrow_forward_rounded,
-                            onPressed: _onGetOtpPressed,
-                          );
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildRoleChip({
+  Widget _buildRoleButton({
     required UserRole role,
     required String label,
     required IconData icon,
+    required bool isContrast,
   }) {
     final isSelected = _selectedRole == role;
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedRole = role;
-          if (role == UserRole.employer) {
-            _phoneController.text = '9876543210';
-            _nameController.text = 'Priya Sharma';
-          } else {
-            _phoneController.text = '9811122233';
-            _nameController.text = 'Sunita Devi';
-          }
-        });
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary.withOpacity(0.1) : AppColors.background,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 1.5 : 1,
+
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: 'Role selection: $label',
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedRole = role;
+            if (role == UserRole.employer) {
+              _phone = '9876543210';
+              _name = 'Priya Sharma';
+            } else {
+              _phone = '9811122233';
+              _name = 'Sunita Devi';
+            }
+          });
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          height: 52, // >= 48dp GIGW touch target
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? (isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.08))
+                : (isContrast ? Colors.black : Colors.grey.shade50),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected
+                  ? (isContrast ? Colors.yellow : AppColors.primary)
+                  : (isContrast ? Colors.white38 : AppColors.border),
+              width: isSelected ? 2 : 1,
+            ),
           ),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? (isContrast ? Colors.black : AppColors.primary)
+                    : (isContrast ? Colors.white70 : AppColors.textSecondary),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                    color: isSelected
+                        ? (isContrast ? Colors.black : AppColors.primary)
+                        : (isContrast ? Colors.white : AppColors.textPrimary),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

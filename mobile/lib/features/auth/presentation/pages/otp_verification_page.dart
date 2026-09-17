@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../widgets/custom_button.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String phoneNumber;
@@ -24,17 +26,11 @@ class OtpVerificationPage extends StatefulWidget {
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  final TextEditingController _otpController = TextEditingController(text: '123456');
-
-  @override
-  void dispose() {
-    _otpController.dispose();
-    super.dispose();
-  }
+  String _otp = '123456';
 
   void _onVerifyPressed() {
-    final otp = _otpController.text.trim();
-    if (otp.length != 6) {
+    final cleanOtp = _otp.trim();
+    if (cleanOtp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter 6-digit verification code')),
       );
@@ -44,7 +40,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     context.read<AuthBloc>().add(
           VerifyOtpSubmitted(
             phoneNumber: widget.phoneNumber,
-            otp: otp,
+            otp: cleanOtp,
             role: widget.role,
             fullName: widget.fullName,
           ),
@@ -53,113 +49,136 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Verify Phone'),
-        backgroundColor: Colors.transparent,
-      ),
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            Navigator.pop(context); // Pop back to app root where BlocBuilder routes
-          } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: AppColors.absent,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+    final a11y = AccessibilityController.instance;
+
+    return ListenableBuilder(
+      listenable: a11y,
+      builder: (context, _) {
+        final isContrast = a11y.isHighContrast;
+
+        return Scaffold(
+          backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
+          appBar: AppBar(
+            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            foregroundColor: Colors.white,
+            title: Text(
+              a11y.tr('verify_phone'),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+          body: SafeArea(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 20),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.sms_outlined,
-                      size: 40,
-                      color: AppColors.primary,
-                    ),
+                const Ux4gCivicBar(showTitle: false),
+                Expanded(
+                  child: BlocConsumer<AuthBloc, AuthState>(
+                    listener: (context, state) {
+                      if (state is AuthAuthenticated) {
+                        Navigator.pop(context);
+                      } else if (state is AuthError) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.message),
+                            backgroundColor: AppColors.absent,
+                          ),
+                        );
+                      }
+                    },
+                    builder: (context, state) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.all(24),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 440),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const SizedBox(height: 16),
+                              Center(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: isContrast
+                                        ? Colors.yellow.withOpacity(0.2)
+                                        : AppColors.primary.withOpacity(0.08),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: isContrast ? Colors.yellow : AppColors.primary,
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    Icons.sms_outlined,
+                                    size: 38,
+                                    color: isContrast ? Colors.yellow : AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                a11y.tr('enter_code'),
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '${a11y.tr('code_sent_to')} ${widget.phoneNumber}',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              // UX4G Status Banner for Demo OTP
+                              Ux4gStatusBanner(
+                                variant: Ux4gBannerVariant.infoLight,
+                                title: a11y.tr('test_mode_otp'),
+                                leadingIcon: const Icon(Icons.info_outline, size: 20, color: Color(0xFF0B4D8C)),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // 6-digit OTP Input using Ux4gInputField
+                              Ux4gInputField(
+                                value: _otp,
+                                onValueChange: (val) => setState(() => _otp = val),
+                                label: a11y.tr('enter_code'),
+                                required: true,
+                                placeholder: '123456',
+                                maxLength: 6,
+                                type: Ux4gInputFieldType.number,
+                                textAlign: TextAlign.center,
+                                size: Ux4gInputFieldSize.large,
+                                leadingIcon: Icons.lock_clock_outlined,
+                              ),
+                              const SizedBox(height: 28),
+
+                              // UX4G Verify Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: Ux4gButton(
+                                  text: a11y.tr('verify_continue'),
+                                  size: Ux4gButtonSize.large,
+                                  isLoading: state is AuthLoading,
+                                  leadingIcon: Icons.check_circle_outline,
+                                  onPressed: _onVerifyPressed,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Enter 6-Digit Code',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Code sent to ${widget.phoneNumber}',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.lateBg,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.late.withOpacity(0.3)),
-                  ),
-                  child: const Text(
-                    '💡 Test Mode: Default OTP is 123456',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.late,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                TextField(
-                  controller: _otpController,
-                  keyboardType: TextInputType.number,
-                  textAlign: TextAlign.center,
-                  maxLength: 6,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    letterSpacing: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  decoration: InputDecoration(
-                    counterText: '',
-                    hintText: '123456',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                CustomButton(
-                  text: 'Verify & Continue',
-                  isLoading: state is AuthLoading,
-                  onPressed: _onVerifyPressed,
                 ),
               ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }
