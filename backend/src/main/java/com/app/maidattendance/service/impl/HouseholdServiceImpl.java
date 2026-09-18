@@ -41,7 +41,8 @@ public class HouseholdServiceImpl implements HouseholdService {
         User employer = userRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employer not found with ID: " + request.getEmployerId()));
 
-        HouseholdLocation location = new HouseholdLocation();
+        List<HouseholdLocation> existing = householdLocationRepository.findByEmployerId(employer.getId());
+        HouseholdLocation location = existing.isEmpty() ? new HouseholdLocation() : existing.get(0);
         location.setEmployer(employer);
         location.setHouseName(request.getHouseName());
         location.setAddress(request.getAddress());

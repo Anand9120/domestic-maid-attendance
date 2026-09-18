@@ -1,10 +1,12 @@
 package com.app.maidattendance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
 @Table(name = "household_locations")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class HouseholdLocation {
 
     @Id
@@ -13,6 +15,7 @@ public class HouseholdLocation {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employer_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User employer;
 
     @Column(name = "house_name", length = 100)

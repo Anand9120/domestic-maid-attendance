@@ -106,6 +106,14 @@ class AccessibilityController extends ChangeNotifier {
     'step_audit_desc': 'Mock Check',
     'step_verified': 'Presence',
     'step_verified_desc': 'Recorded',
+    'realtime_telemetry': 'Real-Time GPS & Geofence Telemetry',
+    'gps_hardware_status': 'Hardware GPS Status',
+    'distance_to_target': 'Distance to Household',
+    'calibrate_location': 'Set My Location as Household Geofence',
+    'calibrating': 'Calibrating GPS...',
+    'checkin_now': 'Check-In Now (Geofenced)',
+    'authentic_gps': 'Authentic Hardware GPS (Clean)',
+    'mock_gps_detected': 'Mock Location Detected (Spoofing Alert)',
   };
 
   static const Map<String, String> _hindiStrings = {
@@ -169,5 +177,13 @@ class AccessibilityController extends ChangeNotifier {
     'step_audit_desc': 'सत्यापन',
     'step_verified': 'उपस्थिति',
     'step_verified_desc': 'दर्ज',
+    'realtime_telemetry': 'वास्तविक समय GPS और जियोफेंस टेलीमेट्री',
+    'gps_hardware_status': 'हार्डवेयर GPS स्थिति',
+    'distance_to_target': 'घर से दूरी',
+    'calibrate_location': 'अपने वर्तमान स्थान को जियोफेंस बनाएं',
+    'calibrating': 'GPS कैलिब्रेट हो रहा है...',
+    'checkin_now': 'अभी उपस्थिति दर्ज करें (जियोफेंस सत्यापित)',
+    'authentic_gps': 'प्रामाणिक हार्डवेयर GPS (सत्यापित)',
+    'mock_gps_detected': 'नकली GPS का पता चला (सुरक्षा चेतावनी)',
   };
 }

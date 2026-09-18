@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/location_helper.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../auth/domain/entities/user_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
@@ -26,60 +30,297 @@ class AttendanceDashboardPage extends StatefulWidget {
 }
 
 class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
-  bool _isInsideGeofence = false;
-  int _dwellCountdown = 0;
-  Timer? _timer;
-  bool _simulateMockGps = false;
+  // Household Target Parameters
+  double _targetLat = 28.6315000;
+  double _targetLon = 77.2167000;
+  int _targetHouseholdId = 1;
+  String _targetHouseName = 'Sharma Residence';
+  double _geofenceRadiusMeters = 50.0;
+  int _requiredDwellSeconds = 180; // Standard 3-minute dwell requirement (PRD US-S01)
 
-  // Household coordinates (Sharma Residence: 28.6315000, 77.2167000)
-  final double _targetLat = 28.6315000;
-  final double _targetLon = 77.2167000;
-  final int _targetHouseholdId = 1;
+  // Real-Time GPS & Telemetry
+  Position? _currentPosition;
+  StreamSubscription<Position>? _positionSubscription;
+  double? _currentDistanceMeters;
+  bool _isInsideGeofence = false;
+  bool _isMockGpsDetected = false;
+  bool _isLoadingGps = true;
+  bool _isCalibrating = false;
+  String _gpsStatusInfo = 'Acquiring GPS fix...';
+
+  // Real Dwell State
+  int _dwellCountdown = 0;
+  Timer? _dwellTimer;
+  bool _hasCheckedInToday = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHouseholdFromBackend();
+    _initRealTimeGps();
+  }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _dwellTimer?.cancel();
+    _positionSubscription?.cancel();
     super.dispose();
   }
 
-  void _simulateGeofenceEntry() {
+  /// Fetches assigned household geofence parameters from Spring Boot backend
+  Future<void> _fetchHouseholdFromBackend() async {
+    try {
+      final dio = Dio(BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 4),
+      ));
+
+      final endpoint = widget.user.role == UserRole.employer
+          ? '${ApiConstants.householdSetup.replaceAll('/setup', '')}/1'
+          : '${ApiConstants.maidAssignments}/${widget.user.id}/assignments';
+
+      final response = await dio.get(endpoint);
+      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
+        final data = response.data['data'];
+        if (data != null) {
+          Map<String, dynamic>? householdMap;
+          if (data is List && data.isNotEmpty) {
+            householdMap = data[0]['householdLocation'] as Map<String, dynamic>?;
+          } else if (data is Map<String, dynamic>) {
+            householdMap = data;
+          }
+
+          final hMap = householdMap;
+          if (hMap != null && mounted) {
+            setState(() {
+              _targetLat = (hMap['latitude'] as num).toDouble();
+              _targetLon = (hMap['longitude'] as num).toDouble();
+              _targetHouseholdId = (hMap['id'] as num).toInt();
+              _targetHouseName = (hMap['houseName'] ?? 'Sharma Residence').toString();
+              if (hMap['geofenceRadiusMeters'] != null) {
+                _geofenceRadiusMeters = (hMap['geofenceRadiusMeters'] as num).toDouble();
+              }
+              if (hMap['dwellTimeMinutes'] != null) {
+                _requiredDwellSeconds = (hMap['dwellTimeMinutes'] as num).toInt() * 60;
+              }
+            });
+            if (_currentPosition != null) {
+              _evaluatePosition(_currentPosition!);
+            }
+          }
+        }
+      }
+    } catch (_) {
+      // Retain seeded defaults if offline
+    }
+  }
+
+  /// Initializes device GPS hardware and listens to continuous position stream
+  Future<void> _initRealTimeGps() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) {
+          setState(() {
+            _isLoadingGps = false;
+            _gpsStatusInfo = 'Device location services are disabled. Please enable GPS in device settings.';
+          });
+        }
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) {
+            setState(() {
+              _isLoadingGps = false;
+              _gpsStatusInfo = 'Location permission denied. Real GPS tracking paused.';
+            });
+          }
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) {
+          setState(() {
+            _isLoadingGps = false;
+            _gpsStatusInfo = 'Location permissions permanently denied in OS settings.';
+          });
+        }
+        return;
+      }
+
+      // Initial fast fix
+      final initialPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      if (mounted) {
+        _evaluatePosition(initialPosition);
+      }
+
+      // Continuous high-precision stream for real-time geofence tracking
+      const locationSettings = LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 2, // Update whenever device physically moves by 2m
+      );
+
+      _positionSubscription?.cancel();
+      _positionSubscription = Geolocator.getPositionStream(
+        locationSettings: locationSettings,
+      ).listen(
+        _evaluatePosition,
+        onError: (err) {
+          if (mounted) {
+            setState(() {
+              _gpsStatusInfo = 'GPS Stream Error: $err';
+            });
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingGps = false;
+          _gpsStatusInfo = 'GPS Initialization Error: $e';
+        });
+      }
+    }
+  }
+
+  /// Calculates real distance using Haversine algorithm and updates boundary & dwell state
+  void _evaluatePosition(Position pos) {
+    final distance = LocationHelper.calculateDistanceMeters(
+      pos.latitude,
+      pos.longitude,
+      _targetLat,
+      _targetLon,
+    );
+    final inside = distance <= _geofenceRadiusMeters;
+    final isMock = pos.isMocked;
+
+    setState(() {
+      _currentPosition = pos;
+      _currentDistanceMeters = distance;
+      _isMockGpsDetected = isMock;
+      _isLoadingGps = false;
+      _gpsStatusInfo = inside
+          ? 'Inside household boundary (${distance.toStringAsFixed(1)}m)'
+          : 'Outside geofence boundary (${distance.toStringAsFixed(1)}m away)';
+    });
+
+    if (inside && !_isInsideGeofence) {
+      _onEnteredGeofence(pos);
+    } else if (!inside && _isInsideGeofence) {
+      _onExitedGeofence();
+    }
+  }
+
+  void _onEnteredGeofence(Position pos) {
     setState(() {
       _isInsideGeofence = true;
       _dwellCountdown = 0;
     });
 
-    _timer?.cancel();
-    // Simulate 3-minute dwell time counter (accelerated for interactive demo)
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _dwellTimer?.cancel();
+    _dwellTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       setState(() {
-        _dwellCountdown += 60; // 60s per tick -> reaches 180s in 3 seconds
+        _dwellCountdown++;
       });
 
-      if (_dwellCountdown >= 180) {
+      if (_dwellCountdown >= _requiredDwellSeconds) {
         timer.cancel();
-        // 3-minute dwell time met! Dispatch automated arrival check-in (PRD US-M01)
-        context.read<AttendanceBloc>().add(
-              CheckInEventTriggered(
-                maidId: widget.user.id,
-                householdId: _targetHouseholdId,
-                latitude: _targetLat,
-                longitude: _targetLon,
-                deviceTimestamp: DateTime.now(),
-                isMockLocation: _simulateMockGps,
-                dwellTimeSeconds: 180,
-              ),
-            );
+        if (!_hasCheckedInToday) {
+          _triggerCheckIn(pos: pos, dwellSeconds: _dwellCountdown);
+        }
       }
     });
   }
 
-  void _simulateGeofenceExit() {
-    _timer?.cancel();
+  void _onExitedGeofence() {
+    _dwellTimer?.cancel();
     setState(() {
       _isInsideGeofence = false;
       _dwellCountdown = 0;
     });
+  }
+
+  /// Dispatches arrival check-in event with real device GPS coordinates and hardware spoof flag
+  void _triggerCheckIn({Position? pos, int? dwellSeconds}) {
+    final effectivePos = pos ?? _currentPosition;
+    final effectiveDwell = dwellSeconds ?? (_dwellCountdown > 0 ? _dwellCountdown : _requiredDwellSeconds);
+    final maidId = widget.user.role == UserRole.employer ? 2 : widget.user.id;
+
+    context.read<AttendanceBloc>().add(
+          CheckInEventTriggered(
+            maidId: maidId,
+            householdId: _targetHouseholdId,
+            latitude: effectivePos?.latitude ?? _targetLat,
+            longitude: effectivePos?.longitude ?? _targetLon,
+            deviceTimestamp: DateTime.now(),
+            isMockLocation: effectivePos?.isMocked ?? _isMockGpsDetected,
+            dwellTimeSeconds: effectiveDwell,
+          ),
+        );
+    _hasCheckedInToday = true;
+  }
+
+  /// Calibrates household geofence to employer device's actual GPS coordinates
+  Future<void> _calibrateToCurrentLocation() async {
+    setState(() => _isCalibrating = true);
+    try {
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final dio = Dio(BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 5),
+      ));
+
+      final payload = {
+        'employerId': widget.user.id,
+        'houseName': 'Live Household (Calibrated)',
+        'address': 'Current Physical Test Location',
+        'latitude': pos.latitude,
+        'longitude': pos.longitude,
+        'geofenceRadiusMeters': 50,
+        'dwellTimeMinutes': 3,
+      };
+
+      final response = await dio.post(ApiConstants.householdSetup, data: payload);
+      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
+        final data = response.data['data'];
+        if (mounted) {
+          setState(() {
+            _targetLat = pos.latitude;
+            _targetLon = pos.longitude;
+            _targetHouseholdId = (data['id'] as num).toInt();
+            _targetHouseName = (data['houseName'] ?? 'Live Household').toString();
+            _isCalibrating = false;
+          });
+          _evaluatePosition(pos);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('📍 Geofence calibrated to your live GPS: ${pos.latitude.toStringAsFixed(4)}, ${pos.longitude.toStringAsFixed(4)}'),
+              backgroundColor: AppColors.present,
+            ),
+          );
+        }
+      } else {
+        throw Exception(response.data?['message'] ?? 'Calibration failed');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isCalibrating = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Calibration failed: $e'),
+            backgroundColor: AppColors.absent,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -179,19 +420,19 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // Active Status Banners
-                              if (_isInsideGeofence && _dwellCountdown < 180) ...[
+                              if (_isInsideGeofence && _dwellCountdown < _requiredDwellSeconds) ...[
                                 Ux4gStatusBanner(
                                   variant: Ux4gBannerVariant.warningLight,
-                                  title: '${a11y.tr('dwell_counting')} ($_dwellCountdown / 180s)...',
+                                  title: '${a11y.tr('dwell_counting')} ($_dwellCountdown / ${_requiredDwellSeconds}s)...',
                                   leadingIcon: const Icon(Icons.timer_outlined, color: Color(0xFFC47400)),
                                 ),
                                 const SizedBox(height: 12),
                               ],
 
-                              if (_simulateMockGps) ...[
+                              if (_isMockGpsDetected) ...[
                                 const Ux4gStatusBanner(
                                   variant: Ux4gBannerVariant.errorLight,
-                                  title: '⚠️ GIGW Security Alert: Mock GPS Location Simulation Active',
+                                  title: '⚠️ GIGW Security Alert: Real Hardware Mock/Spoofed Location Detected (position.isMocked = true)',
                                   leadingIcon: Icon(Icons.security_outlined, color: Color(0xFFC5221F)),
                                 ),
                                 const SizedBox(height: 12),
@@ -201,12 +442,12 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                               _buildAttendanceStepper(a11y, isContrast, state),
                               const SizedBox(height: 16),
 
-                              // Geofence Radar Card
+                              // Real-Time Presence Radar Card
                               _buildGeofenceCard(a11y, isContrast),
                               const SizedBox(height: 16),
 
-                              // Hardware & Location Simulator Card
-                              _buildSimulationControls(a11y, isContrast),
+                              // Real-Time GPS & Hardware Telemetry Card
+                              _buildRealTimeTelemetryCard(a11y, isContrast, isEmployer),
                               const SizedBox(height: 16),
 
                               // Quick Navigation Action Cards
@@ -291,12 +532,12 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     AttendanceState state,
   ) {
     int currentStep = 1;
-    final isStep3Error = _simulateMockGps && _dwellCountdown >= 180;
+    final isStep3Error = _isMockGpsDetected && _dwellCountdown >= _requiredDwellSeconds;
 
     if (state is CheckInSuccess || state is OfflineLogBuffered) {
       currentStep = 4;
     } else if (_isInsideGeofence) {
-      if (_dwellCountdown >= 180) {
+      if (_dwellCountdown >= _requiredDwellSeconds) {
         currentStep = 3;
       } else {
         currentStep = 2;
@@ -391,6 +632,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   }
 
   Widget _buildGeofenceCard(AccessibilityController a11y, bool isContrast) {
+    final distanceText = _currentDistanceMeters != null
+        ? '${_currentDistanceMeters!.toStringAsFixed(1)}m'
+        : '...';
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -438,8 +683,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                     const SizedBox(height: 2),
                     Text(
                       _isInsideGeofence
-                          ? a11y.tr('inside_geofence')
-                          : a11y.tr('outside_geofence'),
+                          ? '${a11y.tr('inside_geofence')} ($distanceText)'
+                          : '${a11y.tr('outside_geofence')} ($distanceText)',
                       style: TextStyle(
                         fontSize: 12,
                         color: _isInsideGeofence
@@ -458,11 +703,11 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
-                value: _dwellCountdown / 180.0,
+                value: (_dwellCountdown / _requiredDwellSeconds).clamp(0.0, 1.0),
                 minHeight: 8,
                 backgroundColor: isContrast ? Colors.white24 : AppColors.border,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  _dwellCountdown >= 180
+                  _dwellCountdown >= _requiredDwellSeconds
                       ? (isContrast ? Colors.yellow : AppColors.present)
                       : (isContrast ? Colors.amber : AppColors.late),
                 ),
@@ -473,18 +718,18 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _dwellCountdown >= 180 ? a11y.tr('dwell_completed') : a11y.tr('dwell_counting'),
+                  _dwellCountdown >= _requiredDwellSeconds ? a11y.tr('dwell_completed') : a11y.tr('dwell_counting'),
                   style: TextStyle(
                     fontSize: 11,
                     color: isContrast ? Colors.white70 : AppColors.textSecondary,
                   ),
                 ),
                 Text(
-                  '$_dwellCountdown / 180s',
+                  '$_dwellCountdown / ${_requiredDwellSeconds}s',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: _dwellCountdown >= 180
+                    color: _dwellCountdown >= _requiredDwellSeconds
                         ? (isContrast ? Colors.yellow : AppColors.present)
                         : (isContrast ? Colors.amber : AppColors.late),
                   ),
@@ -497,7 +742,9 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     );
   }
 
-  Widget _buildSimulationControls(AccessibilityController a11y, bool isContrast) {
+  Widget _buildRealTimeTelemetryCard(AccessibilityController a11y, bool isContrast, bool isEmployer) {
+    final pos = _currentPosition;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -511,67 +758,189 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '50m OS Geofence & Location Simulator',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: isContrast ? Colors.white : AppColors.textPrimary,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                a11y.tr('realtime_telemetry'),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _isInsideGeofence
+                      ? (isContrast ? Colors.yellow.withOpacity(0.2) : AppColors.present.withOpacity(0.1))
+                      : (isContrast ? Colors.white12 : Colors.grey.withOpacity(0.1)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _isInsideGeofence ? 'IN BOUNDARY' : 'OUT OF RANGE',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: _isInsideGeofence
+                        ? (isContrast ? Colors.yellow : AppColors.present)
+                        : (isContrast ? Colors.white70 : AppColors.textSecondary),
+                  ),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
-            'Simulate device location entry into 50m radius with 3-minute dwell verification.',
+            'Target: $_targetHouseName (${_geofenceRadiusMeters.toInt()}m radius at ${_targetLat.toStringAsFixed(4)}, ${_targetLon.toStringAsFixed(4)})',
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: isContrast ? Colors.white70 : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 14),
 
-          // Primary Simulator Button (Ux4gButton)
-          SizedBox(
-            width: double.infinity,
-            child: Ux4gButton(
-              text: _isInsideGeofence ? a11y.tr('exit_geofence') : a11y.tr('enter_geofence'),
-              variant: _isInsideGeofence ? Ux4gButtonVariant.secondary : Ux4gButtonVariant.primary,
-              size: Ux4gButtonSize.large,
-              leadingIcon: _isInsideGeofence ? Icons.exit_to_app : Icons.login,
-              onPressed: _isInsideGeofence ? _simulateGeofenceExit : _simulateGeofenceEntry,
+          // Live Telemetry Grid
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: isContrast ? Colors.black45 : const Color(0xFFF7FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: isContrast ? AppColors.hcBorder : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildTelemetryRow(
+                  '🛰️ Device GPS:',
+                  pos != null
+                      ? '${pos.latitude.toStringAsFixed(5)}, ${pos.longitude.toStringAsFixed(5)}'
+                      : (_isLoadingGps ? 'Fixing...' : _gpsStatusInfo),
+                  isContrast,
+                ),
+                const SizedBox(height: 6),
+                _buildTelemetryRow(
+                  '🎯 Accuracy / Range:',
+                  pos != null
+                      ? '±${pos.accuracy.toStringAsFixed(1)}m (Range: ${_geofenceRadiusMeters.toInt()}m)'
+                      : '--',
+                  isContrast,
+                ),
+                const SizedBox(height: 6),
+                _buildTelemetryRow(
+                  '📏 ${a11y.tr('distance_to_target')}:',
+                  _currentDistanceMeters != null
+                      ? '${_currentDistanceMeters!.toStringAsFixed(1)} meters'
+                      : '--',
+                  isContrast,
+                  valueColor: _isInsideGeofence ? AppColors.present : AppColors.late,
+                  isBold: true,
+                ),
+                const SizedBox(height: 6),
+                _buildTelemetryRow(
+                  '🛡️ Hardware Spoof Check:',
+                  _isMockGpsDetected
+                      ? '⚠️ MOCK GPS DETECTED'
+                      : '✅ Authentic Hardware GPS',
+                  isContrast,
+                  valueColor: _isMockGpsDetected ? AppColors.absent : AppColors.present,
+                  isBold: true,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
-          // Mock Location Switch
-          Material(
-            color: Colors.transparent,
-            child: SwitchListTile(
-              dense: true,
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Simulate Fake / Mock GPS Location',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: isContrast ? Colors.white : AppColors.textPrimary,
-                ),
+          // Employer Calibration Button: Calibrate Geofence to Tester's Real GPS
+          if (isEmployer) ...[
+            SizedBox(
+              width: double.infinity,
+              child: Ux4gButton(
+                text: _isCalibrating ? a11y.tr('calibrating') : a11y.tr('calibrate_location'),
+                variant: Ux4gButtonVariant.secondary,
+                size: Ux4gButtonSize.medium,
+                leadingIcon: Icons.my_location_rounded,
+                isLoading: _isCalibrating,
+                onPressed: _isCalibrating ? null : _calibrateToCurrentLocation,
               ),
-              subtitle: Text(
-                'PRD US-S01: Flags security alert if spoofing detected',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: isContrast ? Colors.white70 : AppColors.textSecondary,
-                ),
-              ),
-              value: _simulateMockGps,
-              activeColor: isContrast ? Colors.yellow : AppColors.absent,
-              onChanged: (val) {
-                setState(() => _simulateMockGps = val);
-              },
             ),
-          ),
+            const SizedBox(height: 10),
+          ],
+
+          // Instant or Verified Check-In Button (Enabled when inside geofence)
+          if (_isInsideGeofence) ...[
+            SizedBox(
+              width: double.infinity,
+              child: Ux4gButton(
+                text: a11y.tr('checkin_now'),
+                variant: Ux4gButtonVariant.primary,
+                size: Ux4gButtonSize.large,
+                leadingIcon: Icons.verified_user_rounded,
+                onPressed: () => _triggerCheckIn(),
+              ),
+            ),
+          ] else ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              decoration: BoxDecoration(
+                color: isContrast ? Colors.white10 : const Color(0xFFEDF2F7),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Move within ${_geofenceRadiusMeters.toInt()}m of household to activate automated arrival verification.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildTelemetryRow(
+    String label,
+    String value,
+    bool isContrast, {
+    Color? valueColor,
+    bool isBold = false,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: isContrast ? Colors.white70 : AppColors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+            color: valueColor ?? (isContrast ? Colors.white : AppColors.textPrimary),
+          ),
+        ),
+      ],
     );
   }
 
@@ -659,29 +1028,23 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  a11y.tr('latest_log'),
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                    color: isContrast ? Colors.white : AppColors.textPrimary,
-                  ),
+              Text(
+                a11y.tr('latest_log'),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: StatusBadge(
-                  status: log.status,
-                  entryType: log.entryType,
-                  isMock: log.isMockLocation,
-                ),
+              StatusBadge(
+                status: log.status,
+                isMock: log.isMockLocation,
               ),
             ],
           ),
-          Divider(height: 20, color: isContrast ? Colors.white24 : AppColors.border),
+          const SizedBox(height: 12),
           Text(
-            '${a11y.tr('checkin_time')}: ${log.checkInTime ?? "Recorded"}',
+            'Check-In: ${log.checkInTime ?? "--:--"}',
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -690,10 +1053,11 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           ),
           const SizedBox(height: 4),
           Text(
-            '${a11y.tr('entry_type')}: ${log.entryType.name.toUpperCase()}',
+            'Location Verified: ${log.isMockLocation ? "⚠️ Flagged Spoofed Location" : "✅ Authentic GPS within 50m"}',
             style: TextStyle(
-              fontSize: 12,
-              color: isContrast ? Colors.white70 : AppColors.textSecondary,
+              fontSize: 11,
+              color: log.isMockLocation ? AppColors.absent : AppColors.present,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

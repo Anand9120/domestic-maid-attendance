@@ -1,11 +1,13 @@
 package com.app.maidattendance.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "maid_household_assignments", 
        uniqueConstraints = @UniqueConstraint(name = "uq_maid_household", columnNames = {"maid_id", "household_id"}))
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MaidHouseholdAssignment {
 
     public enum Status {
@@ -19,10 +21,12 @@ public class MaidHouseholdAssignment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "maid_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private User maid;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "household_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private HouseholdLocation householdLocation;
 
     @Column(name = "assigned_at", updatable = false)

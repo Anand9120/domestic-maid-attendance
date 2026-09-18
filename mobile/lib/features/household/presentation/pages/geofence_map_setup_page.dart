@@ -1,5 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/ux4g/ux4g.dart';
 import '../../../auth/presentation/widgets/custom_button.dart';
 
 class GeofenceMapSetupPage extends StatefulWidget {
@@ -20,6 +24,7 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
   double _geofenceRadius = 50.0;
   double _dwellTimeMinutes = 3.0;
   bool _isSaving = false;
+  bool _isDetectingLocation = false;
 
   @override
   void dispose() {
@@ -30,19 +35,85 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
     super.dispose();
   }
 
-  void _onSaveSetup() {
+  Future<void> _detectCurrentLocation() async {
+    setState(() => _isDetectingLocation = true);
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      final pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      if (mounted) {
+        setState(() {
+          _latController.text = pos.latitude.toStringAsFixed(7);
+          _lonController.text = pos.longitude.toStringAsFixed(7);
+          _isDetectingLocation = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('📍 Coordinates updated from your device GPS (Accuracy: ±${pos.accuracy.toStringAsFixed(1)}m)'),
+            backgroundColor: AppColors.present,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isDetectingLocation = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Could not fetch GPS location: $e'),
+            backgroundColor: AppColors.absent,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _onSaveSetup() async {
     setState(() => _isSaving = true);
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (!mounted) return;
-      setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Household geofence & dwell settings saved successfully!'),
-          backgroundColor: AppColors.present,
-        ),
-      );
-      Navigator.pop(context);
-    });
+    try {
+      final dio = Dio(BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
+        connectTimeout: const Duration(seconds: 5),
+      ));
+
+      final payload = {
+        'employerId': widget.employerId,
+        'houseName': _houseNameController.text.trim(),
+        'address': _addressController.text.trim(),
+        'latitude': double.tryParse(_latController.text) ?? 28.6315,
+        'longitude': double.tryParse(_lonController.text) ?? 77.2167,
+        'geofenceRadiusMeters': _geofenceRadius.toInt(),
+        'dwellTimeMinutes': _dwellTimeMinutes.toInt(),
+      };
+
+      final response = await dio.post(ApiConstants.householdSetup, data: payload);
+      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
+        if (mounted) {
+          setState(() => _isSaving = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✅ Household geofence & dwell settings saved to server!'),
+              backgroundColor: AppColors.present,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        throw Exception(response.data?['message'] ?? 'Failed to save settings');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('⚠️ Server error: $e'),
+            backgroundColor: AppColors.absent,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -160,6 +231,19 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+
+                  // Button to detect current device GPS
+                  SizedBox(
+                    width: double.infinity,
+                    child: Ux4gButton(
+                      text: _isDetectingLocation ? 'Acquiring GPS...' : '📍 Use Current Device GPS Coordinates',
+                      variant: Ux4gButtonVariant.secondary,
+                      size: Ux4gButtonSize.small,
+                      isLoading: _isDetectingLocation,
+                      onPressed: _isDetectingLocation ? null : _detectCurrentLocation,
+                    ),
+                  ),
                   const SizedBox(height: 20),
 
                   // Geofence Radius Slider (PRD US-M01: 50m radius)
@@ -210,7 +294,7 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
                   const SizedBox(height: 16),
 
                   CustomButton(
-                    text: 'Save Geofence Setup',
+                    text: 'Save Geofence Setup to Server',
                     isLoading: _isSaving,
                     icon: Icons.check_circle_outline,
                     onPressed: _onSaveSetup,
