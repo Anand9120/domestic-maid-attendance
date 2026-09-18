@@ -879,37 +879,119 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             const SizedBox(height: 10),
           ],
 
-          // Instant or Verified Check-In Button (Enabled when inside geofence)
-          if (_isInsideGeofence) ...[
-            SizedBox(
+          // Zero-Touch Automation Status Banner
+          if (_hasCheckedInToday) ...[
+            Container(
               width: double.infinity,
-              child: Ux4gButton(
-                text: a11y.tr('checkin_now'),
-                variant: Ux4gButtonVariant.primary,
-                size: Ux4gButtonSize.large,
-                leadingIcon: Icons.verified_user_rounded,
-                onPressed: () => _triggerCheckIn(),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isContrast ? Colors.green.shade900.withOpacity(0.3) : const Color(0xFFE6F4EA),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isContrast ? Colors.greenAccent : const Color(0xFF34A853),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.verified_rounded,
+                    size: 22,
+                    color: isContrast ? Colors.greenAccent : const Color(0xFF137333),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Zero-Touch Attendance Verified',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isContrast ? Colors.white : const Color(0xFF137333),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Arrival recorded with 3-minute physical dwell validation. Employer has been notified.',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isContrast ? Colors.white70 : const Color(0xFF1E4620),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else if (_isInsideGeofence) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isContrast ? Colors.amber.shade900.withOpacity(0.2) : const Color(0xFFFEF7E0),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isContrast ? Colors.yellow : const Color(0xFFF9AB00),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.hourglass_top_rounded,
+                        size: 20,
+                        color: isContrast ? Colors.yellow : const Color(0xFFB06000),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Zero-Touch Dwell Verification Active',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isContrast ? Colors.yellow : const Color(0xFFB06000),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'No buttons needed. Please remain inside the household for ${_requiredDwellSeconds ~/ 60} minutes to automatically log verified presence.',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isContrast ? Colors.white70 : const Color(0xFF5F6368),
+                    ),
+                  ),
+                ],
               ),
             ),
           ] else ...[
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               decoration: BoxDecoration(
                 color: isContrast ? Colors.white10 : const Color(0xFFEDF2F7),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isContrast ? Colors.white24 : const Color(0xFFCBD5E0),
+                ),
               ),
               child: Row(
                 children: [
                   Icon(
-                    Icons.info_outline_rounded,
-                    size: 16,
+                    Icons.location_searching_rounded,
+                    size: 18,
                     color: isContrast ? Colors.yellow : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Move within ${_geofenceRadiusMeters.toInt()}m of household to activate automated arrival verification.',
+                      'Move within ${_geofenceRadiusMeters.toInt()}m of household to start automated 3-minute dwell verification.',
                       style: TextStyle(
                         fontSize: 11,
                         color: isContrast ? Colors.white70 : AppColors.textSecondary,
