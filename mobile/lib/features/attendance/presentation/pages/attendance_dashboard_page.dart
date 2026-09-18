@@ -197,6 +197,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                 const SizedBox(height: 12),
                               ],
 
+                              // UX4G Attendance Verification Pipeline Stepper
+                              _buildAttendanceStepper(a11y, isContrast, state),
+                              const SizedBox(height: 16),
+
                               // Geofence Radar Card
                               _buildGeofenceCard(a11y, isContrast),
                               const SizedBox(height: 16),
@@ -278,6 +282,111 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildAttendanceStepper(
+    AccessibilityController a11y,
+    bool isContrast,
+    AttendanceState state,
+  ) {
+    int currentStep = 1;
+    final isStep3Error = _simulateMockGps && _dwellCountdown >= 180;
+
+    if (state is CheckInSuccess || state is OfflineLogBuffered) {
+      currentStep = 4;
+    } else if (_isInsideGeofence) {
+      if (_dwellCountdown >= 180) {
+        currentStep = 3;
+      } else {
+        currentStep = 2;
+      }
+    } else {
+      currentStep = 1;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      decoration: BoxDecoration(
+        color: isContrast ? AppColors.hcSurface : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isContrast ? AppColors.hcBorder : AppColors.border,
+          width: isContrast ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.linear_scale_rounded,
+                size: 18,
+                color: isContrast ? Colors.yellow : AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  a11y.tr('attendance_pipeline'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isContrast
+                      ? Colors.yellow
+                      : AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'Step $currentStep / 4',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: isContrast ? Colors.black : AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Ux4gStepper(
+            totalSteps: 4,
+            currentStep: currentStep,
+            orientation: StepperOrientation.horizontal,
+            lineStyle: StepperLineStyle.solid,
+            stepSize: 28,
+            steps: [
+              Ux4gStepItem(
+                title: a11y.tr('step_geofence'),
+                description: a11y.tr('step_geofence_desc'),
+              ),
+              Ux4gStepItem(
+                title: a11y.tr('step_dwell'),
+                description: a11y.tr('step_dwell_desc'),
+              ),
+              Ux4gStepItem(
+                title: a11y.tr('step_audit'),
+                description: a11y.tr('step_audit_desc'),
+                isError: isStep3Error,
+              ),
+              Ux4gStepItem(
+                title: a11y.tr('step_verified'),
+                description: a11y.tr('step_verified_desc'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

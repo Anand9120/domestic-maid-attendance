@@ -97,6 +97,15 @@ class AccessibilityController extends ChangeNotifier {
     'font_size': 'Font Size',
     'high_contrast': 'High Contrast',
     'language': 'Language',
+    'attendance_pipeline': 'Attendance Verification Pipeline',
+    'step_geofence': 'Geofence',
+    'step_geofence_desc': '50m Radius',
+    'step_dwell': 'Dwell Timer',
+    'step_dwell_desc': '3-min Stay',
+    'step_audit': 'GPS Audit',
+    'step_audit_desc': 'Mock Check',
+    'step_verified': 'Presence',
+    'step_verified_desc': 'Recorded',
   };
 
   static const Map<String, String> _hindiStrings = {
@@ -151,5 +160,14 @@ class AccessibilityController extends ChangeNotifier {
     'font_size': 'फ़ॉन्ट आकार',
     'high_contrast': 'उच्च कंट्रास्ट',
     'language': 'भाषा',
+    'attendance_pipeline': 'उपस्थिति सत्यापन प्रक्रिया',
+    'step_geofence': 'जियोफेंस',
+    'step_geofence_desc': '50मी दायरा',
+    'step_dwell': 'ठहराव समय',
+    'step_dwell_desc': '3 मिनट',
+    'step_audit': 'GPS जांच',
+    'step_audit_desc': 'सत्यापन',
+    'step_verified': 'उपस्थिति',
+    'step_verified_desc': 'दर्ज',
   };
 }
