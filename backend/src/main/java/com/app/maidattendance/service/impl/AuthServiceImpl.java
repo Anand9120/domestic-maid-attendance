@@ -75,4 +75,32 @@ public class AuthServiceImpl implements AuthService {
         token.setDeviceType(request.getDeviceType());
         fcmDeviceTokenRepository.save(token);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+    }
+
+    @Override
+    public User updateUserProfile(Long userId, com.app.maidattendance.dto.request.UserProfileUpdateRequestDto request) {
+        User user = getUserById(userId);
+        if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
+            user.setFullName(request.getFullName().trim());
+        }
+        if (request.getEmergencyContact() != null) {
+            user.setEmergencyContact(request.getEmergencyContact().trim());
+        }
+        if (request.getServicesOffered() != null) {
+            user.setServicesOffered(request.getServicesOffered().trim());
+        }
+        if (request.getUpiId() != null) {
+            user.setUpiId(request.getUpiId().trim());
+        }
+        if (request.getBankAccount() != null) {
+            user.setBankAccount(request.getBankAccount().trim());
+        }
+        return userRepository.save(user);
+    }
 }

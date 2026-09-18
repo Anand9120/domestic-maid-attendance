@@ -10,18 +10,26 @@ class HouseholdModel extends HouseholdEntity {
     required super.longitude,
     super.geofenceRadiusMeters,
     super.dwellTimeMinutes,
+    super.inviteCode,
+    super.monthlySalary,
+    super.allowedLeaves,
   });
 
   factory HouseholdModel.fromJson(Map<String, dynamic> json) {
     return HouseholdModel(
       id: (json['id'] ?? 0) as int,
-      employerId: (json['employerId'] ?? 0) as int,
+      employerId: json['employer'] != null && json['employer']['id'] != null 
+          ? (json['employer']['id'] as int)
+          : ((json['employerId'] ?? 0) as int),
       houseName: (json['houseName'] ?? 'Home') as String,
       address: json['address'] as String?,
       latitude: (json['latitude'] is num) ? (json['latitude'] as num).toDouble() : 0.0,
       longitude: (json['longitude'] is num) ? (json['longitude'] as num).toDouble() : 0.0,
       geofenceRadiusMeters: (json['geofenceRadiusMeters'] ?? 50) as int,
       dwellTimeMinutes: (json['dwellTimeMinutes'] ?? 3) as int,
+      inviteCode: json['inviteCode'] as String?,
+      monthlySalary: (json['monthlySalary'] is num) ? (json['monthlySalary'] as num).toDouble() : null,
+      allowedLeaves: json['allowedLeaves'] as int?,
     );
   }
 
@@ -35,6 +43,9 @@ class HouseholdModel extends HouseholdEntity {
       'longitude': longitude,
       'geofenceRadiusMeters': geofenceRadiusMeters,
       'dwellTimeMinutes': dwellTimeMinutes,
+      'inviteCode': inviteCode,
+      'monthlySalary': monthlySalary,
+      'allowedLeaves': allowedLeaves,
     };
   }
 }

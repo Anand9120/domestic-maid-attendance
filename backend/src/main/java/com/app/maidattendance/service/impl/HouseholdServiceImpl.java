@@ -51,6 +51,19 @@ public class HouseholdServiceImpl implements HouseholdService {
         location.setGeofenceRadiusMeters(request.getGeofenceRadiusMeters() != null ? request.getGeofenceRadiusMeters() : 50);
         location.setDwellTimeMinutes(request.getDwellTimeMinutes() != null ? request.getDwellTimeMinutes() : 3);
 
+        if (request.getInviteCode() != null && !request.getInviteCode().trim().isEmpty()) {
+            location.setInviteCode(request.getInviteCode().trim().toUpperCase());
+        } else if (location.getInviteCode() == null || location.getInviteCode().trim().isEmpty()) {
+            location.setInviteCode(generateUniqueInviteCode(request.getHouseName()));
+        }
+
+        if (request.getMonthlySalary() != null) {
+            location.setMonthlySalary(request.getMonthlySalary());
+        }
+        if (request.getAllowedLeaves() != null) {
+            location.setAllowedLeaves(request.getAllowedLeaves());
+        }
+
         HouseholdLocation savedLocation = householdLocationRepository.save(location);
 
         // Configure default or provided shift schedules
@@ -69,11 +82,37 @@ public class HouseholdServiceImpl implements HouseholdService {
         return savedLocation;
     }
 
+    private String generateUniqueInviteCode(String houseName) {
+        String prefix = "HOME";
+        if (houseName != null && !houseName.trim().isEmpty()) {
+            String sanitized = houseName.replaceAll("[^a-zA-Z]", "").toUpperCase();
+            if (sanitized.length() >= 3) {
+                prefix = sanitized.substring(0, Math.min(6, sanitized.length()));
+            }
+        }
+        java.util.Random random = new java.util.Random();
+        for (int attempt = 0; attempt < 20; attempt++) {
+            int suffix = 100 + random.nextInt(900);
+            String candidate = prefix + suffix;
+            if (!householdLocationRepository.existsByInviteCode(candidate)) {
+                return candidate;
+            }
+        }
+        return "HOME" + (System.currentTimeMillis() % 100000);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public HouseholdLocation getHouseholdById(Long id) {
         return householdLocationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Household not found with ID: " + id));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HouseholdLocation getHouseholdByInviteCode(String inviteCode) {
+        return householdLocationRepository.findByInviteCode(inviteCode.trim().toUpperCase())
+                .orElseThrow(() -> new ResourceNotFoundException("Household not found for Invite Code: " + inviteCode));
     }
 
     @Override
@@ -98,6 +137,12 @@ public class HouseholdServiceImpl implements HouseholdService {
                     assignment.setStatus(MaidHouseholdAssignment.Status.ACTIVE);
                     return assignmentRepository.save(assignment);
                 });
+    }
+
+    @Override
+    public MaidHouseholdAssignment joinHouseholdByCode(Long maidId, String inviteCode) {
+        HouseholdLocation household = getHouseholdByInviteCode(inviteCode);
+        return assignMaidToHousehold(maidId, household.getId());
     }
 
     @Override

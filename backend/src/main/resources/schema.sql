@@ -9,6 +9,10 @@ CREATE TABLE IF NOT EXISTS users (
     full_name VARCHAR(100) NOT NULL,
     phone_number VARCHAR(15) UNIQUE NOT NULL,
     role VARCHAR(20) NOT NULL, -- 'EMPLOYER', 'MAID', 'ADMIN'
+    emergency_contact VARCHAR(15),
+    services_offered VARCHAR(255),
+    upi_id VARCHAR(100),
+    bank_account VARCHAR(100),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -23,6 +27,9 @@ CREATE TABLE IF NOT EXISTS household_locations (
     longitude DECIMAL(11, 8) NOT NULL,
     geofence_radius_meters INT DEFAULT 50,
     dwell_time_minutes INT DEFAULT 3,
+    invite_code VARCHAR(20) UNIQUE,
+    monthly_salary DECIMAL(10, 2) DEFAULT 0.00,
+    allowed_leaves INT DEFAULT 2,
     CONSTRAINT fk_household_employer FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

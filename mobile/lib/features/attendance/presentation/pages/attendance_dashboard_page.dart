@@ -19,6 +19,9 @@ import '../../domain/entities/attendance_log_entity.dart';
 import '../widgets/manual_override_dialog.dart';
 import '../widgets/status_badge.dart';
 import 'monthly_ledger_page.dart';
+import 'package:flutter/services.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import '../../../household/presentation/pages/maid_profile_setup_page.dart';
 
 class AttendanceDashboardPage extends StatefulWidget {
   final UserEntity user;
@@ -37,6 +40,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   String _targetHouseName = 'Sharma Residence';
   double _geofenceRadiusMeters = 50.0;
   int _requiredDwellSeconds = 180; // Standard 3-minute dwell requirement (PRD US-S01)
+  String _inviteCode = 'SHARMA402';
 
   // Real-Time GPS & Telemetry
   Position? _currentPosition;
@@ -97,6 +101,9 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               _targetLon = (hMap['longitude'] as num).toDouble();
               _targetHouseholdId = (hMap['id'] as num).toInt();
               _targetHouseName = (hMap['houseName'] ?? 'Sharma Residence').toString();
+              if (hMap['inviteCode'] != null) {
+                _inviteCode = hMap['inviteCode'].toString();
+              }
               if (hMap['geofenceRadiusMeters'] != null) {
                 _geofenceRadiusMeters = (hMap['geofenceRadiusMeters'] as num).toDouble();
               }
@@ -356,6 +363,29 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               ],
             ),
             actions: [
+              if (isEmployer)
+                IconButton(
+                  icon: const Icon(Icons.qr_code_2_rounded),
+                  tooltip: 'Household Invite Code & QR',
+                  onPressed: _showHouseholdInviteModal,
+                )
+              else
+                IconButton(
+                  icon: const Icon(Icons.account_circle_rounded),
+                  tooltip: 'Maid Profile & Work Settings',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MaidProfileSetupPage(
+                          maidId: widget.user.id,
+                          initialName: widget.user.fullName,
+                          initialPhone: widget.user.phoneNumber,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               IconButton(
                 icon: const Icon(Icons.sync_rounded),
                 tooltip: a11y.tr('sync_offline'),
@@ -505,9 +535,43 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                         },
                                       ),
                                     ),
+                                  ] else ...[
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildActionCard(
+                                        title: 'Profile & Payout',
+                                        subtitle: 'UPI, Work & Homes',
+                                        icon: Icons.account_circle_rounded,
+                                        color: AppColors.secondary,
+                                        isContrast: isContrast,
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) => MaidProfileSetupPage(
+                                                maidId: widget.user.id,
+                                                initialName: widget.user.fullName,
+                                                initialPhone: widget.user.phoneNumber,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   ],
                                 ],
                               ),
+                              if (isEmployer) ...[
+                                const SizedBox(height: 12),
+                                _buildActionCard(
+                                  title: 'Invite Maid (आमंत्रण कोड)',
+                                  subtitle: 'Code: $_inviteCode • Tap to view QR & Share',
+                                  icon: Icons.qr_code_2_rounded,
+                                  color: AppColors.present,
+                                  isContrast: isContrast,
+                                  onTap: _showHouseholdInviteModal,
+                                ),
+                              ],
                               const SizedBox(height: 16),
 
                               // Recent Attendance Log Card
@@ -1167,6 +1231,111 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showHouseholdInviteModal() {
+    final a11y = AccessibilityController.instance;
+    final isContrast = a11y.isHighContrast;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: isContrast ? Colors.black : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.qr_code_2_rounded, color: isContrast ? Colors.yellow : AppColors.primary, size: 26),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Household Invite Code',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Have your maid scan this QR or enter the code below in their app to link with "$_targetHouseName".',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: QrImageView(
+                    data: 'MAID_INVITE:$_inviteCode',
+                    version: QrVersions.auto,
+                    size: 160.0,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isContrast ? Colors.grey.shade900 : AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _inviteCode,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 4,
+                          color: isContrast ? Colors.yellow : AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      IconButton(
+                        tooltip: 'Copy Code',
+                        icon: Icon(Icons.copy_rounded, color: isContrast ? Colors.yellow : AppColors.primary, size: 20),
+                        onPressed: () {
+                          Clipboard.setData(ClipboardData(text: _inviteCode));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Invite code "$_inviteCode" copied!'),
+                              backgroundColor: AppColors.present,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () => Navigator.of(ctx).pop(),
+            ),
+          ],
+        );
+      },
     );
   }
 }

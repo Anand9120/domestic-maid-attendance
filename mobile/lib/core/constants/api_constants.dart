@@ -15,6 +15,11 @@ class ApiConstants {
   // Household endpoints
   static const String householdSetup = '/api/v1/household/setup';
   static const String maidAssignments = '/api/v1/household/maid';
+  static const String householdByCode = '/api/v1/household/code';
+  static const String joinHouseholdByCode = '/api/v1/household/join-by-code';
+
+  // Profile endpoints
+  static const String userProfile = '/api/v1/auth/user';
 
   // Report endpoints
   static const String monthlyReport = '/api/v1/reports/monthly';

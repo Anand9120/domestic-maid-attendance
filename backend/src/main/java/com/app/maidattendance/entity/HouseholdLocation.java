@@ -36,11 +36,27 @@ public class HouseholdLocation {
     @Column(name = "dwell_time_minutes")
     private Integer dwellTimeMinutes = 3;
 
+    @Column(name = "invite_code", unique = true, length = 20)
+    private String inviteCode;
+
+    @Column(name = "monthly_salary", precision = 10, scale = 2)
+    private BigDecimal monthlySalary = BigDecimal.ZERO;
+
+    @Column(name = "allowed_leaves")
+    private Integer allowedLeaves = 2;
+
     public HouseholdLocation() {}
 
     public HouseholdLocation(Long id, User employer, String houseName, String address, 
                              BigDecimal latitude, BigDecimal longitude, 
                              Integer geofenceRadiusMeters, Integer dwellTimeMinutes) {
+        this(id, employer, houseName, address, latitude, longitude, geofenceRadiusMeters, dwellTimeMinutes, null, BigDecimal.ZERO, 2);
+    }
+
+    public HouseholdLocation(Long id, User employer, String houseName, String address, 
+                             BigDecimal latitude, BigDecimal longitude, 
+                             Integer geofenceRadiusMeters, Integer dwellTimeMinutes,
+                             String inviteCode, BigDecimal monthlySalary, Integer allowedLeaves) {
         this.id = id;
         this.employer = employer;
         this.houseName = houseName != null ? houseName : "Home";
@@ -49,6 +65,9 @@ public class HouseholdLocation {
         this.longitude = longitude;
         this.geofenceRadiusMeters = geofenceRadiusMeters != null ? geofenceRadiusMeters : 50;
         this.dwellTimeMinutes = dwellTimeMinutes != null ? dwellTimeMinutes : 3;
+        this.inviteCode = inviteCode;
+        this.monthlySalary = monthlySalary != null ? monthlySalary : BigDecimal.ZERO;
+        this.allowedLeaves = allowedLeaves != null ? allowedLeaves : 2;
     }
 
     public Long getId() { return id; }
@@ -74,4 +93,13 @@ public class HouseholdLocation {
 
     public Integer getDwellTimeMinutes() { return dwellTimeMinutes; }
     public void setDwellTimeMinutes(Integer dwellTimeMinutes) { this.dwellTimeMinutes = dwellTimeMinutes; }
+
+    public String getInviteCode() { return inviteCode; }
+    public void setInviteCode(String inviteCode) { this.inviteCode = inviteCode; }
+
+    public BigDecimal getMonthlySalary() { return monthlySalary; }
+    public void setMonthlySalary(BigDecimal monthlySalary) { this.monthlySalary = monthlySalary; }
+
+    public Integer getAllowedLeaves() { return allowedLeaves; }
+    public void setAllowedLeaves(Integer allowedLeaves) { this.allowedLeaves = allowedLeaves; }
 }

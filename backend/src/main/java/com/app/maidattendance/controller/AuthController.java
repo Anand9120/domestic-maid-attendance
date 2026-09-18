@@ -35,4 +35,20 @@ public class AuthController {
         authService.registerFcmToken(request);
         return ResponseEntity.ok(ApiResponse.ok("Device token registered successfully", null));
     }
+
+    @GetMapping("/user/{userId}")
+    @Operation(summary = "Get User Profile", description = "Fetches user details by user ID")
+    public ResponseEntity<ApiResponse<com.app.maidattendance.entity.User>> getUserProfile(@PathVariable Long userId) {
+        com.app.maidattendance.entity.User user = authService.getUserById(userId);
+        return ResponseEntity.ok(ApiResponse.ok("User profile retrieved successfully", user));
+    }
+
+    @PutMapping("/user/{userId}/profile")
+    @Operation(summary = "Update User Profile", description = "Updates user profile (services, payout, emergency contact)")
+    public ResponseEntity<ApiResponse<com.app.maidattendance.entity.User>> updateUserProfile(
+            @PathVariable Long userId,
+            @RequestBody com.app.maidattendance.dto.request.UserProfileUpdateRequestDto request) {
+        com.app.maidattendance.entity.User updated = authService.updateUserProfile(userId, request);
+        return ResponseEntity.ok(ApiResponse.ok("User profile updated successfully", updated));
+    }
 }

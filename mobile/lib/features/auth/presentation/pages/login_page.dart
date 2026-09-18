@@ -9,6 +9,8 @@ import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import 'otp_verification_page.dart';
+import '../../../household/presentation/pages/employer_registration_page.dart';
+import '../../../household/presentation/pages/maid_profile_setup_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -219,6 +221,97 @@ class _LoginPageState extends State<LoginPage> {
                                         ),
                                       );
                                     },
+                                  ),
+                                  const SizedBox(height: 20),
+
+                                  // Divider
+                                  Row(
+                                    children: [
+                                      Expanded(child: Divider(color: isContrast ? Colors.white38 : Colors.grey.shade300)),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                                        child: Text(
+                                          'NEW REGISTRATION',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                            color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(child: Divider(color: isContrast ? Colors.white38 : Colors.grey.shade300)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Register Employer Household
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        minimumSize: const Size(double.infinity, 48),
+                                        side: BorderSide(
+                                          color: isContrast ? Colors.yellow : AppColors.primary,
+                                        ),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      icon: Icon(
+                                        Icons.add_home_work_rounded,
+                                        size: 18,
+                                        color: isContrast ? Colors.yellow : AppColors.primary,
+                                      ),
+                                      label: Text(
+                                        'Register New Household (नया घर जोड़ें)',
+                                        style: TextStyle(
+                                          color: isContrast ? Colors.yellow : AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const EmployerRegistrationPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  // Maid Profile & Linking
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                        minimumSize: const Size(double.infinity, 48),
+                                        side: BorderSide(
+                                          color: isContrast ? Colors.white70 : Colors.grey.shade400,
+                                        ),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                      ),
+                                      icon: Icon(
+                                        Icons.person_add_alt_1_rounded,
+                                        size: 18,
+                                        color: isContrast ? Colors.white : AppColors.textPrimary,
+                                      ),
+                                      label: Text(
+                                        'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
+                                        style: TextStyle(
+                                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => const MaidProfileSetupPage(),
+                                          ),
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),

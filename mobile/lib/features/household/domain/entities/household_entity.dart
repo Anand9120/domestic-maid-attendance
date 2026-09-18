@@ -9,6 +9,9 @@ class HouseholdEntity extends Equatable {
   final double longitude;
   final int geofenceRadiusMeters;
   final int dwellTimeMinutes;
+  final String? inviteCode;
+  final double? monthlySalary;
+  final int? allowedLeaves;
 
   const HouseholdEntity({
     required this.id,
@@ -19,6 +22,9 @@ class HouseholdEntity extends Equatable {
     required this.longitude,
     this.geofenceRadiusMeters = 50,
     this.dwellTimeMinutes = 3,
+    this.inviteCode,
+    this.monthlySalary,
+    this.allowedLeaves,
   });
 
   @override
@@ -30,5 +36,8 @@ class HouseholdEntity extends Equatable {
         longitude,
         geofenceRadiusMeters,
         dwellTimeMinutes,
+        inviteCode,
+        monthlySalary,
+        allowedLeaves,
       ];
 }

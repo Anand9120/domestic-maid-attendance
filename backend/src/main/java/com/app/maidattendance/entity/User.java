@@ -29,6 +29,18 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "emergency_contact", length = 15)
+    private String emergencyContact;
+
+    @Column(name = "services_offered", length = 255)
+    private String servicesOffered;
+
+    @Column(name = "upi_id", length = 100)
+    private String upiId;
+
+    @Column(name = "bank_account", length = 100)
+    private String bankAccount;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 
@@ -60,6 +72,18 @@ public class User {
 
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
+
+    public String getEmergencyContact() { return emergencyContact; }
+    public void setEmergencyContact(String emergencyContact) { this.emergencyContact = emergencyContact; }
+
+    public String getServicesOffered() { return servicesOffered; }
+    public void setServicesOffered(String servicesOffered) { this.servicesOffered = servicesOffered; }
+
+    public String getUpiId() { return upiId; }
+    public void setUpiId(String upiId) { this.upiId = upiId; }
+
+    public String getBankAccount() { return bankAccount; }
+    public void setBankAccount(String bankAccount) { this.bankAccount = bankAccount; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

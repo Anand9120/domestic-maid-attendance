@@ -55,6 +55,21 @@ public class HouseholdController {
         return ResponseEntity.ok(ApiResponse.ok("Maid successfully assigned to household", assignment));
     }
 
+    @GetMapping("/code/{inviteCode}")
+    @Operation(summary = "Get Household Details by Invite Code", description = "Fetches household details using 6-character invite code")
+    public ResponseEntity<ApiResponse<HouseholdLocation>> getHouseholdByInviteCode(@PathVariable String inviteCode) {
+        HouseholdLocation location = householdService.getHouseholdByInviteCode(inviteCode);
+        return ResponseEntity.ok(ApiResponse.ok("Household found", location));
+    }
+
+    @PostMapping("/join-by-code")
+    @Operation(summary = "Join Household via Invite Code", description = "Allows maid to link to household using invite code")
+    public ResponseEntity<ApiResponse<MaidHouseholdAssignment>> joinByCode(
+            @Valid @RequestBody com.app.maidattendance.dto.request.JoinHouseholdRequestDto request) {
+        MaidHouseholdAssignment assignment = householdService.joinHouseholdByCode(request.getMaidId(), request.getInviteCode());
+        return ResponseEntity.ok(ApiResponse.ok("Household linked successfully", assignment));
+    }
+
     @GetMapping("/maid/{maidId}/assignments")
     @Operation(summary = "Get Active Household Targets for Maid", description = "Returns active geofences for maid client")
     public ResponseEntity<ApiResponse<List<MaidHouseholdAssignment>>> getAssignmentsForMaid(@PathVariable Long maidId) {

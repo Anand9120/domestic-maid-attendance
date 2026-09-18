@@ -26,6 +26,12 @@ public class HouseholdSetupRequestDto {
 
     private Integer dwellTimeMinutes = 3;
 
+    private String inviteCode;
+
+    private BigDecimal monthlySalary = BigDecimal.ZERO;
+
+    private Integer allowedLeaves = 2;
+
     private List<ShiftDto> shifts;
 
     public static class ShiftDto {
@@ -75,6 +81,15 @@ public class HouseholdSetupRequestDto {
 
     public Integer getDwellTimeMinutes() { return dwellTimeMinutes; }
     public void setDwellTimeMinutes(Integer dwellTimeMinutes) { this.dwellTimeMinutes = dwellTimeMinutes; }
+
+    public String getInviteCode() { return inviteCode; }
+    public void setInviteCode(String inviteCode) { this.inviteCode = inviteCode; }
+
+    public BigDecimal getMonthlySalary() { return monthlySalary; }
+    public void setMonthlySalary(BigDecimal monthlySalary) { this.monthlySalary = monthlySalary; }
+
+    public Integer getAllowedLeaves() { return allowedLeaves; }
+    public void setAllowedLeaves(Integer allowedLeaves) { this.allowedLeaves = allowedLeaves; }
 
     public List<ShiftDto> getShifts() { return shifts; }
     public void setShifts(List<ShiftDto> shifts) { this.shifts = shifts; }
