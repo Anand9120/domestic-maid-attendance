@@ -31,7 +31,14 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         throw ServerException(response.data['message'] ?? 'Check-in failed');
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      if (e.response == null ||
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException(e.message ?? 'No network connection');
+      }
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Check-in failed';
       throw ServerException(msg.toString());
     }
   }

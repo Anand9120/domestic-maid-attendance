@@ -1,3 +1,4 @@
+import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/attendance_log_entity.dart';
 import '../../domain/entities/monthly_report_entity.dart';
 import '../../domain/repositories/attendance_repository.dart';
@@ -39,7 +40,7 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
       // 1. Try sending to Spring Boot backend directly
       final result = await remoteDataSource.checkIn(payload);
       return result;
-    } catch (e) {
+    } on NetworkException catch (_) {
       // 2. Offline fallback (PRD US-M02: Offline Queue & Event Buffer)
       // If network is absent or backend unreachable, buffer into Hive with exact device timestamp
       await localDataSource.cacheOfflineCheckIn(payload);

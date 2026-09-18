@@ -251,7 +251,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   /// Dispatches arrival check-in event with real device GPS coordinates and hardware spoof flag
   void _triggerCheckIn({Position? pos, int? dwellSeconds}) {
     final effectivePos = pos ?? _currentPosition;
-    final effectiveDwell = dwellSeconds ?? (_dwellCountdown > 0 ? _dwellCountdown : _requiredDwellSeconds);
+    final effectiveDwell = dwellSeconds ?? (_dwellCountdown >= _requiredDwellSeconds ? _dwellCountdown : _requiredDwellSeconds);
     final maidId = widget.user.role == UserRole.employer ? 2 : widget.user.id;
 
     context.read<AttendanceBloc>().add(
@@ -403,6 +403,11 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                           ),
                         );
                       } else if (state is AttendanceFailure) {
+                        if (state.error.contains('already recorded today')) {
+                          setState(() {
+                            _hasCheckedInToday = true;
+                          });
+                        }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('⚠️ ${state.error}'),
