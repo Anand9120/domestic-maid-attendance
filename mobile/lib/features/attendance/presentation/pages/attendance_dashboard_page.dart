@@ -717,13 +717,16 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  _dwellCountdown >= _requiredDwellSeconds ? a11y.tr('dwell_completed') : a11y.tr('dwell_counting'),
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                Expanded(
+                  child: Text(
+                    _dwellCountdown >= _requiredDwellSeconds ? a11y.tr('dwell_completed') : a11y.tr('dwell_counting'),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '$_dwellCountdown / ${_requiredDwellSeconds}s',
                   style: TextStyle(
@@ -761,14 +764,17 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                a11y.tr('realtime_telemetry'),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isContrast ? Colors.white : AppColors.textPrimary,
+              Expanded(
+                child: Text(
+                  a11y.tr('realtime_telemetry'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
@@ -923,21 +929,30 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: isContrast ? Colors.white70 : AppColors.textSecondary,
+        Flexible(
+          flex: 4,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: isContrast ? Colors.white70 : AppColors.textSecondary,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: valueColor ?? (isContrast ? Colors.white : AppColors.textPrimary),
+        const SizedBox(width: 8),
+        Flexible(
+          flex: 5,
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+              color: valueColor ?? (isContrast ? Colors.white : AppColors.textPrimary),
+            ),
           ),
         ),
       ],
@@ -1028,14 +1043,17 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                a11y.tr('latest_log'),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isContrast ? Colors.white : AppColors.textPrimary,
+              Expanded(
+                child: Text(
+                  a11y.tr('latest_log'),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               StatusBadge(
                 status: log.status,
                 isMock: log.isMockLocation,
