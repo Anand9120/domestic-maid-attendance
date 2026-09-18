@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ux4g_flutter_components/ux4g_flutter_components.dart';
+import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../domain/entities/attendance_log_entity.dart';
 
