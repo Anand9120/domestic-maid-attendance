@@ -8,15 +8,18 @@ import 'features/attendance/presentation/pages/attendance_dashboard_page.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/notifications/presentation/bloc/notification_bloc.dart';
 
 class MaidAttendanceApp extends StatelessWidget {
   final AuthBloc authBloc;
   final AttendanceBloc attendanceBloc;
+  final NotificationBloc notificationBloc;
 
   const MaidAttendanceApp({
     super.key,
     required this.authBloc,
     required this.attendanceBloc,
+    required this.notificationBloc,
   });
 
   @override
@@ -27,8 +30,10 @@ class MaidAttendanceApp extends StatelessWidget {
       providers: [
         BlocProvider<AuthBloc>.value(value: authBloc),
         BlocProvider<AttendanceBloc>.value(value: attendanceBloc),
+        BlocProvider<NotificationBloc>.value(value: notificationBloc),
       ],
       child: ListenableBuilder(
+
         listenable: a11y,
         builder: (context, _) {
           return Ux4gTheme(

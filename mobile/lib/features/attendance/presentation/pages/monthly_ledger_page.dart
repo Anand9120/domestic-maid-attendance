@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
+import '../../domain/entities/monthly_report_entity.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
@@ -27,10 +32,16 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
   final int _year = DateTime.now().year;
   final int _month = DateTime.now().month;
 
+  // Salary & Payout Configuration
+  double _baseSalary = 5000.0;
+  String _upiId = 'sunita@okhdfcbank';
+  String _maidPhone = '9811122233';
+
   @override
   void initState() {
     super.initState();
     _loadReport();
+    _fetchMaidProfile();
   }
 
   void _loadReport() {
@@ -41,6 +52,270 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
             month: _month,
           ),
         );
+  }
+
+  Future<void> _fetchMaidProfile() async {
+    try {
+      final user = await sl.getUserProfileUseCase.execute(widget.maidId);
+      if (mounted) {
+        setState(() {
+          if (user.upiId != null && user.upiId!.isNotEmpty) {
+            _upiId = user.upiId!;
+          }
+          if (user.phoneNumber.isNotEmpty) {
+            _maidPhone = user.phoneNumber;
+          }
+        });
+      }
+    } catch (_) {
+      // Retain defaults
+    }
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return (month >= 1 && month <= 12) ? months[month - 1] : 'Month $month';
+  }
+
+  String _computeDuration(String? inTime, String? outTime) {
+    if (inTime == null || outTime == null) return '';
+    try {
+      final inParts = inTime.split(':').map(int.parse).toList();
+      final outParts = outTime.split(':').map(int.parse).toList();
+      int diffMinutes = (outParts[0] * 60 + outParts[1]) - (inParts[0] * 60 + inParts[1]);
+      if (diffMinutes < 0) diffMinutes += 24 * 60;
+      final hrs = diffMinutes ~/ 60;
+      final mins = diffMinutes % 60;
+      return hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  void _showEditSalaryDialog() {
+    final controller = TextEditingController(text: _baseSalary.toInt().toString());
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Set Agreed Monthly Salary'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Enter the agreed base monthly salary for this household.',
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              autofocus: true,
+              decoration: const InputDecoration(
+                prefixText: '₹ ',
+                labelText: 'Monthly Salary (रुपये)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final val = double.tryParse(controller.text.trim());
+              if (val != null && val > 0) {
+                setState(() => _baseSalary = val);
+              }
+              Navigator.pop(ctx);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _payViaUpi(double amount) async {
+    final amountStr = amount.toStringAsFixed(2);
+    final upiUrl = 'upi://pay?pa=$_upiId&pn=${Uri.encodeComponent(widget.maidName)}&am=$amountStr&cu=INR&tn=Monthly%20Maid%20Salary';
+    final uri = Uri.parse(upiUrl);
+
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched && mounted) {
+        _showUpiFallbackModal(amount, upiUrl);
+      }
+    } catch (_) {
+      if (mounted) _showUpiFallbackModal(amount, upiUrl);
+    }
+  }
+
+  void _showUpiFallbackModal(double amount, String upiUrl) {
+    final a11y = AccessibilityController.instance;
+    final isContrast = a11y.isHighContrast;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: isContrast ? Colors.black : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF137333), size: 24),
+            const SizedBox(width: 8),
+            Text(
+              'UPI Salary Payout (₹${amount.toInt()})',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isContrast ? Colors.white : AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Scan with Google Pay, PhonePe, Paytm or BHIM UPI to transfer directly to ${widget.maidName}.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: QrImageView(
+                  data: upiUrl,
+                  version: QrVersions.auto,
+                  size: 160.0,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isContrast ? Colors.grey.shade900 : const Color(0xFFF1F3F4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('UPI ID:', style: TextStyle(fontSize: 10, color: isContrast ? Colors.white60 : AppColors.textSecondary)),
+                          Text(_upiId, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isContrast ? Colors.yellow : AppColors.textPrimary)),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.copy_rounded, size: 18),
+                      tooltip: 'Copy UPI ID',
+                      onPressed: () {
+                        Clipboard.setData(ClipboardData(text: _upiId));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Copied UPI ID: $_upiId'),
+                            backgroundColor: AppColors.present,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _generateSalarySlipText(MonthlyReportEntity report, double netPayable, double deductionAmount) {
+    return '''*घरेलू सहायक वेतन पर्ची (Maid Attendance & Salary Slip)*
+---------------------------------------
+👤 *सहायक (Maid):* ${widget.maidName}
+📅 *माह (Month):* ${_getMonthName(_month)} $_year
+🏢 *घर (Household):* Sharma Residence - Flat 402
+
+📊 *उपस्थिति सारांश (Attendance Summary):*
+• कुल कार्य दिवस (Total Days): ${report.totalWorkingDays}
+• उपस्थित (Present): ${report.presentDays}
+• देरी (Late): ${report.lateDays}
+• आधा दिन (Half-Day): ${report.halfDays}
+• अनुपस्थित (Absent): ${report.absentDays}
+• कुल कटौती (Deductions): ${report.calculatedDeductions.toStringAsFixed(1)} दिन
+
+💰 *वेतन विवरण (Salary Breakdown):*
+• मूल मासिक वेतन (Base Salary): ₹${_baseSalary.toInt()}
+• कटौती राशि (Deductions): -₹${deductionAmount.toInt()}
+• *देय शुद्ध वेतन (Net Payable):* *₹${netPayable.toInt()}*
+
+🏦 *भुगतान UPI ID:* $_upiId
+---------------------------------------
+_Generated via Digital Civic Maid Attendance System_''';
+  }
+
+  Future<void> _shareSalarySlipOnWhatsApp(MonthlyReportEntity report, double netPayable, double deductionAmount) async {
+    final slipText = _generateSalarySlipText(report, netPayable, deductionAmount);
+    final cleanPhone = _maidPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final phoneParam = cleanPhone.length >= 10 ? '&phone=91$cleanPhone' : '';
+    final waUrl = 'whatsapp://send?text=${Uri.encodeComponent(slipText)}$phoneParam';
+    final uri = Uri.parse(waUrl);
+
+    try {
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        final webPhoneParam = cleanPhone.length >= 10 ? '&phone=91$cleanPhone' : '';
+        final webUri = Uri.parse('https://api.whatsapp.com/send?text=${Uri.encodeComponent(slipText)}$webPhoneParam');
+        final webLaunched = await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        if (!webLaunched) {
+          await Clipboard.setData(ClipboardData(text: slipText));
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('📋 WhatsApp app not found. Salary slip copied to clipboard!'),
+                backgroundColor: AppColors.present,
+              ),
+            );
+          }
+        }
+      }
+    } catch (_) {
+      await Clipboard.setData(ClipboardData(text: slipText));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('📋 Salary slip copied to clipboard!'),
+            backgroundColor: AppColors.present,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -65,7 +340,10 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 tooltip: 'Refresh Ledger',
-                onPressed: _loadReport,
+                onPressed: () {
+                  _loadReport();
+                  _fetchMaidProfile();
+                },
               ),
             ],
           ),
@@ -83,6 +361,12 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                       if (state is MonthlyReportLoaded) {
                         final report = state.report;
 
+                        // Payroll Computation
+                        final totalWorkingDays = report.totalWorkingDays > 0 ? report.totalWorkingDays : 30;
+                        final perDaySalary = _baseSalary / totalWorkingDays;
+                        final totalDeductionAmount = (report.calculatedDeductions * perDaySalary).roundToDouble();
+                        final netPayable = (_baseSalary - totalDeductionAmount).clamp(0.0, _baseSalary);
+
                         return SingleChildScrollView(
                           padding: const EdgeInsets.all(18),
                           child: ConstrainedBox(
@@ -91,13 +375,35 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 // Month Header
-                                Text(
-                                  '$_month/$_year Attendance & Salary Ledger',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    color: isContrast ? Colors.white : AppColors.textPrimary,
-                                  ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${_getMonthName(_month)} $_year Ledger',
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.08),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        'Attendance: ${report.attendancePercentage.toStringAsFixed(1)}%',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: isContrast ? Colors.black : AppColors.primary,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 14),
 
@@ -155,7 +461,7 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: _buildMetricTile(
-                                        label: 'Deduction',
+                                        label: 'Deductions',
                                         value: '${report.calculatedDeductions.toStringAsFixed(1)}d',
                                         color: isContrast ? Colors.yellow : Colors.deepOrange,
                                         isContrast: isContrast,
@@ -165,7 +471,26 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                                 ),
                                 const SizedBox(height: 18),
 
-                                // Calendar Card
+                                // Salary Breakdown Card (वेतन गणना)
+                                _buildSalaryCard(
+                                  report: report,
+                                  netPayable: netPayable,
+                                  deductionAmount: totalDeductionAmount,
+                                  isContrast: isContrast,
+                                  a11y: a11y,
+                                ),
+                                const SizedBox(height: 14),
+
+                                // 1-Tap UPI Payment & WhatsApp Share Action Buttons
+                                _buildActionButtons(
+                                  report: report,
+                                  netPayable: netPayable,
+                                  deductionAmount: totalDeductionAmount,
+                                  isContrast: isContrast,
+                                ),
+                                const SizedBox(height: 18),
+
+                                // Visual Calendar Card
                                 Container(
                                   padding: const EdgeInsets.all(18),
                                   decoration: BoxDecoration(
@@ -198,16 +523,30 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                                 ),
                                 const SizedBox(height: 18),
 
-                                // Recent Records
-                                Text(
-                                  'Daily Attendance Entries',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                    color: isContrast ? Colors.white : AppColors.textPrimary,
-                                  ),
+                                // Daily Records Header
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Daily Attendance Entries',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: isContrast ? Colors.white : AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${report.dailyLogs.length} logged',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(height: 10),
+
+                                // Daily Attendance Entries with Arrival/Departure Duration
                                 if (report.dailyLogs.isEmpty)
                                   Container(
                                     padding: const EdgeInsets.all(20),
@@ -229,6 +568,11 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                                   )
                                 else
                                   ...report.dailyLogs.map((log) {
+                                    final hasOut = log.checkOutTime != null && log.checkOutTime!.isNotEmpty;
+                                    final inTime = log.checkInTime ?? "08:00 AM";
+                                    final outTime = log.checkOutTime ?? "--:--";
+                                    final durationStr = _computeDuration(inTime, outTime);
+
                                     return Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       padding: const EdgeInsets.all(14),
@@ -248,12 +592,37 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  '${log.attendanceDate.day}/${log.attendanceDate.month}/${log.attendanceDate.year} - ${log.checkInTime ?? "08:00 AM"}',
+                                                  '${log.attendanceDate.day}/${log.attendanceDate.month}/${log.attendanceDate.year}',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 13,
                                                     color: isContrast ? Colors.white : AppColors.textPrimary,
                                                   ),
+                                                ),
+                                                const SizedBox(height: 3),
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.schedule_rounded,
+                                                      size: 13,
+                                                      color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Expanded(
+                                                      child: Text(
+                                                        hasOut
+                                                            ? 'In: $inTime • Out: $outTime ($durationStr)'
+                                                            : 'In: $inTime • In Progress / Pending Out',
+                                                        style: TextStyle(
+                                                          fontSize: 11,
+                                                          fontWeight: FontWeight.w500,
+                                                          color: hasOut
+                                                              ? (isContrast ? Colors.white70 : AppColors.textSecondary)
+                                                              : (isContrast ? Colors.yellow : const Color(0xFF1A73E8)),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                                 if (log.overrideByEmployerName != null) ...[
                                                   const SizedBox(height: 2),
@@ -295,6 +664,194 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildSalaryCard({
+    required MonthlyReportEntity report,
+    required double netPayable,
+    required double deductionAmount,
+    required bool isContrast,
+    required AccessibilityController a11y,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isContrast ? AppColors.hcSurface : const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isContrast ? AppColors.hcBorder : const Color(0xFFDADCE0),
+          width: isContrast ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.payments_rounded,
+                    color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                    size: 22,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'मासिक वेतन विवरण (Salary Breakdown)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.white : AppColors.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+              InkWell(
+                onTap: _showEditSalaryDialog,
+                borderRadius: BorderRadius.circular(6),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.edit_outlined, size: 14, color: isContrast ? Colors.yellow : AppColors.primary),
+                      const SizedBox(width: 2),
+                      Text('Edit', style: TextStyle(fontSize: 11, color: isContrast ? Colors.yellow : AppColors.primary, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Breakdown items
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Base Monthly Salary:', style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary)),
+              Text('₹${_baseSalary.toInt()}', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isContrast ? Colors.white : AppColors.textPrimary)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Attendance Deductions (${report.calculatedDeductions.toStringAsFixed(1)} days):',
+                style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
+              ),
+              Text(
+                '-₹${deductionAmount.toInt()}',
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.deepOrange),
+              ),
+            ],
+          ),
+          const Divider(height: 18),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'देय शुद्ध वेतन (Net Payable):',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              Text(
+                '₹${netPayable.toInt()}',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: isContrast ? Colors.black45 : Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: isContrast ? Colors.white24 : const Color(0xFFE0E0E0)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet_outlined, size: 16, color: isContrast ? Colors.yellow : const Color(0xFF137333)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Maid UPI ID: $_upiId',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isContrast ? Colors.white70 : AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButtons({
+    required MonthlyReportEntity report,
+    required double netPayable,
+    required double deductionAmount,
+    required bool isContrast,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1-Tap UPI Payment Button
+        SizedBox(
+          height: 48,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+              foregroundColor: isContrast ? Colors.black : Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 2,
+            ),
+            icon: const Icon(Icons.flash_on_rounded, size: 20),
+            label: Text(
+              '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            onPressed: () => _payViaUpi(netPayable),
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        // WhatsApp Share Salary Slip Button
+        SizedBox(
+          height: 48,
+          child: OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              backgroundColor: isContrast ? AppColors.hcSurface : const Color(0xFFE8F5E9),
+              foregroundColor: isContrast ? Colors.yellow : const Color(0xFF2E7D32),
+              side: BorderSide(
+                color: isContrast ? Colors.yellow : const Color(0xFF4CAF50),
+                width: 1.5,
+              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            icon: const Icon(Icons.share_rounded, size: 18),
+            label: const Text(
+              'Share Salary Slip on WhatsApp (व्हाट्सएप पर्ची)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            onPressed: () => _shareSalarySlipOnWhatsApp(report, netPayable, deductionAmount),
+          ),
+        ),
+      ],
     );
   }
 

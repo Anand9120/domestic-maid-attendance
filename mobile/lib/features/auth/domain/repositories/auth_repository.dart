@@ -13,5 +13,12 @@ abstract class AuthRepository {
     required String fcmToken,
   });
 
+  Future<UserEntity> getUserProfile(int userId);
+
+  Future<UserEntity> updateUserProfile({
+    required int userId,
+    required Map<String, dynamic> data,
+  });
+
   Future<void> logout();
 }

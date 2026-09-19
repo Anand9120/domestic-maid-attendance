@@ -45,9 +45,11 @@ public class SecurityConfig {
                     "/api-docs/**",
                     "/h2-console/**"
                 ).permitAll()
-                // Permit attendance, household, and reports for testing ease while supporting JWT when provided
-                .requestMatchers("/api/v1/attendance/**", "/api/v1/household/**", "/api/v1/reports/**").permitAll()
+                // Permit attendance, household, notifications, and reports for testing ease while supporting JWT when provided
+                .requestMatchers("/api/v1/attendance/**", "/api/v1/household/**", "/api/v1/notifications/**", "/api/v1/reports/**").permitAll()
                 .anyRequest().authenticated()
+
+
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

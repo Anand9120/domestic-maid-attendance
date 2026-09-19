@@ -7,6 +7,8 @@ class UserModel extends UserEntity {
     required super.phoneNumber,
     required super.role,
     super.token,
+    super.upiId,
+    super.emergencyContact,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +26,8 @@ class UserModel extends UserEntity {
       phoneNumber: (json['phoneNumber'] ?? '') as String,
       role: parsedRole,
       token: json['token'] as String?,
+      upiId: json['upiId'] as String?,
+      emergencyContact: json['emergencyContact'] as String?,
     );
   }
 
@@ -34,6 +38,8 @@ class UserModel extends UserEntity {
       'phoneNumber': phoneNumber,
       'role': role.name.toUpperCase(),
       'token': token,
+      'upiId': upiId,
+      'emergencyContact': emergencyContact,
     };
   }
 }

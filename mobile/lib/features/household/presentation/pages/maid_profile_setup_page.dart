@@ -1,12 +1,12 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
-import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../attendance/presentation/pages/attendance_dashboard_page.dart';
 import '../../../auth/domain/entities/user_entity.dart';
+import '../../domain/entities/household_entity.dart';
 
 class MaidProfileSetupPage extends StatefulWidget {
   final int? maidId;
@@ -37,7 +37,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   final Set<String> _selectedServices = {'COOKING', 'CLEANING'};
 
   // Linked households
-  List<Map<String, dynamic>> _linkedHouseholds = [];
+  List<HouseholdEntity> _linkedHouseholds = [];
   bool _isLoadingHouseholds = false;
   bool _isLinkingCode = false;
   bool _isSavingProfile = false;
@@ -72,22 +72,12 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   Future<void> _fetchLinkedHouseholds() async {
     setState(() => _isLoadingHouseholds = true);
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 5),
-      ));
-
-      final response = await dio.get('${ApiConstants.maidAssignments}/$_maidId/assignments');
-      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
-        final list = response.data['data'] as List<dynamic>? ?? [];
-        if (mounted) {
-          setState(() {
-            _linkedHouseholds = list.map((e) => e as Map<String, dynamic>).toList();
-            _isLoadingHouseholds = false;
-          });
-        }
-      } else {
-        if (mounted) setState(() => _isLoadingHouseholds = false);
+      final list = await sl.getAssignedHouseholdUseCase.executeListForMaid(_maidId);
+      if (mounted) {
+        setState(() {
+          _linkedHouseholds = list;
+          _isLoadingHouseholds = false;
+        });
       }
     } catch (_) {
       if (mounted) setState(() => _isLoadingHouseholds = false);
@@ -106,20 +96,12 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
     setState(() => _isLinkingCode = true);
 
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 8),
-      ));
-
-      final response = await dio.post(
-        ApiConstants.joinHouseholdByCode,
-        data: {
-          'maidId': _maidId,
-          'inviteCode': code,
-        },
+      final success = await sl.joinHouseholdByCodeUseCase.execute(
+        maidId: _maidId,
+        inviteCode: code,
       );
 
-      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
+      if (success) {
         _inviteCodeController.clear();
         await _fetchLinkedHouseholds();
 
@@ -133,7 +115,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
           );
         }
       } else {
-        throw Exception(response.data?['message'] ?? 'Failed to link household');
+        throw Exception('Invalid invite code or already linked');
       }
     } catch (e) {
       if (mounted) {
@@ -151,11 +133,6 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   Future<void> _saveProfile() async {
     setState(() => _isSavingProfile = true);
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 8),
-      ));
-
       final payload = {
         'fullName': _fullName.trim(),
         'emergencyContact': _emergencyContact.trim(),
@@ -164,20 +141,19 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
         'bankAccount': _bankAccount.trim().isNotEmpty ? '$_bankAccount (IFSC: $_ifscCode)' : null,
       };
 
-      final response = await dio.put('${ApiConstants.userProfile}/$_maidId/profile', data: payload);
+      await sl.updateUserProfileUseCase.execute(
+        userId: _maidId,
+        data: payload,
+      );
 
-      if (response.statusCode == 200) {
-        if (mounted) {
-          setState(() => _isSavingProfile = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✅ Maid Profile & Payout details updated!'),
-              backgroundColor: AppColors.present,
-            ),
-          );
-        }
-      } else {
-        throw Exception(response.data?['message'] ?? 'Failed to update profile');
+      if (mounted) {
+        setState(() => _isSavingProfile = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Maid Profile & Payout details updated!'),
+            backgroundColor: AppColors.present,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -464,12 +440,10 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                               )
                             else
                               Column(
-                                children: _linkedHouseholds.map((assignment) {
-                                  final loc = assignment['householdLocation'] as Map<String, dynamic>? ?? {};
-                                  final houseName = loc['houseName'] ?? 'Household';
-                                  final addr = loc['address'] ?? '';
-                                  final salary = loc['monthlySalary'] ?? 0;
-                                  final code = loc['inviteCode'] ?? '';
+                                children: _linkedHouseholds.map((household) {
+                                  final houseName = household.houseName;
+                                  final addr = household.address ?? '';
+                                  final code = household.inviteCode ?? '';
 
                                   return Container(
                                     margin: const EdgeInsets.only(bottom: 8),
@@ -506,9 +480,9 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                                 overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
                                               ),
-                                              if (salary > 0)
+                                              if (code.isNotEmpty)
                                                 Text(
-                                                  'Salary: ₹$salary/mo • Code: $code',
+                                                  'Invite Code: $code',
                                                   style: const TextStyle(
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.w600,

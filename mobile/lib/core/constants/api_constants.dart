@@ -8,6 +8,7 @@ class ApiConstants {
 
   // Attendance endpoints
   static const String checkIn = '/api/v1/attendance/check-in';
+  static const String checkOut = '/api/v1/attendance/check-out';
   static const String manualOverride = '/api/v1/attendance/manual-override';
   static const String maidAttendance = '/api/v1/attendance/maid';
   static const String householdAttendance = '/api/v1/attendance/household';
@@ -23,4 +24,9 @@ class ApiConstants {
 
   // Report endpoints
   static const String monthlyReport = '/api/v1/reports/monthly';
+
+  // Notification endpoints
+  static const String notifications = '/api/v1/notifications';
+  static const String userNotifications = '/api/v1/notifications/user';
 }
+

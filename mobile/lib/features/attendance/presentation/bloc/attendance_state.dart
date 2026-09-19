@@ -23,6 +23,16 @@ class CheckInSuccess extends AttendanceState {
   List<Object?> get props => [log, message];
 }
 
+class CheckOutSuccess extends AttendanceState {
+  final AttendanceLogEntity log;
+  final String message;
+
+  const CheckOutSuccess(this.log, [this.message = 'Automated check-out logged successfully!']);
+
+  @override
+  List<Object?> get props => [log, message];
+}
+
 class OfflineLogBuffered extends AttendanceState {
   final AttendanceLogEntity log;
   final int totalQueued;

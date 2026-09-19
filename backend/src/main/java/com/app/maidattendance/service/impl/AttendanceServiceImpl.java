@@ -1,6 +1,7 @@
 package com.app.maidattendance.service.impl;
 
 import com.app.maidattendance.dto.request.CheckInRequestDto;
+import com.app.maidattendance.dto.request.CheckOutRequestDto;
 import com.app.maidattendance.dto.request.ManualOverrideRequestDto;
 import com.app.maidattendance.dto.response.AttendanceLogResponseDto;
 import com.app.maidattendance.entity.*;
@@ -11,6 +12,7 @@ import com.app.maidattendance.repository.*;
 import com.app.maidattendance.service.AttendanceService;
 import com.app.maidattendance.service.FcmNotificationService;
 import com.app.maidattendance.service.GeofenceValidationService;
+import com.app.maidattendance.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final MaidHouseholdAssignmentRepository assignmentRepository;
     private final GeofenceValidationService geofenceValidationService;
     private final FcmNotificationService fcmNotificationService;
+    private final NotificationService notificationService;
 
     public AttendanceServiceImpl(
             AttendanceLogRepository attendanceLogRepository,
@@ -47,7 +50,8 @@ public class AttendanceServiceImpl implements AttendanceService {
             ShiftScheduleRepository shiftScheduleRepository,
             MaidHouseholdAssignmentRepository assignmentRepository,
             GeofenceValidationService geofenceValidationService,
-            FcmNotificationService fcmNotificationService) {
+            FcmNotificationService fcmNotificationService,
+            NotificationService notificationService) {
         this.attendanceLogRepository = attendanceLogRepository;
         this.userRepository = userRepository;
         this.householdLocationRepository = householdLocationRepository;
@@ -55,6 +59,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         this.assignmentRepository = assignmentRepository;
         this.geofenceValidationService = geofenceValidationService;
         this.fcmNotificationService = fcmNotificationService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -175,9 +180,95 @@ public class AttendanceServiceImpl implements AttendanceService {
         payloadData.put("maidName", maid.getFullName());
         payloadData.put("householdId", String.valueOf(household.getId()));
         payloadData.put("status", status.name());
-        payloadData.put("checkInTime", timeStr);
+        fcmNotificationService.sendPushNotification(employer.getId(), notifTitle, notifBody, payloadData);
+
+        // Record in-app notifications for Employer & Maid
+        notificationService.recordNotification(
+                employer.getId(),
+                household.getId(),
+                notifTitle,
+                notifBody,
+                "CHECK_IN"
+        );
+        String maidNotifTitle = "Arrival Verified: " + household.getHouseName();
+        String maidNotifBody = String.format("Checked into %s at %s (%s). Dwell verified.",
+                household.getHouseName(), timeStr, status.name());
+        notificationService.recordNotification(
+                maid.getId(),
+                household.getId(),
+                maidNotifTitle,
+                maidNotifBody,
+                "CHECK_IN"
+        );
+
+        return mapToDto(saved);
+    }
+
+    @Override
+    public AttendanceLogResponseDto recordCheckOut(CheckOutRequestDto request) {
+        User maid = userRepository.findById(request.getMaidId())
+                .orElseThrow(() -> new ResourceNotFoundException("Maid not found with ID: " + request.getMaidId()));
+
+        HouseholdLocation household = householdLocationRepository.findById(request.getHouseholdId())
+                .orElseThrow(() -> new ResourceNotFoundException("Household location not found with ID: " + request.getHouseholdId()));
+
+        LocalDate attendanceDate = request.getDeviceTimestamp().toLocalDate();
+
+        AttendanceLog logEntity = attendanceLogRepository
+                .findFirstByMaidIdAndHouseholdLocationIdAndAttendanceDateOrderByCheckInTimeDesc(
+                        maid.getId(), household.getId(), attendanceDate)
+                .orElseThrow(() -> new IllegalStateException("Cannot check-out: No check-in record found for today (" + attendanceDate + ")"));
+
+        LocalTime checkOutTime = request.getDeviceTimestamp().toLocalTime();
+        logEntity.setCheckOutTime(checkOutTime);
+
+        String durationStr = "N/A";
+        if (logEntity.getCheckInTime() != null) {
+            long minutesWorked = java.time.Duration.between(logEntity.getCheckInTime(), checkOutTime).toMinutes();
+            long hours = minutesWorked / 60;
+            long mins = minutesWorked % 60;
+            durationStr = (hours > 0 ? hours + "h " : "") + mins + "m";
+        }
+
+        AttendanceLog saved = attendanceLogRepository.save(logEntity);
+
+        // Send Departure Push Notification to Employer
+        User employer = household.getEmployer();
+        String timeStr = checkOutTime.format(DateTimeFormatter.ofPattern("hh:mm a"));
+        String notifTitle = "Maid Departed: " + maid.getFullName();
+        String notifBody = String.format("%s completed work and departed from %s at %s (Total Time: %s)",
+                maid.getFullName(), household.getHouseName(), timeStr, durationStr);
+
+        Map<String, String> payloadData = new HashMap<>();
+        payloadData.put("attendanceId", String.valueOf(saved.getId()));
+        payloadData.put("maidId", String.valueOf(maid.getId()));
+        payloadData.put("maidName", maid.getFullName());
+        payloadData.put("householdId", String.valueOf(household.getId()));
+        payloadData.put("status", saved.getStatus().name());
+        payloadData.put("checkInTime", saved.getCheckInTime() != null ? saved.getCheckInTime().format(DateTimeFormatter.ofPattern("hh:mm a")) : "");
+        payloadData.put("checkOutTime", timeStr);
+        payloadData.put("duration", durationStr);
 
         fcmNotificationService.sendPushNotification(employer.getId(), notifTitle, notifBody, payloadData);
+
+        // Record in-app notifications for Employer & Maid
+        notificationService.recordNotification(
+                employer.getId(),
+                household.getId(),
+                notifTitle,
+                notifBody,
+                "CHECK_OUT"
+        );
+        String maidNotifTitle = "Shift Completed: " + household.getHouseName();
+        String maidNotifBody = String.format("Departure logged at %s from %s. Work duration: %s.",
+                timeStr, household.getHouseName(), durationStr);
+        notificationService.recordNotification(
+                maid.getId(),
+                household.getId(),
+                maidNotifTitle,
+                maidNotifBody,
+                "CHECK_OUT"
+        );
 
         return mapToDto(saved);
     }
@@ -212,6 +303,16 @@ public class AttendanceServiceImpl implements AttendanceService {
         logEntity.setOverrideByEmployer(employer);
 
         AttendanceLog saved = attendanceLogRepository.save(logEntity);
+
+        notificationService.recordNotification(
+                maid.getId(),
+                household.getId(),
+                "Manual Attendance Recorded: " + household.getHouseName(),
+                String.format("Employer %s manually recorded attendance for %s (%s).",
+                        employer.getFullName(), request.getAttendanceDate(), request.getStatus().name()),
+                "MANUAL_OVERRIDE"
+        );
+
         return mapToDto(saved);
     }
 

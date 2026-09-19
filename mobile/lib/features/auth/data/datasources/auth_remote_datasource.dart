@@ -17,6 +17,13 @@ abstract class AuthRemoteDataSource {
     required int userId,
     required String fcmToken,
   });
+
+  Future<UserModel> getUserProfile(int userId);
+
+  Future<UserModel> updateUserProfile({
+    required int userId,
+    required Map<String, dynamic> data,
+  });
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -74,6 +81,48 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     } catch (_) {
       // Non-blocking for offline resilience
+    }
+  }
+
+  @override
+  Future<UserModel> getUserProfile(int userId) async {
+    try {
+      final response = await networkClient.dio.get(
+        '${ApiConstants.userProfile}/$userId',
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final data = response.data['data'] as Map<String, dynamic>;
+        return UserModel.fromJson(data);
+      } else {
+        throw ServerException(response.data['message'] ?? 'Failed to get user profile');
+      }
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      throw ServerException(errorMsg.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> updateUserProfile({
+    required int userId,
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      final response = await networkClient.dio.put(
+        '${ApiConstants.userProfile}/$userId/profile',
+        data: data,
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        final resData = response.data['data'] as Map<String, dynamic>;
+        return UserModel.fromJson(resData);
+      } else {
+        throw ServerException(response.data['message'] ?? 'Failed to update user profile');
+      }
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?['message'] ?? e.message ?? 'Network error';
+      throw ServerException(errorMsg.toString());
     }
   }
 }

@@ -114,6 +114,17 @@ class AccessibilityController extends ChangeNotifier {
     'checkin_now': 'Check-In Now (Geofenced)',
     'authentic_gps': 'Authentic Hardware GPS (Clean)',
     'mock_gps_detected': 'Mock Location Detected (Spoofing Alert)',
+    'multi_household_radar': 'Multi-Household Society Radar',
+    'auto_switch_badge': 'Auto-Active Geofence',
+    'all_assigned_homes': 'Assigned Households in Society',
+    'activity_timeline': 'Activity Timeline & Notifications',
+    'mark_all_read': 'Mark All Read',
+    'unread_alerts': 'Unread Alerts',
+    'auto_detecting': 'Auto-Scanning GPS...',
+    'switch_to_home': 'Auto-Switched to',
+    'dwell_verifying': 'Dwell Verifying',
+    'active_boundary': 'Active Boundary',
+    'view_timeline': 'View Full Activity Timeline',
   };
 
   static const Map<String, String> _hindiStrings = {
@@ -185,5 +196,17 @@ class AccessibilityController extends ChangeNotifier {
     'checkin_now': 'अभी उपस्थिति दर्ज करें (जियोफेंस सत्यापित)',
     'authentic_gps': 'प्रामाणिक हार्डवेयर GPS (सत्यापित)',
     'mock_gps_detected': 'नकली GPS का पता चला (सुरक्षा चेतावनी)',
+    'multi_household_radar': 'सोसायटी बहु-आवास रडार (Auto-Switch)',
+    'auto_switch_badge': 'ऑटो-सक्रिय जियोफेंस',
+    'all_assigned_homes': 'सोसायटी में आवंटित घर',
+    'activity_timeline': 'गतिविधि टाइमलाइन और सूचनाएं',
+    'mark_all_read': 'सभी पढ़ी गईं मार्क करें',
+    'unread_alerts': 'अपठित सूचनाएं',
+    'auto_detecting': 'GPS द्वारा स्वतः खोज जारी...',
+    'switch_to_home': 'स्वतः स्विच किया गया:',
+    'dwell_verifying': 'ठहराव सत्यापन जारी',
+    'active_boundary': 'सक्रिय परिधि',
+    'view_timeline': 'पूरी गतिविधि टाइमलाइन देखें',
   };
+
 }

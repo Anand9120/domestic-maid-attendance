@@ -1,11 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
-import '../../../../core/constants/api_constants.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../attendance/presentation/pages/attendance_dashboard_page.dart';
@@ -115,11 +114,6 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
     setState(() => _isSubmitting = true);
 
     try {
-      final dio = Dio(BaseOptions(
-        baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-      ));
-
       final payload = {
         'employerId': widget.employerId ?? 1,
         'houseName': _houseName.trim().isEmpty ? 'Home' : _houseName.trim(),
@@ -147,18 +141,12 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
         ]
       };
 
-      final response = await dio.post(ApiConstants.householdSetup, data: payload);
+      final household = await sl.setupHouseholdUseCase.execute(payload);
+      final finalInviteCode = household.inviteCode ?? _inviteCode;
 
-      if (response.statusCode == 200 && response.data != null && response.data['success'] == true) {
-        final data = response.data['data'];
-        final finalInviteCode = data['inviteCode'] ?? _inviteCode;
-
-        if (mounted) {
-          setState(() => _isSubmitting = false);
-          _showSuccessInviteDialog(finalInviteCode);
-        }
-      } else {
-        throw Exception(response.data?['message'] ?? 'Failed to register household');
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        _showSuccessInviteDialog(finalInviteCode);
       }
     } catch (e) {
       if (mounted) {

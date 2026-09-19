@@ -85,6 +85,21 @@ CREATE TABLE IF NOT EXISTS fcm_device_tokens (
     CONSTRAINT fk_fcm_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 7. NOTIFICATION_LOGS TABLE
+CREATE TABLE IF NOT EXISTS notification_logs (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    household_id BIGINT NULL,
+    title VARCHAR(150) NOT NULL,
+    body VARCHAR(500) NOT NULL,
+    type VARCHAR(50) NOT NULL,
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_notif_household FOREIGN KEY (household_id) REFERENCES household_locations(id) ON DELETE SET NULL
+);
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_attendance_maid_date ON attendance_logs(maid_id, attendance_date);
 CREATE INDEX IF NOT EXISTS idx_attendance_household_date ON attendance_logs(household_id, attendance_date);
+CREATE INDEX IF NOT EXISTS idx_notif_user_created ON notification_logs(user_id, created_at);

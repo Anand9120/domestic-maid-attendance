@@ -42,6 +42,34 @@ class CheckInEventTriggered extends AttendanceEvent {
       ];
 }
 
+class CheckOutEventTriggered extends AttendanceEvent {
+  final int maidId;
+  final int householdId;
+  final double latitude;
+  final double longitude;
+  final DateTime deviceTimestamp;
+  final bool isMockLocation;
+
+  const CheckOutEventTriggered({
+    required this.maidId,
+    required this.householdId,
+    required this.latitude,
+    required this.longitude,
+    required this.deviceTimestamp,
+    this.isMockLocation = false,
+  });
+
+  @override
+  List<Object?> get props => [
+        maidId,
+        householdId,
+        latitude,
+        longitude,
+        deviceTimestamp,
+        isMockLocation,
+      ];
+}
+
 class SyncOfflineLogsEvent extends AttendanceEvent {}
 
 class FetchMonthlyReportEvent extends AttendanceEvent {

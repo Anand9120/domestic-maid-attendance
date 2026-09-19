@@ -50,6 +50,9 @@ class AttendanceServiceTest {
     @Mock
     private FcmNotificationService fcmNotificationService;
 
+    @Mock
+    private NotificationService notificationService;
+
     @InjectMocks
     private AttendanceServiceImpl attendanceService;
 
@@ -184,5 +187,39 @@ class AttendanceServiceTest {
         assertEquals(202L, result.getId());
         assertEquals(AttendanceLog.EntryType.MANUAL_OVERRIDE, result.getEntryType());
         assertEquals("Priya Sharma", result.getOverrideByEmployerName());
+    }
+
+    @Test
+    @DisplayName("Should successfully record check-out when maid completes work")
+    void testCheckOutSuccess() {
+        com.app.maidattendance.dto.request.CheckOutRequestDto request = 
+                new com.app.maidattendance.dto.request.CheckOutRequestDto(
+                        2L, 1L,
+                        new BigDecimal("28.6315500"), new BigDecimal("77.2167200"),
+                        LocalDateTime.of(2026, 9, 12, 9, 30, 0),
+                        false
+                );
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(maid));
+        when(householdLocationRepository.findById(1L)).thenReturn(Optional.of(household));
+
+        AttendanceLog existingLog = new AttendanceLog();
+        existingLog.setId(301L);
+        existingLog.setMaid(maid);
+        existingLog.setHouseholdLocation(household);
+        existingLog.setAttendanceDate(LocalDate.of(2026, 9, 12));
+        existingLog.setCheckInTime(LocalTime.of(7, 30));
+        existingLog.setStatus(AttendanceLog.AttendanceStatus.PRESENT);
+
+        when(attendanceLogRepository.findFirstByMaidIdAndHouseholdLocationIdAndAttendanceDateOrderByCheckInTimeDesc(
+                eq(2L), eq(1L), eq(LocalDate.of(2026, 9, 12)))).thenReturn(Optional.of(existingLog));
+
+        when(attendanceLogRepository.save(any(AttendanceLog.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        AttendanceLogResponseDto result = attendanceService.recordCheckOut(request);
+
+        assertNotNull(result);
+        assertEquals(LocalTime.of(9, 30), result.getCheckOutTime());
+        verify(fcmNotificationService, times(1)).sendPushNotification(eq(1L), contains("Maid Departed"), anyString(), anyMap());
     }
 }

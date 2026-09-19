@@ -32,5 +32,19 @@ abstract class AttendanceRepository {
     required int month,
   });
 
+  Future<AttendanceLogEntity> checkOut({
+    required int maidId,
+    required int householdId,
+    required double latitude,
+    required double longitude,
+    required DateTime deviceTimestamp,
+    bool isMockLocation = false,
+  });
+
+  Future<List<AttendanceLogEntity>> getTodayAttendance({
+    required int maidId,
+    required String dateIso,
+  });
+
   Future<int> getQueuedCount();
 }

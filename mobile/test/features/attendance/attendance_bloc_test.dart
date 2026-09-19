@@ -9,10 +9,12 @@ import 'package:maid_attendance/features/attendance/domain/usecases/sync_offline
 import 'package:maid_attendance/features/attendance/presentation/bloc/attendance_bloc.dart';
 import 'package:maid_attendance/features/attendance/presentation/bloc/attendance_event.dart';
 import 'package:maid_attendance/features/attendance/presentation/bloc/attendance_state.dart';
+import 'package:maid_attendance/features/attendance/domain/usecases/check_out_usecase.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAttendanceRepository extends Mock implements AttendanceRepository {}
 class MockCheckInUseCase extends Mock implements CheckInUseCase {}
+class MockCheckOutUseCase extends Mock implements CheckOutUseCase {}
 class MockSyncOfflineLogsUseCase extends Mock implements SyncOfflineLogsUseCase {}
 class MockGetMonthlyReportUseCase extends Mock implements GetMonthlyReportUseCase {}
 class MockManualOverrideUseCase extends Mock implements ManualOverrideUseCase {}
@@ -20,6 +22,7 @@ class MockManualOverrideUseCase extends Mock implements ManualOverrideUseCase {}
 void main() {
   late MockAttendanceRepository mockRepository;
   late MockCheckInUseCase mockCheckInUseCase;
+  late MockCheckOutUseCase mockCheckOutUseCase;
   late MockSyncOfflineLogsUseCase mockSyncOfflineLogsUseCase;
   late MockGetMonthlyReportUseCase mockGetMonthlyReportUseCase;
   late MockManualOverrideUseCase mockManualOverrideUseCase;
@@ -28,12 +31,14 @@ void main() {
   setUp(() {
     mockRepository = MockAttendanceRepository();
     mockCheckInUseCase = MockCheckInUseCase();
+    mockCheckOutUseCase = MockCheckOutUseCase();
     mockSyncOfflineLogsUseCase = MockSyncOfflineLogsUseCase();
     mockGetMonthlyReportUseCase = MockGetMonthlyReportUseCase();
     mockManualOverrideUseCase = MockManualOverrideUseCase();
 
     attendanceBloc = AttendanceBloc(
       checkInUseCase: mockCheckInUseCase,
+      checkOutUseCase: mockCheckOutUseCase,
       syncOfflineLogsUseCase: mockSyncOfflineLogsUseCase,
       getMonthlyReportUseCase: mockGetMonthlyReportUseCase,
       manualOverrideUseCase: mockManualOverrideUseCase,
@@ -141,6 +146,48 @@ void main() {
       expect: () => [
         AttendanceLoading(),
         const SyncSuccessState(2),
+      ],
+    );
+
+    final checkOutLog = AttendanceLogEntity(
+      id: 101,
+      maidId: 2,
+      maidName: 'Sunita Devi',
+      householdId: 1,
+      houseName: 'Sharma Residence',
+      attendanceDate: testDate,
+      checkInTime: '07:35',
+      checkOutTime: '09:45',
+      status: AttendanceStatus.present,
+      entryType: EntryType.automatedGeofence,
+      deviceTimestamp: testDate,
+      isMockLocation: false,
+    );
+
+    blocTest<AttendanceBloc, AttendanceState>(
+      'emits [AttendanceLoading, CheckOutSuccess] on successful automated check-out',
+      build: () {
+        when(() => mockCheckOutUseCase.execute(
+              maidId: 2,
+              householdId: 1,
+              latitude: any(named: 'latitude'),
+              longitude: any(named: 'longitude'),
+              deviceTimestamp: any(named: 'deviceTimestamp'),
+              isMockLocation: false,
+            )).thenAnswer((_) async => checkOutLog);
+        return attendanceBloc;
+      },
+      act: (bloc) => bloc.add(CheckOutEventTriggered(
+        maidId: 2,
+        householdId: 1,
+        latitude: 28.6325,
+        longitude: 77.2175,
+        deviceTimestamp: testDate,
+        isMockLocation: false,
+      )),
+      expect: () => [
+        AttendanceLoading(),
+        CheckOutSuccess(checkOutLog, 'Automated check-out logged successfully!'),
       ],
     );
   });

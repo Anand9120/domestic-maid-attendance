@@ -7,6 +7,7 @@ import '../models/monthly_report_model.dart';
 
 abstract class AttendanceRemoteDataSource {
   Future<AttendanceLogModel> checkIn(Map<String, dynamic> checkInPayload);
+  Future<AttendanceLogModel> checkOut(Map<String, dynamic> checkOutPayload);
   Future<AttendanceLogModel> manualOverride(Map<String, dynamic> overridePayload);
   Future<MonthlyReportModel> getMonthlyReport(int maidId, int year, int month);
   Future<List<AttendanceLogModel>> getDailyLogs(int maidId, String dateIso);
@@ -39,6 +40,32 @@ class AttendanceRemoteDataSourceImpl implements AttendanceRemoteDataSource {
         throw NetworkException(e.message ?? 'No network connection');
       }
       final msg = e.response?.data?['message'] ?? e.message ?? 'Check-in failed';
+      throw ServerException(msg.toString());
+    }
+  }
+
+  @override
+  Future<AttendanceLogModel> checkOut(Map<String, dynamic> checkOutPayload) async {
+    try {
+      final response = await networkClient.dio.post(
+        ApiConstants.checkOut,
+        data: checkOutPayload,
+      );
+
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return AttendanceLogModel.fromJson(response.data['data'] as Map<String, dynamic>);
+      } else {
+        throw ServerException(response.data['message'] ?? 'Check-out failed');
+      }
+    } on DioException catch (e) {
+      if (e.response == null ||
+          e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw NetworkException(e.message ?? 'No network connection');
+      }
+      final msg = e.response?.data?['message'] ?? e.message ?? 'Check-out failed';
       throw ServerException(msg.toString());
     }
   }

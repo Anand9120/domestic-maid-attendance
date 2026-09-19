@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/attendance_log_entity.dart';
 import '../../domain/usecases/check_in_usecase.dart';
+import '../../domain/usecases/check_out_usecase.dart';
 import '../../domain/usecases/get_monthly_report_usecase.dart';
 import '../../domain/usecases/manual_override_usecase.dart';
 import '../../domain/usecases/sync_offline_logs_usecase.dart';
@@ -10,6 +11,7 @@ import 'attendance_state.dart';
 
 class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final CheckInUseCase checkInUseCase;
+  final CheckOutUseCase checkOutUseCase;
   final SyncOfflineLogsUseCase syncOfflineLogsUseCase;
   final GetMonthlyReportUseCase getMonthlyReportUseCase;
   final ManualOverrideUseCase manualOverrideUseCase;
@@ -17,12 +19,14 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   AttendanceBloc({
     required this.checkInUseCase,
+    required this.checkOutUseCase,
     required this.syncOfflineLogsUseCase,
     required this.getMonthlyReportUseCase,
     required this.manualOverrideUseCase,
     required this.repository,
   }) : super(AttendanceInitial()) {
     on<CheckInEventTriggered>(_onCheckInTriggered);
+    on<CheckOutEventTriggered>(_onCheckOutTriggered);
     on<SyncOfflineLogsEvent>(_onSyncOfflineLogs);
     on<FetchMonthlyReportEvent>(_onFetchMonthlyReport);
     on<ManualOverrideSubmitted>(_onManualOverrideSubmitted);
@@ -105,6 +109,26 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(CheckInSuccess(log, 'Manual override saved successfully!'));
     } catch (e) {
       emit(AttendanceFailure('Override failed: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onCheckOutTriggered(
+    CheckOutEventTriggered event,
+    Emitter<AttendanceState> emit,
+  ) async {
+    emit(AttendanceLoading());
+    try {
+      final log = await checkOutUseCase.execute(
+        maidId: event.maidId,
+        householdId: event.householdId,
+        latitude: event.latitude,
+        longitude: event.longitude,
+        deviceTimestamp: event.deviceTimestamp,
+        isMockLocation: event.isMockLocation,
+      );
+      emit(CheckOutSuccess(log, 'Automated check-out logged successfully!'));
+    } catch (e) {
+      emit(AttendanceFailure(e.toString()));
     }
   }
 }

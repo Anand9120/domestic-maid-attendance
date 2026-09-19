@@ -39,6 +39,19 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> getUserProfile(int userId) async {
+    return await remoteDataSource.getUserProfile(userId);
+  }
+
+  @override
+  Future<UserEntity> updateUserProfile({
+    required int userId,
+    required Map<String, dynamic> data,
+  }) async {
+    return await remoteDataSource.updateUserProfile(userId: userId, data: data);
+  }
+
+  @override
   Future<void> logout() async {
     // Clear tokens and cached sessions
   }

@@ -119,6 +119,35 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
   }
 
   @override
+  Future<AttendanceLogEntity> checkOut({
+    required int maidId,
+    required int householdId,
+    required double latitude,
+    required double longitude,
+    required DateTime deviceTimestamp,
+    bool isMockLocation = false,
+  }) async {
+    final payload = {
+      'maidId': maidId,
+      'householdId': householdId,
+      'latitude': latitude,
+      'longitude': longitude,
+      'deviceTimestamp': deviceTimestamp.toIso8601String(),
+      'isMockLocation': isMockLocation,
+    };
+
+    return await remoteDataSource.checkOut(payload);
+  }
+
+  @override
+  Future<List<AttendanceLogEntity>> getTodayAttendance({
+    required int maidId,
+    required String dateIso,
+  }) async {
+    return await remoteDataSource.getDailyLogs(maidId, dateIso);
+  }
+
+  @override
   Future<int> getQueuedCount() async {
     return await localDataSource.getQueuedCount();
   }

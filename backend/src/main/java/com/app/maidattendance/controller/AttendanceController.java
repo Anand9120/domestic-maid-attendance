@@ -1,6 +1,7 @@
 package com.app.maidattendance.controller;
 
 import com.app.maidattendance.dto.request.CheckInRequestDto;
+import com.app.maidattendance.dto.request.CheckOutRequestDto;
 import com.app.maidattendance.dto.request.ManualOverrideRequestDto;
 import com.app.maidattendance.dto.response.ApiResponse;
 import com.app.maidattendance.dto.response.AttendanceLogResponseDto;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/attendance")
-@Tag(name = "Attendance", description = "Endpoints for geofenced check-in, dwell validation, manual override, and daily logs")
+@Tag(name = "Attendance", description = "Endpoints for geofenced check-in, check-out, dwell validation, manual override, and daily logs")
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -32,6 +33,14 @@ public class AttendanceController {
     public ResponseEntity<ApiResponse<AttendanceLogResponseDto>> checkIn(@Valid @RequestBody CheckInRequestDto request) {
         AttendanceLogResponseDto response = attendanceService.recordCheckIn(request);
         return ResponseEntity.ok(ApiResponse.ok("Check-in recorded successfully", response));
+    }
+
+    @PostMapping("/check-out")
+    @Operation(summary = "Automated Departure Check-out",
+               description = "Logs departure when maid leaves geofence, computes total work duration, and notifies employer")
+    public ResponseEntity<ApiResponse<AttendanceLogResponseDto>> checkOut(@Valid @RequestBody CheckOutRequestDto request) {
+        AttendanceLogResponseDto response = attendanceService.recordCheckOut(request);
+        return ResponseEntity.ok(ApiResponse.ok("Check-out recorded successfully", response));
     }
 
     @PostMapping("/manual-override")
