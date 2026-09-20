@@ -7,7 +7,7 @@ import 'package:maid_attendance/features/notifications/domain/entities/notificat
 void main() {
   late GeofenceTrackingController controller;
 
-  final home1 = const HouseholdEntity(
+  const home1 = HouseholdEntity(
     id: 1,
     employerId: 1,
     houseName: 'Sharma Residence (Flat 402)',
@@ -17,7 +17,7 @@ void main() {
     dwellTimeMinutes: 3,
   );
 
-  final home2 = const HouseholdEntity(
+  const home2 = HouseholdEntity(
     id: 2,
     employerId: 2,
     houseName: 'Verma Residence (Flat 105)',
@@ -27,7 +27,7 @@ void main() {
     dwellTimeMinutes: 3,
   );
 
-  final home3 = const HouseholdEntity(
+  const home3 = HouseholdEntity(
     id: 3,
     employerId: 3,
     houseName: 'Kapoor Residence (Flat 204)',

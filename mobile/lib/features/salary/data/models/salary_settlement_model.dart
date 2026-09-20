@@ -1,0 +1,96 @@
+import '../../domain/entities/salary_settlement_entity.dart';
+
+class SalarySettlementModel extends SalarySettlementEntity {
+  const SalarySettlementModel({
+    required super.id,
+    required super.maidId,
+    required super.maidName,
+    super.maidUpiId,
+    super.maidPhoneNumber,
+    required super.employerId,
+    required super.employerName,
+    required super.householdId,
+    required super.houseName,
+    required super.payoutYear,
+    required super.payoutMonth,
+    required super.baseSalary,
+    required super.totalWorkingDays,
+    required super.presentDays,
+    required super.lateDays,
+    required super.halfDays,
+    required super.absentDays,
+    required super.allowedLeaves,
+    required super.deductionDays,
+    required super.deductionAmount,
+    required super.netAmount,
+    required super.paymentMode,
+    required super.transactionRef,
+    required super.status,
+    required super.settledAt,
+    super.notes,
+  });
+
+  factory SalarySettlementModel.fromJson(Map<String, dynamic> json) {
+    return SalarySettlementModel(
+      id: json['id'] as int? ?? 0,
+      maidId: json['maidId'] as int? ?? 0,
+      maidName: json['maidName'] as String? ?? '',
+      maidUpiId: json['maidUpiId'] as String?,
+      maidPhoneNumber: json['maidPhoneNumber'] as String?,
+      employerId: json['employerId'] as int? ?? 0,
+      employerName: json['employerName'] as String? ?? '',
+      householdId: json['householdId'] as int? ?? 0,
+      houseName: json['houseName'] as String? ?? 'Home',
+      payoutYear: json['payoutYear'] as int? ?? DateTime.now().year,
+      payoutMonth: json['payoutMonth'] as int? ?? DateTime.now().month,
+      baseSalary: (json['baseSalary'] as num?)?.toDouble() ?? 0.0,
+      totalWorkingDays: json['totalWorkingDays'] as int? ?? 26,
+      presentDays: json['presentDays'] as int? ?? 0,
+      lateDays: json['lateDays'] as int? ?? 0,
+      halfDays: json['halfDays'] as int? ?? 0,
+      absentDays: json['absentDays'] as int? ?? 0,
+      allowedLeaves: json['allowedLeaves'] as int? ?? 2,
+      deductionDays: (json['deductionDays'] as num?)?.toDouble() ?? 0.0,
+      deductionAmount: (json['deductionAmount'] as num?)?.toDouble() ?? 0.0,
+      netAmount: (json['netAmount'] as num?)?.toDouble() ?? 0.0,
+      paymentMode: json['paymentMode'] as String? ?? 'UPI',
+      transactionRef: json['transactionRef'] as String? ?? '',
+      status: json['status'] as String? ?? 'SETTLED',
+      settledAt: json['settledAt'] != null
+          ? DateTime.tryParse(json['settledAt'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      notes: json['notes'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'maidId': maidId,
+      'maidName': maidName,
+      'maidUpiId': maidUpiId,
+      'maidPhoneNumber': maidPhoneNumber,
+      'employerId': employerId,
+      'employerName': employerName,
+      'householdId': householdId,
+      'houseName': houseName,
+      'payoutYear': payoutYear,
+      'payoutMonth': payoutMonth,
+      'baseSalary': baseSalary,
+      'totalWorkingDays': totalWorkingDays,
+      'presentDays': presentDays,
+      'lateDays': lateDays,
+      'halfDays': halfDays,
+      'absentDays': absentDays,
+      'allowedLeaves': allowedLeaves,
+      'deductionDays': deductionDays,
+      'deductionAmount': deductionAmount,
+      'netAmount': netAmount,
+      'paymentMode': paymentMode,
+      'transactionRef': transactionRef,
+      'status': status,
+      'settledAt': settledAt.toIso8601String(),
+      'notes': notes,
+    };
+  }
+}

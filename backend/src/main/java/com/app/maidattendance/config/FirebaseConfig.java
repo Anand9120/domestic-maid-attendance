@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import jakarta.annotation.PostConstruct;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
@@ -20,13 +21,13 @@ public class FirebaseConfig {
     @Value("${app.firebase.credentials-path:firebase-service-account.json}")
     private String credentialsPath;
 
-    @Value("${app.firebase.enabled:false}")
+    @Value("${app.firebase.enabled:true}")
     private boolean firebaseEnabled;
 
     @PostConstruct
     public void initializeFirebase() {
         if (!firebaseEnabled) {
-            log.info("Firebase FCM is running in SIMULATION mode (set app.firebase.enabled=true with valid credentials for live push notifications).");
+            log.info("Firebase FCM explicitly disabled via configuration. Operating in SIMULATION mode.");
             return;
         }
 
@@ -38,7 +39,15 @@ public class FirebaseConfig {
             if (resourceStream != null) {
                 serviceAccount = resourceStream;
             } else {
-                serviceAccount = new FileInputStream(credentialsPath);
+                File file = new File(credentialsPath);
+                if (file.exists()) {
+                    serviceAccount = new FileInputStream(file);
+                }
+            }
+
+            if (serviceAccount == null) {
+                log.info("Firebase service account credentials '{}' not found. Operating in SIMULATION mode.", credentialsPath);
+                return;
             }
 
             FirebaseOptions options = FirebaseOptions.builder()
@@ -47,7 +56,7 @@ public class FirebaseConfig {
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
-                log.info("Firebase Admin SDK successfully initialized.");
+                log.info("Firebase Admin SDK successfully initialized for live push notifications (Project: {}).", options.getProjectId());
             }
         } catch (Exception e) {
             log.warn("Could not initialize Firebase Admin SDK from {}: {}. Operating in fallback simulation mode.", credentialsPath, e.getMessage());

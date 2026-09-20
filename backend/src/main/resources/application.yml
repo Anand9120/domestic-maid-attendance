@@ -61,7 +61,7 @@ app:
     expiration-ms: 86400000 # 24 hours
   firebase:
     credentials-path: ${FIREBASE_CREDENTIALS_PATH:firebase-service-account.json}
-    enabled: ${FIREBASE_ENABLED:false} # Mock mode fallback when service-account JSON is not provided
+    enabled: ${FIREBASE_ENABLED:true} # Automatically initializes when service-account JSON is present
   geofence:
     default-radius-meters: 50
     default-dwell-time-minutes: 3

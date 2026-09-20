@@ -6,7 +6,15 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/services/upi_payment_launcher.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
+import '../../../salary/domain/entities/salary_calculation_entity.dart';
+import '../../../salary/domain/entities/salary_settlement_entity.dart';
+import '../../../salary/presentation/bloc/salary_bloc.dart';
+import '../../../salary/presentation/bloc/salary_event.dart';
+import '../../../salary/presentation/bloc/salary_state.dart';
+import '../../../salary/presentation/widgets/digital_salary_slip_dialog.dart';
+import '../../../salary/presentation/widgets/settle_payment_confirmation_dialog.dart';
 import '../../domain/entities/monthly_report_entity.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
@@ -36,12 +44,26 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
   double _baseSalary = 5000.0;
   String _upiId = 'sunita@okhdfcbank';
   String _maidPhone = '9811122233';
+  SalaryCalculationEntity? _latestCalculation;
+  SalarySettlementEntity? _latestSettlement;
 
   @override
   void initState() {
     super.initState();
     _loadReport();
     _fetchMaidProfile();
+    _loadSalaryCalculation();
+  }
+
+  void _loadSalaryCalculation() {
+    sl.salaryBloc.add(
+      CalculateSalaryEvent(
+        maidId: widget.maidId,
+        householdId: 1,
+        year: _year,
+        month: _month,
+      ),
+    );
   }
 
   void _loadReport() {
@@ -143,17 +165,78 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
   }
 
   Future<void> _payViaUpi(double amount) async {
-    final amountStr = amount.toStringAsFixed(2);
-    final upiUrl = 'upi://pay?pa=$_upiId&pn=${Uri.encodeComponent(widget.maidName)}&am=$amountStr&cu=INR&tn=Monthly%20Maid%20Salary';
-    final uri = Uri.parse(upiUrl);
+    final upiUrl = UpiPaymentLauncher.buildUpiUri(
+      upiId: _upiId,
+      payeeName: widget.maidName,
+      amount: amount,
+      note: 'Salary for ${_getMonthName(_month)} $_year',
+    );
 
     try {
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!launched && mounted) {
-        _showUpiFallbackModal(amount, upiUrl);
+      final launched = await UpiPaymentLauncher.launchUpiIntent(upiUrl);
+      if (mounted) {
+        if (!launched) {
+          _showUpiFallbackModal(amount, upiUrl);
+        } else {
+          // Trigger settlement prompt once employer returns from UPI app
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('UPI App launched. Confirm settlement once paid.'),
+              action: SnackBarAction(
+                label: 'Settle & Receipt',
+                onPressed: () {
+                  if (_latestCalculation != null) {
+                    _showSettleDialog(_latestCalculation!);
+                  }
+                },
+              ),
+              duration: const Duration(seconds: 10),
+            ),
+          );
+        }
       }
     } catch (_) {
       if (mounted) _showUpiFallbackModal(amount, upiUrl);
+    }
+  }
+
+  void _showSettleDialog(SalaryCalculationEntity calc) {
+    showDialog(
+      context: context,
+      builder: (ctx) => SettlePaymentConfirmationDialog(
+        calculation: calc,
+        onConfirmed: (mode, ref, notes) {
+          sl.salaryBloc.add(
+            SettleSalaryEvent(
+              maidId: widget.maidId,
+              householdId: 1,
+              year: _year,
+              month: _month,
+              paymentMode: mode,
+              transactionRef: ref,
+              notes: notes,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _viewSalaryReceipt(int settlementId) async {
+    try {
+      final receipt = await sl.getSalarySettlementsUseCase.executeForReceipt(settlementId);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => DigitalSalarySlipDialog(settlement: receipt),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not load slip: $e'), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -246,6 +329,20 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
           ),
         ),
         actions: [
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+              foregroundColor: isContrast ? Colors.black : Colors.white,
+            ),
+            icon: const Icon(Icons.check_circle_outline, size: 16),
+            label: const Text('Record Settlement (निपटान दर्ज करें)'),
+            onPressed: () {
+              Navigator.pop(ctx);
+              if (_latestCalculation != null) {
+                _showSettleDialog(_latestCalculation!);
+              }
+            },
+          ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text('Close'),
@@ -352,20 +449,52 @@ _Generated via Digital Civic Maid Attendance System_''';
               children: [
                 const Ux4gCivicBar(showTitle: false),
                 Expanded(
-                  child: BlocBuilder<AttendanceBloc, AttendanceState>(
-                    builder: (context, state) {
-                      if (state is AttendanceLoading) {
-                        return const Center(child: CircularProgressIndicator());
+                  child: BlocConsumer<SalaryBloc, SalaryState>(
+                    bloc: sl.salaryBloc,
+                    listener: (context, salaryState) {
+                      if (salaryState is SalaryCalculatedState) {
+                        setState(() {
+                          _latestCalculation = salaryState.calculation;
+                          _baseSalary = salaryState.calculation.monthlyBaseSalary;
+                        });
+                      } else if (salaryState is SalarySettledSuccessState) {
+                        setState(() {
+                          _latestSettlement = salaryState.settlement;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('🎉 वेतन भुगतान संपन्न! (Salary Settled Successfully)'),
+                            backgroundColor: AppColors.present,
+                          ),
+                        );
+                        _loadSalaryCalculation();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => DigitalSalarySlipDialog(settlement: salaryState.settlement),
+                        );
+                      } else if (salaryState is SalaryErrorState) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(salaryState.message), backgroundColor: Colors.red),
+                        );
                       }
+                    },
+                    builder: (context, salaryState) {
+                      return BlocBuilder<AttendanceBloc, AttendanceState>(
+                        builder: (context, state) {
+                          if (state is AttendanceLoading) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
 
-                      if (state is MonthlyReportLoaded) {
-                        final report = state.report;
+                          if (state is MonthlyReportLoaded) {
+                            final report = state.report;
 
-                        // Payroll Computation
-                        final totalWorkingDays = report.totalWorkingDays > 0 ? report.totalWorkingDays : 30;
-                        final perDaySalary = _baseSalary / totalWorkingDays;
-                        final totalDeductionAmount = (report.calculatedDeductions * perDaySalary).roundToDouble();
-                        final netPayable = (_baseSalary - totalDeductionAmount).clamp(0.0, _baseSalary);
+                            // Payroll Computation with backend allowance integration
+                            final totalWorkingDays = _latestCalculation?.totalWorkingDays ?? (report.totalWorkingDays > 0 ? report.totalWorkingDays : 26);
+                            final perDaySalary = _baseSalary / totalWorkingDays;
+                            final fallbackDeductionAmount = (report.calculatedDeductions * perDaySalary).roundToDouble();
+                            final deductionAmount = _latestCalculation?.deductionAmount ?? fallbackDeductionAmount;
+                            final netPayable = _latestCalculation?.netPayableSalary ?? (_baseSalary - fallbackDeductionAmount).clamp(0.0, _baseSalary);
+                            final isSettled = _latestCalculation?.isAlreadySettled ?? false;
 
                         return SingleChildScrollView(
                           padding: const EdgeInsets.all(18),
@@ -475,9 +604,10 @@ _Generated via Digital Civic Maid Attendance System_''';
                                 _buildSalaryCard(
                                   report: report,
                                   netPayable: netPayable,
-                                  deductionAmount: totalDeductionAmount,
+                                  deductionAmount: deductionAmount,
                                   isContrast: isContrast,
                                   a11y: a11y,
+                                  isSettled: isSettled,
                                 ),
                                 const SizedBox(height: 14),
 
@@ -485,8 +615,9 @@ _Generated via Digital Civic Maid Attendance System_''';
                                 _buildActionButtons(
                                   report: report,
                                   netPayable: netPayable,
-                                  deductionAmount: totalDeductionAmount,
+                                  deductionAmount: deductionAmount,
                                   isContrast: isContrast,
+                                  isSettled: isSettled,
                                 ),
                                 const SizedBox(height: 18),
 
@@ -657,8 +788,10 @@ _Generated via Digital Civic Maid Attendance System_''';
 
                       return const Center(child: Text('Loading monthly ledger...'));
                     },
-                  ),
-                ),
+                  );
+                },
+              ),
+            ),
               ],
             ),
           ),
@@ -673,15 +806,22 @@ _Generated via Digital Civic Maid Attendance System_''';
     required double deductionAmount,
     required bool isContrast,
     required AccessibilityController a11y,
+    required bool isSettled,
   }) {
+    final allowedLeaves = _latestCalculation?.allowedLeaves ?? 2;
+    final deductionDays = _latestCalculation?.effectiveDeductionDays ?? report.calculatedDeductions;
+    final receiptRef = _latestCalculation?.settlementReceiptRef;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: isContrast ? AppColors.hcSurface : const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isContrast ? AppColors.hcBorder : const Color(0xFFDADCE0),
-          width: isContrast ? 2 : 1,
+          color: isSettled
+              ? (isContrast ? Colors.yellow : const Color(0xFF137333))
+              : (isContrast ? AppColors.hcBorder : const Color(0xFFDADCE0)),
+          width: isContrast || isSettled ? 2 : 1,
         ),
       ),
       child: Column(
@@ -693,7 +833,7 @@ _Generated via Digital Civic Maid Attendance System_''';
               Row(
                 children: [
                   Icon(
-                    Icons.payments_rounded,
+                    isSettled ? Icons.verified_rounded : Icons.payments_rounded,
                     color: isContrast ? Colors.yellow : const Color(0xFF137333),
                     size: 22,
                   ),
@@ -708,23 +848,51 @@ _Generated via Digital Civic Maid Attendance System_''';
                   ),
                 ],
               ),
-              InkWell(
-                onTap: _showEditSalaryDialog,
-                borderRadius: BorderRadius.circular(6),
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.edit_outlined, size: 14, color: isContrast ? Colors.yellow : AppColors.primary),
-                      const SizedBox(width: 2),
-                      Text('Edit', style: TextStyle(fontSize: 11, color: isContrast ? Colors.yellow : AppColors.primary, fontWeight: FontWeight.bold)),
-                    ],
+              if (!isSettled)
+                InkWell(
+                  onTap: _showEditSalaryDialog,
+                  borderRadius: BorderRadius.circular(6),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.edit_outlined, size: 14, color: isContrast ? Colors.yellow : AppColors.primary),
+                        const SizedBox(width: 2),
+                        Text('Edit', style: TextStyle(fontSize: 11, color: isContrast ? Colors.yellow : AppColors.primary, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: isContrast ? Colors.yellow : const Color(0xFFE6F4EA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'SETTLED (चुकाया गया)',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: isContrast ? Colors.black : const Color(0xFF137333),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
+          if (isSettled && receiptRef != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              'रसीद सं. (Receipt No): $receiptRef',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isContrast ? Colors.yellow : const Color(0xFF137333),
+              ),
+            ),
+          ],
           const SizedBox(height: 14),
 
           // Breakdown items
@@ -739,9 +907,18 @@ _Generated via Digital Civic Maid Attendance System_''';
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Attendance Deductions (${report.calculatedDeductions.toStringAsFixed(1)} days):',
-                style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
+              Row(
+                children: [
+                  Text(
+                    'Attendance Deductions (${deductionDays.toStringAsFixed(1)} days):',
+                    style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
+                  ),
+                  const SizedBox(width: 4),
+                  Tooltip(
+                    message: '$allowedLeaves paid allowed leaves applied without deduction',
+                    child: Icon(Icons.info_outline, size: 13, color: isContrast ? Colors.yellow : AppColors.primary),
+                  ),
+                ],
               ),
               Text(
                 '-₹${deductionAmount.toInt()}',
@@ -806,29 +983,84 @@ _Generated via Digital Civic Maid Attendance System_''';
     required double netPayable,
     required double deductionAmount,
     required bool isContrast,
+    required bool isSettled,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 1-Tap UPI Payment Button
-        SizedBox(
-          height: 48,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
-              foregroundColor: isContrast ? Colors.black : Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 2,
+        if (isSettled) ...[
+          // View Digital Slip Button
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+                foregroundColor: isContrast ? Colors.black : Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 2,
+              ),
+              icon: const Icon(Icons.receipt_long_rounded, size: 20),
+              label: const Text(
+                'डिजिटल वेतन पर्ची देखें (View Digital Slip)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              onPressed: () {
+                if (_latestSettlement != null) {
+                  showDialog(
+                    context: context,
+                    builder: (_) => DigitalSalarySlipDialog(settlement: _latestSettlement!),
+                  );
+                } else {
+                  _viewSalaryReceipt(1);
+                }
+              },
             ),
-            icon: const Icon(Icons.flash_on_rounded, size: 20),
-            label: Text(
-              '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            onPressed: () => _payViaUpi(netPayable),
           ),
-        ),
-        const SizedBox(height: 10),
+          const SizedBox(height: 10),
+        ] else ...[
+          // 1-Tap UPI Payment Button
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+                foregroundColor: isContrast ? Colors.black : Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 2,
+              ),
+              icon: const Icon(Icons.flash_on_rounded, size: 20),
+              label: Text(
+                '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              onPressed: () => _payViaUpi(netPayable),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Settle Confirmation Button
+          SizedBox(
+            height: 44,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: isContrast ? Colors.yellow : const Color(0xFF137333)),
+                foregroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
+              label: const Text(
+                'वेतन निपटान दर्ज करें (Record Settlement)',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
+              onPressed: () {
+                if (_latestCalculation != null) {
+                  _showSettleDialog(_latestCalculation!);
+                }
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+        ],
 
         // WhatsApp Share Salary Slip Button
         SizedBox(

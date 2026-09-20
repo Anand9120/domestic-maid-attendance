@@ -28,5 +28,10 @@ class ApiConstants {
   // Notification endpoints
   static const String notifications = '/api/v1/notifications';
   static const String userNotifications = '/api/v1/notifications/user';
+
+  // Salary endpoints
+  static const String salary = '/api/v1/salary';
+  static const String calculateSalary = '/api/v1/salary/calculate';
+  static const String settleSalary = '/api/v1/salary/settle';
 }
 

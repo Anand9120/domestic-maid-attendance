@@ -53,3 +53,7 @@ app.*.map.json
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Secrets & Private Credentials
+*service-account*.json
+**/firebase-service-account.json

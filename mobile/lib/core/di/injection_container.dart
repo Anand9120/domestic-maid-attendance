@@ -14,9 +14,11 @@ import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/get_user_profile_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../features/auth/domain/usecases/register_fcm_token_usecase.dart';
 import '../../features/auth/domain/usecases/update_user_profile_usecase.dart';
 import '../../features/auth/domain/usecases/verify_otp_usecase.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../services/fcm_service.dart';
 import '../../features/household/data/datasources/household_remote_datasource.dart';
 import '../../features/household/data/repositories/household_repository_impl.dart';
 import '../../features/household/domain/repositories/household_repository.dart';
@@ -32,6 +34,14 @@ import '../../features/notifications/domain/usecases/get_notifications_usecase.d
 import '../../features/notifications/domain/usecases/mark_all_notifications_read_usecase.dart';
 import '../../features/notifications/domain/usecases/mark_notification_read_usecase.dart';
 import '../../features/notifications/presentation/bloc/notification_bloc.dart';
+import '../../features/salary/data/datasources/salary_local_datasource.dart';
+import '../../features/salary/data/datasources/salary_remote_datasource.dart';
+import '../../features/salary/data/repositories/salary_repository_impl.dart';
+import '../../features/salary/domain/repositories/salary_repository.dart';
+import '../../features/salary/domain/usecases/calculate_salary_usecase.dart';
+import '../../features/salary/domain/usecases/get_salary_settlements_usecase.dart';
+import '../../features/salary/domain/usecases/settle_salary_usecase.dart';
+import '../../features/salary/presentation/bloc/salary_bloc.dart';
 import '../network/network_info.dart';
 
 class ServiceLocator {
@@ -41,6 +51,7 @@ class ServiceLocator {
 
   // Core
   late final NetworkClient networkClient;
+  late final FcmClientService fcmClientService;
 
   // Data Sources
   late final AuthRemoteDataSource authRemoteDataSource;
@@ -59,6 +70,7 @@ class ServiceLocator {
   // Auth Use Cases
   late final VerifyOtpUseCase verifyOtpUseCase;
   late final LogoutUseCase logoutUseCase;
+  late final RegisterFcmTokenUseCase registerFcmTokenUseCase;
   late final GetUserProfileUseCase getUserProfileUseCase;
   late final UpdateUserProfileUseCase updateUserProfileUseCase;
 
@@ -81,10 +93,21 @@ class ServiceLocator {
   late final MarkNotificationReadUseCase markNotificationReadUseCase;
   late final MarkAllNotificationsReadUseCase markAllNotificationsReadUseCase;
 
+  // Salary Data Sources & Repository
+  late final SalaryRemoteDataSource salaryRemoteDataSource;
+  late final SalaryLocalDataSource salaryLocalDataSource;
+  late final SalaryRepository salaryRepository;
+
+  // Salary Use Cases
+  late final CalculateSalaryUseCase calculateSalaryUseCase;
+  late final SettleSalaryUseCase settleSalaryUseCase;
+  late final GetSalarySettlementsUseCase getSalarySettlementsUseCase;
+
   // BLoCs
   late final AuthBloc authBloc;
   late final AttendanceBloc attendanceBloc;
   late final NotificationBloc notificationBloc;
+  late final SalaryBloc salaryBloc;
 
   bool _initialized = false;
 
@@ -92,8 +115,10 @@ class ServiceLocator {
   Future<void> init() async {
     if (_initialized) return;
 
-    // 1. Core Network
+    // 1. Core
     networkClient = NetworkClient();
+    fcmClientService = FcmClientService();
+    await fcmClientService.initialize();
 
     // 2. Data Sources
     authRemoteDataSource = AuthRemoteDataSourceImpl(networkClient: networkClient);
@@ -102,6 +127,8 @@ class ServiceLocator {
     householdRemoteDataSource = HouseholdRemoteDataSourceImpl(networkClient: networkClient);
     notificationRemoteDataSource = NotificationRemoteDataSourceImpl(networkClient: networkClient);
     notificationLocalDataSource = NotificationLocalDataSourceImpl();
+    salaryRemoteDataSource = SalaryRemoteDataSourceImpl(networkClient: networkClient);
+    salaryLocalDataSource = SalaryLocalDataSourceImpl();
 
     // 3. Repositories
     authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
@@ -114,10 +141,15 @@ class ServiceLocator {
       remoteDataSource: notificationRemoteDataSource,
       localDataSource: notificationLocalDataSource,
     );
+    salaryRepository = SalaryRepositoryImpl(
+      remoteDataSource: salaryRemoteDataSource,
+      localDataSource: salaryLocalDataSource,
+    );
 
     // 4. Use Cases
     verifyOtpUseCase = VerifyOtpUseCase(authRepository);
     logoutUseCase = LogoutUseCase(authRepository);
+    registerFcmTokenUseCase = RegisterFcmTokenUseCase(authRepository);
     getUserProfileUseCase = GetUserProfileUseCase(authRepository);
     updateUserProfileUseCase = UpdateUserProfileUseCase(authRepository);
 
@@ -137,10 +169,16 @@ class ServiceLocator {
     markNotificationReadUseCase = MarkNotificationReadUseCase(notificationRepository);
     markAllNotificationsReadUseCase = MarkAllNotificationsReadUseCase(notificationRepository);
 
+    calculateSalaryUseCase = CalculateSalaryUseCase(salaryRepository);
+    settleSalaryUseCase = SettleSalaryUseCase(salaryRepository);
+    getSalarySettlementsUseCase = GetSalarySettlementsUseCase(salaryRepository);
+
     // 5. BLoCs
     authBloc = AuthBloc(
       verifyOtpUseCase: verifyOtpUseCase,
       logoutUseCase: logoutUseCase,
+      registerFcmTokenUseCase: registerFcmTokenUseCase,
+      fcmClientService: fcmClientService,
     );
 
     attendanceBloc = AttendanceBloc(
@@ -157,6 +195,12 @@ class ServiceLocator {
       markNotificationReadUseCase: markNotificationReadUseCase,
       markAllNotificationsReadUseCase: markAllNotificationsReadUseCase,
       repository: notificationRepository,
+    );
+
+    salaryBloc = SalaryBloc(
+      calculateSalaryUseCase: calculateSalaryUseCase,
+      settleSalaryUseCase: settleSalaryUseCase,
+      getSalarySettlementsUseCase: getSalarySettlementsUseCase,
     );
 
     _initialized = true;

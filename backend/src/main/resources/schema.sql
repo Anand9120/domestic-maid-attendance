@@ -99,7 +99,37 @@ CREATE TABLE IF NOT EXISTS notification_logs (
     CONSTRAINT fk_notif_household FOREIGN KEY (household_id) REFERENCES household_locations(id) ON DELETE SET NULL
 );
 
+-- 8. SALARY_SETTLEMENTS TABLE
+CREATE TABLE IF NOT EXISTS salary_settlements (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    maid_id BIGINT NOT NULL,
+    employer_id BIGINT NOT NULL,
+    household_id BIGINT NOT NULL,
+    payout_year INT NOT NULL,
+    payout_month INT NOT NULL,
+    base_salary DECIMAL(10, 2) NOT NULL,
+    total_working_days INT NOT NULL,
+    present_days INT NOT NULL,
+    late_days INT NOT NULL,
+    half_days INT NOT NULL,
+    absent_days INT NOT NULL,
+    allowed_leaves INT NOT NULL DEFAULT 2,
+    deduction_days DECIMAL(4, 1) NOT NULL,
+    deduction_amount DECIMAL(10, 2) NOT NULL,
+    net_amount DECIMAL(10, 2) NOT NULL,
+    payment_mode VARCHAR(20) NOT NULL DEFAULT 'UPI',
+    transaction_ref VARCHAR(100) UNIQUE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'SETTLED',
+    settled_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    CONSTRAINT fk_salary_maid FOREIGN KEY (maid_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_salary_employer FOREIGN KEY (employer_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_salary_household FOREIGN KEY (household_id) REFERENCES household_locations(id) ON DELETE CASCADE
+);
+
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_attendance_maid_date ON attendance_logs(maid_id, attendance_date);
 CREATE INDEX IF NOT EXISTS idx_attendance_household_date ON attendance_logs(household_id, attendance_date);
 CREATE INDEX IF NOT EXISTS idx_notif_user_created ON notification_logs(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_salary_maid_period ON salary_settlements(maid_id, payout_year, payout_month);
+CREATE INDEX IF NOT EXISTS idx_salary_household ON salary_settlements(household_id, settled_at);
