@@ -36,8 +36,7 @@ class MonthlyCalendarGrid extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: weekDays
-              .map((d) => SizedBox(
-                    width: 36,
+              .map((d) => Expanded(
                     child: Text(
                       d,
                       textAlign: TextAlign.center,

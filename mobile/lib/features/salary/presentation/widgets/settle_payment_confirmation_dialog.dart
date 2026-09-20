@@ -78,14 +78,19 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Net Settled Amount:',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isContrast ? Colors.white70 : const Color(0xFF1B5E20),
+                  Expanded(
+                    child: Text(
+                      'Net Settled Amount:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isContrast ? Colors.white70 : const Color(0xFF1B5E20),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Text(
                     '₹${netAmount.toInt()}',
                     style: TextStyle(

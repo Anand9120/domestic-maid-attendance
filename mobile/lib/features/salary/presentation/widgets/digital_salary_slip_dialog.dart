@@ -272,11 +272,11 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStatChip('Total Days', '${settlement.totalWorkingDays}', isContrast),
-                        _buildStatChip('Present', '${settlement.presentDays}', isContrast, color: AppColors.present),
-                        _buildStatChip('Late', '${settlement.lateDays}', isContrast, color: AppColors.late),
-                        _buildStatChip('Half-Day', '${settlement.halfDays}', isContrast, color: AppColors.halfDay),
-                        _buildStatChip('Absent', '${settlement.absentDays}', isContrast, color: AppColors.absent),
+                        Expanded(child: _buildStatChip('Total Days', '${settlement.totalWorkingDays}', isContrast)),
+                        Expanded(child: _buildStatChip('Present', '${settlement.presentDays}', isContrast, color: AppColors.present)),
+                        Expanded(child: _buildStatChip('Late', '${settlement.lateDays}', isContrast, color: AppColors.late)),
+                        Expanded(child: _buildStatChip('Half-Day', '${settlement.halfDays}', isContrast, color: AppColors.halfDay)),
+                        Expanded(child: _buildStatChip('Absent', '${settlement.absentDays}', isContrast, color: AppColors.absent)),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -330,18 +330,23 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          'कुल भुगतान (Net Amount):',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: isContrast ? Colors.white : AppColors.textPrimary,
+                        Expanded(
+                          child: Text(
+                            'कुल भुगतान (Net Amount):',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: isContrast ? Colors.white : AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        const SizedBox(width: 8),
                         Text(
                           _formatCurrency(settlement.netAmount),
                           style: TextStyle(
-                            fontSize: 22,
+                            fontSize: 20,
                             fontWeight: FontWeight.w900,
                             color: isContrast ? Colors.yellow : const Color(0xFF137333),
                           ),
@@ -402,13 +407,18 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: isContrast ? Colors.white70 : AppColors.textSecondary,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: isContrast ? Colors.white70 : AppColors.textSecondary,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
+        const SizedBox(width: 8),
         Text(
           value,
           style: TextStyle(

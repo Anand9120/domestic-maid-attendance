@@ -256,12 +256,16 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
           children: [
             const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF137333), size: 24),
             const SizedBox(width: 8),
-            Text(
-              'UPI Salary Payout (₹${amount.toInt()})',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isContrast ? Colors.white : AppColors.textPrimary,
+            Expanded(
+              child: Text(
+                'UPI Salary Payout (₹${amount.toInt()})',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isContrast ? Colors.white : AppColors.textPrimary,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -452,6 +456,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                   child: BlocConsumer<SalaryBloc, SalaryState>(
                     bloc: sl.salaryBloc,
                     listener: (context, salaryState) {
+                      if (!mounted) return;
                       if (salaryState is SalaryCalculatedState) {
                         setState(() {
                           _latestCalculation = salaryState.calculation;
@@ -763,6 +768,8 @@ _Generated via Digital Civic Maid Attendance System_''';
                                                       fontSize: 11,
                                                       color: isContrast ? Colors.yellow : AppColors.secondary,
                                                     ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
                                                 ],
                                               ],
@@ -830,24 +837,31 @@ _Generated via Digital Civic Maid Attendance System_''';
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Icon(
-                    isSettled ? Icons.verified_rounded : Icons.payments_rounded,
-                    color: isContrast ? Colors.yellow : const Color(0xFF137333),
-                    size: 22,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'मासिक वेतन विवरण (Salary Breakdown)',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.white : AppColors.textPrimary,
+              Expanded(
+                child: Row(
+                  children: [
+                    Icon(
+                      isSettled ? Icons.verified_rounded : Icons.payments_rounded,
+                      color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                      size: 20,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'मासिक वेतन विवरण (Salary Breakdown)',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               if (!isSettled)
                 InkWell(
                   onTap: _showEditSalaryDialog,
@@ -872,7 +886,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'SETTLED (चुकाया गया)',
+                    'SETTLED',
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
@@ -891,6 +905,8 @@ _Generated via Digital Civic Maid Attendance System_''';
                 fontWeight: FontWeight.w600,
                 color: isContrast ? Colors.yellow : const Color(0xFF137333),
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
           const SizedBox(height: 14),
@@ -899,27 +915,43 @@ _Generated via Digital Civic Maid Attendance System_''';
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Base Monthly Salary:', style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary)),
-              Text('₹${_baseSalary.toInt()}', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isContrast ? Colors.white : AppColors.textPrimary)),
+              Expanded(
+                child: Text(
+                  'Base Monthly Salary:',
+                  style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '₹${_baseSalary.toInt()}',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: isContrast ? Colors.white : AppColors.textPrimary),
+              ),
             ],
           ),
           const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  Text(
-                    'Attendance Deductions (${deductionDays.toStringAsFixed(1)} days):',
-                    style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
-                  ),
-                  const SizedBox(width: 4),
-                  Tooltip(
-                    message: '$allowedLeaves paid allowed leaves applied without deduction',
-                    child: Icon(Icons.info_outline, size: 13, color: isContrast ? Colors.yellow : AppColors.primary),
-                  ),
-                ],
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        'Attendance Deductions (${deductionDays.toStringAsFixed(1)} days):',
+                        style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Tooltip(
+                      message: '$allowedLeaves paid allowed leaves applied without deduction',
+                      child: Icon(Icons.info_outline, size: 13, color: isContrast ? Colors.yellow : AppColors.primary),
+                    ),
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '-₹${deductionAmount.toInt()}',
                 style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: Colors.deepOrange),
@@ -930,18 +962,21 @@ _Generated via Digital Civic Maid Attendance System_''';
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'देय शुद्ध वेतन (Net Payable):',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isContrast ? Colors.white : AppColors.textPrimary,
+              Expanded(
+                child: Text(
+                  'देय शुद्ध वेतन (Net Payable):',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isContrast ? Colors.white : AppColors.textPrimary,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Text(
                 '₹${netPayable.toInt()}',
                 style: TextStyle(
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: isContrast ? Colors.yellow : const Color(0xFF137333),
                 ),
@@ -992,17 +1027,13 @@ _Generated via Digital Civic Maid Attendance System_''';
           // View Digital Slip Button
           SizedBox(
             height: 48,
-            child: ElevatedButton.icon(
+            child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
                 foregroundColor: isContrast ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 2,
-              ),
-              icon: const Icon(Icons.receipt_long_rounded, size: 20),
-              label: const Text(
-                'डिजिटल वेतन पर्ची देखें (View Digital Slip)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               onPressed: () {
                 if (_latestSettlement != null) {
@@ -1014,6 +1045,21 @@ _Generated via Digital Civic Maid Attendance System_''';
                   _viewSalaryReceipt(1);
                 }
               },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.receipt_long_rounded, size: 20),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'डिजिटल वेतन पर्ची देखें (View Digital Slip)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -1021,19 +1067,30 @@ _Generated via Digital Civic Maid Attendance System_''';
           // 1-Tap UPI Payment Button
           SizedBox(
             height: 48,
-            child: ElevatedButton.icon(
+            child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
                 foregroundColor: isContrast ? Colors.black : Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 2,
-              ),
-              icon: const Icon(Icons.flash_on_rounded, size: 20),
-              label: Text(
-                '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               onPressed: () => _payViaUpi(netPayable),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.flash_on_rounded, size: 20),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -1041,22 +1098,33 @@ _Generated via Digital Civic Maid Attendance System_''';
           // Settle Confirmation Button
           SizedBox(
             height: 44,
-            child: OutlinedButton.icon(
+            child: OutlinedButton(
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: isContrast ? Colors.yellow : const Color(0xFF137333)),
                 foregroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              icon: const Icon(Icons.assignment_turned_in_rounded, size: 18),
-              label: const Text(
-                'वेतन निपटान दर्ज करें (Record Settlement)',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
               onPressed: () {
                 if (_latestCalculation != null) {
                   _showSettleDialog(_latestCalculation!);
                 }
               },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.assignment_turned_in_rounded, size: 18),
+                  SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'वेतन निपटान दर्ज करें (Record Settlement)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -1065,7 +1133,7 @@ _Generated via Digital Civic Maid Attendance System_''';
         // WhatsApp Share Salary Slip Button
         SizedBox(
           height: 48,
-          child: OutlinedButton.icon(
+          child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               backgroundColor: isContrast ? AppColors.hcSurface : const Color(0xFFE8F5E9),
               foregroundColor: isContrast ? Colors.yellow : const Color(0xFF2E7D32),
@@ -1074,13 +1142,24 @@ _Generated via Digital Civic Maid Attendance System_''';
                 width: 1.5,
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            icon: const Icon(Icons.share_rounded, size: 18),
-            label: const Text(
-              'Share Salary Slip on WhatsApp (व्हाट्सएप पर्ची)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             onPressed: () => _shareSalarySlipOnWhatsApp(report, netPayable, deductionAmount),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.share_rounded, size: 18),
+                SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    'Share Salary Slip on WhatsApp (व्हाट्सएप पर्ची)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ],
