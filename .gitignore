@@ -57,3 +57,10 @@ Thumbs.db
 # Secrets & Private Credentials
 *service-account*.json
 **/firebase-service-account.json
+*.keystore
+*.jks
+key.properties
+**/local.properties
+.env
+.env.*
+*.env
