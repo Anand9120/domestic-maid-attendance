@@ -172,15 +172,18 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
         // Label Section
         if (widget.label != null) ...[
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                widget.label!,
-                style: (widget.labelStyle ?? llDefault).copyWith(
-                  color:
-                      widget.labelStyle?.color ??
-                      (widget.enabled
-                          ? _getLabelColor(materialTheme, ux4gColors)
-                          : onSurface.withValues(alpha: 0.4)),
+              Flexible(
+                child: Text(
+                  widget.label!,
+                  style: (widget.labelStyle ?? llDefault).copyWith(
+                    color:
+                        widget.labelStyle?.color ??
+                        (widget.enabled
+                            ? _getLabelColor(materialTheme, ux4gColors)
+                            : onSurface.withValues(alpha: 0.4)),
+                  ),
                 ),
               ),
               if (widget.required) ...[

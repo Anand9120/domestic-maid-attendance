@@ -297,10 +297,13 @@ class _LoginPageState extends State<LoginPage> {
                                                      elevation: 0,
                                                    ),
                                                    icon: const Icon(Icons.person_rounded, size: 18),
-                                                   label: const Text(
-                                                     'Maid Demo\nसुनीता देवी',
-                                                     textAlign: TextAlign.center,
-                                                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
+                                                   label: const FittedBox(
+                                                     fit: BoxFit.scaleDown,
+                                                     child: Text(
+                                                       'Maid Demo\nसुनीता देवी',
+                                                       textAlign: TextAlign.center,
+                                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
+                                                     ),
                                                    ),
                                                    onPressed: () => _quickDemoLogin(UserRole.maid),
                                                  ),
@@ -320,10 +323,13 @@ class _LoginPageState extends State<LoginPage> {
                                                      elevation: 0,
                                                    ),
                                                    icon: const Icon(Icons.home_work_rounded, size: 18),
-                                                   label: const Text(
-                                                     'Employer Demo\nप्रिया शर्मा',
-                                                     textAlign: TextAlign.center,
-                                                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
+                                                   label: const FittedBox(
+                                                     fit: BoxFit.scaleDown,
+                                                     child: Text(
+                                                       'Employer Demo\nप्रिया शर्मा',
+                                                       textAlign: TextAlign.center,
+                                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
+                                                     ),
                                                    ),
                                                    onPressed: () => _quickDemoLogin(UserRole.employer),
                                                  ),
@@ -373,11 +379,15 @@ class _LoginPageState extends State<LoginPage> {
                                         size: 18,
                                         color: isContrast ? Colors.yellow : AppColors.primary,
                                       ),
-                                      label: Text(
-                                        'Register New Household (नया घर जोड़ें)',
-                                        style: TextStyle(
-                                          color: isContrast ? Colors.yellow : AppColors.primary,
-                                          fontWeight: FontWeight.bold,
+                                      label: Flexible(
+                                        child: Text(
+                                          'Register New Household (नया घर जोड़ें)',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: isContrast ? Colors.yellow : AppColors.primary,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
                                       ),
                                       onPressed: () {
@@ -408,11 +418,15 @@ class _LoginPageState extends State<LoginPage> {
                                         size: 18,
                                         color: isContrast ? Colors.white : AppColors.textPrimary,
                                       ),
-                                      label: Text(
-                                        'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
-                                        style: TextStyle(
-                                          color: isContrast ? Colors.white : AppColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
+                                      label: Flexible(
+                                        child: Text(
+                                          'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: isContrast ? Colors.white : AppColors.textPrimary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                         ),
                                       ),
                                       onPressed: () {
