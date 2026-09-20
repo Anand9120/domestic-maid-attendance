@@ -208,10 +208,9 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                     version: QrVersions.auto,
                     size: 160.0,
                   ),
-                ),
-                const SizedBox(height: 14),
+                           const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
@@ -220,18 +219,26 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        code,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 4,
-                          color: AppColors.primary,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            code,
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3,
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       IconButton(
                         tooltip: 'Copy Code',
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(4),
+                        visualDensity: VisualDensity.compact,
                         icon: const Icon(Icons.copy_rounded, color: AppColors.primary, size: 20),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: code));
@@ -242,10 +249,10 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             ),
                           );
                         },
-                      )
+                      ),
                     ],
                   ),
-                ),
+                ),      ),
               ],
             ),
           ),

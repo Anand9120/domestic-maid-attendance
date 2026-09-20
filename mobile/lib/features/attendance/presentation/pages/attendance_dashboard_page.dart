@@ -958,7 +958,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 ),
                 const SizedBox(height: 14),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
                     color: isContrast ? Colors.grey.shade900 : AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
@@ -967,18 +967,26 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        _inviteCode,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 4,
-                          color: isContrast ? Colors.yellow : AppColors.primary,
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            _inviteCode,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 3,
+                              color: isContrast ? Colors.yellow : AppColors.primary,
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       IconButton(
                         tooltip: 'Copy Code',
+                        constraints: const BoxConstraints(),
+                        padding: const EdgeInsets.all(4),
+                        visualDensity: VisualDensity.compact,
                         icon: Icon(Icons.copy_rounded, color: isContrast ? Colors.yellow : AppColors.primary, size: 20),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _inviteCode));
