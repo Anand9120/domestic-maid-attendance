@@ -41,6 +41,7 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
       ),
+      actionsOverflowDirection: VerticalDirection.down,
       title: Row(
         children: [
           Icon(Icons.check_circle_rounded, color: isContrast ? Colors.yellow : const Color(0xFF137333), size: 24),
@@ -109,6 +110,7 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
             const SizedBox(height: 6),
             DropdownButtonFormField<String>(
               value: _paymentMode,
+              isExpanded: true,
               decoration: InputDecoration(
                 isDense: true,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
@@ -116,9 +118,18 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
               ),
               dropdownColor: isContrast ? Colors.grey.shade900 : Colors.white,
               items: const [
-                DropdownMenuItem(value: 'UPI', child: Text('UPI (GPay / PhonePe / Paytm)')),
-                DropdownMenuItem(value: 'CASH', child: Text('Cash (नकद)')),
-                DropdownMenuItem(value: 'BANK_TRANSFER', child: Text('Bank Transfer (IMPS/NEFT)')),
+                DropdownMenuItem(
+                  value: 'UPI',
+                  child: Text('UPI (GPay / PhonePe / Paytm)', overflow: TextOverflow.ellipsis),
+                ),
+                DropdownMenuItem(
+                  value: 'CASH',
+                  child: Text('Cash (नकद)', overflow: TextOverflow.ellipsis),
+                ),
+                DropdownMenuItem(
+                  value: 'BANK_TRANSFER',
+                  child: Text('Bank Transfer (IMPS/NEFT)', overflow: TextOverflow.ellipsis),
+                ),
               ],
               onChanged: (val) {
                 if (val != null) setState(() => _paymentMode = val);
