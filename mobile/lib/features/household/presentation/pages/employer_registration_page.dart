@@ -208,7 +208,8 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                     version: QrVersions.auto,
                     size: 160.0,
                   ),
-                           const SizedBox(height: 14),
+                ),
+                const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
@@ -252,7 +253,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                       ),
                     ],
                   ),
-                ),      ),
+                ),
               ],
             ),
           ),
