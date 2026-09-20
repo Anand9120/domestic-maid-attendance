@@ -592,13 +592,15 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
         ),
         const SizedBox(width: 10),
         Icon(icon, size: 20, color: isContrast ? Colors.yellow : AppColors.primary),
-        const SizedBox(width: 6),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: isContrast ? Colors.white : AppColors.textPrimary,
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: isContrast ? Colors.white : AppColors.textPrimary,
+            ),
           ),
         ),
       ],
