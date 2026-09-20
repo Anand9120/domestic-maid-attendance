@@ -128,14 +128,18 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
               // Filter Chips
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                child: Row(
-                  children: [
-                    _buildFilterChip('ALL', 'All Activities'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('AUTO_SWITCH', 'Auto-Switch'),
-                    const SizedBox(width: 8),
-                    _buildFilterChip('ATTENDANCE', 'Check-In/Out'),
-                  ],
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  child: Row(
+                    children: [
+                      _buildFilterChip('ALL', 'All Activities'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('AUTO_SWITCH', 'Auto-Switch'),
+                      const SizedBox(width: 8),
+                      _buildFilterChip('ATTENDANCE', 'Check-In/Out'),
+                    ],
+                  ),
                 ),
               ),
 
