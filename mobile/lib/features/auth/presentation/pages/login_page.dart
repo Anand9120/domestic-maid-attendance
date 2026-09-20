@@ -288,24 +288,37 @@ class _LoginPageState extends State<LoginPage> {
                                              Expanded(
                                                child: SizedBox(
                                                  height: 48,
-                                                 child: ElevatedButton.icon(
+                                                 child: ElevatedButton(
                                                    style: ElevatedButton.styleFrom(
                                                      backgroundColor: isContrast ? Colors.yellow : const Color(0xFF16A34A),
                                                      foregroundColor: isContrast ? Colors.black : Colors.white,
-                                                     padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                                      elevation: 0,
                                                    ),
-                                                   icon: const Icon(Icons.person_rounded, size: 18),
-                                                   label: const FittedBox(
-                                                     fit: BoxFit.scaleDown,
-                                                     child: Text(
-                                                       'Maid Demo\nसुनीता देवी',
-                                                       textAlign: TextAlign.center,
-                                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
-                                                     ),
-                                                   ),
                                                    onPressed: () => _quickDemoLogin(UserRole.maid),
+                                                   child: Row(
+                                                     mainAxisAlignment: MainAxisAlignment.center,
+                                                     children: [
+                                                       const Icon(Icons.person_rounded, size: 16),
+                                                       const SizedBox(width: 4),
+                                                       Flexible(
+                                                         child: FittedBox(
+                                                           fit: BoxFit.scaleDown,
+                                                           child: Text(
+                                                             'Maid Demo\nसुनीता देवी',
+                                                             textAlign: TextAlign.center,
+                                                             style: TextStyle(
+                                                               fontSize: 11,
+                                                               fontWeight: FontWeight.bold,
+                                                               height: 1.15,
+                                                               color: isContrast ? Colors.black : Colors.white,
+                                                             ),
+                                                           ),
+                                                         ),
+                                                       ),
+                                                     ],
+                                                   ),
                                                  ),
                                                ),
                                              ),
@@ -313,25 +326,38 @@ class _LoginPageState extends State<LoginPage> {
                                              Expanded(
                                                child: SizedBox(
                                                  height: 48,
-                                                 child: ElevatedButton.icon(
+                                                 child: ElevatedButton(
                                                    style: ElevatedButton.styleFrom(
                                                      backgroundColor: isContrast ? Colors.black : const Color(0xFF4338CA),
                                                      foregroundColor: Colors.white,
                                                      side: isContrast ? const BorderSide(color: Colors.yellow) : null,
-                                                     padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                                      elevation: 0,
                                                    ),
-                                                   icon: const Icon(Icons.home_work_rounded, size: 18),
-                                                   label: const FittedBox(
-                                                     fit: BoxFit.scaleDown,
-                                                     child: Text(
-                                                       'Employer Demo\nप्रिया शर्मा',
-                                                       textAlign: TextAlign.center,
-                                                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.15),
-                                                     ),
-                                                   ),
                                                    onPressed: () => _quickDemoLogin(UserRole.employer),
+                                                   child: const Row(
+                                                     mainAxisAlignment: MainAxisAlignment.center,
+                                                     children: [
+                                                       Icon(Icons.home_work_rounded, size: 16),
+                                                       SizedBox(width: 4),
+                                                       Flexible(
+                                                         child: FittedBox(
+                                                           fit: BoxFit.scaleDown,
+                                                           child: Text(
+                                                             'Employer Demo\nप्रिया शर्मा',
+                                                             textAlign: TextAlign.center,
+                                                             style: TextStyle(
+                                                               fontSize: 11,
+                                                               fontWeight: FontWeight.bold,
+                                                               height: 1.15,
+                                                               color: Colors.white,
+                                                             ),
+                                                           ),
+                                                         ),
+                                                       ),
+                                                     ],
+                                                   ),
                                                  ),
                                                ),
                                              ),
@@ -379,15 +405,13 @@ class _LoginPageState extends State<LoginPage> {
                                         size: 18,
                                         color: isContrast ? Colors.yellow : AppColors.primary,
                                       ),
-                                      label: Flexible(
-                                        child: Text(
-                                          'Register New Household (नया घर जोड़ें)',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: isContrast ? Colors.yellow : AppColors.primary,
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                      label: Text(
+                                        'Register New Household (नया घर जोड़ें)',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: isContrast ? Colors.yellow : AppColors.primary,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
                                       onPressed: () {
@@ -418,15 +442,13 @@ class _LoginPageState extends State<LoginPage> {
                                         size: 18,
                                         color: isContrast ? Colors.white : AppColors.textPrimary,
                                       ),
-                                      label: Flexible(
-                                        child: Text(
-                                          'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: TextStyle(
-                                            color: isContrast ? Colors.white : AppColors.textPrimary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
+                                      label: Text(
+                                        'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       onPressed: () {
