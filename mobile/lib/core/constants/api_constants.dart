@@ -1,6 +1,6 @@
 class ApiConstants {
-  // Configured to laptop local Wi-Fi IP so real Android mobile devices can connect seamlessly
-  static const String baseUrl = 'http://192.168.0.114:8080';
+  // Live Cloud Backend on Render.com (24/7 Available without local laptop server)
+  static const String baseUrl = 'https://domestic-maid-attendance-backend.onrender.com';
 
   // Auth endpoints
   static const String verifyOtp = '/api/v1/auth/verify-otp';
