@@ -43,8 +43,8 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
 
   // Salary & Payout Configuration
   double _baseSalary = 5000.0;
-  String _upiId = 'sunita@okhdfcbank';
-  String _maidPhone = '9811122233';
+  String _upiId = '';
+  String _maidPhone = '';
   SalaryCalculationEntity? _latestCalculation;
   SalarySettlementEntity? _latestSettlement;
 
@@ -166,6 +166,16 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
   }
 
   Future<void> _payViaUpi(double amount) async {
+    if (_upiId.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maid UPI ID is not configured. Please add in Profile.'),
+          backgroundColor: AppColors.absent,
+        ),
+      );
+      return;
+    }
+
     final upiUrl = UpiPaymentLauncher.buildUpiUri(
       upiId: _upiId,
       payeeName: widget.maidName,
@@ -310,14 +320,14 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('UPI ID:', style: TextStyle(fontSize: 10, color: isContrast ? Colors.white60 : AppColors.textSecondary)),
-                          Text(_upiId, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isContrast ? Colors.yellow : AppColors.textPrimary)),
+                          Text(_upiId.isNotEmpty ? _upiId : 'Not Configured', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isContrast ? Colors.yellow : AppColors.textPrimary)),
                         ],
                       ),
                     ),
                     IconButton(
                       icon: const Icon(Icons.copy_rounded, size: 18),
                       tooltip: 'Copy UPI ID',
-                      onPressed: () {
+                      onPressed: _upiId.isEmpty ? null : () {
                         Clipboard.setData(ClipboardData(text: _upiId));
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(

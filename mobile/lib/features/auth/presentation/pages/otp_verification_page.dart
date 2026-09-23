@@ -26,7 +26,7 @@ class OtpVerificationPage extends StatefulWidget {
 }
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
-  String _otp = '123456';
+  String _otp = '';
 
   void _onVerifyPressed() {
     final cleanOtp = _otp.trim();
@@ -133,13 +133,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               ),
                               const SizedBox(height: 20),
 
-                              // UX4G Status Banner for Demo OTP
-                              Ux4gStatusBanner(
-                                variant: Ux4gBannerVariant.infoLight,
-                                title: a11y.tr('test_mode_otp'),
-                                leadingIcon: const Icon(Icons.info_outline, size: 20, color: Color(0xFF0B4D8C)),
-                              ),
-                              const SizedBox(height: 24),
+
 
                               // 6-digit OTP Input using Ux4gInputField
                               Ux4gInputField(
@@ -147,7 +141,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                 onValueChange: (val) => setState(() => _otp = val),
                                 label: a11y.tr('enter_code'),
                                 required: true,
-                                placeholder: '123456',
+                                placeholder: '------',
                                 maxLength: 6,
                                 type: Ux4gInputFieldType.number,
                                 textAlign: TextAlign.center,

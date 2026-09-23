@@ -33,20 +33,20 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
   String _email = '';
 
   // Household Details
-  String _houseName = 'Sharma Residence - Flat 402';
-  String _address = 'B-Block, Green Park Heights, New Delhi';
+  String _houseName = '';
+  String _address = '';
   double _latitude = 28.6315;
   double _longitude = 77.2167;
   double _geofenceRadius = 50.0;
   double _dwellTimeMinutes = 3.0;
-  String _inviteCode = 'SHARMA402';
+  String _inviteCode = '';
 
   // Shifts & Compensation
   TimeOfDay _morningStart = const TimeOfDay(hour: 7, minute: 30);
   TimeOfDay _morningEnd = const TimeOfDay(hour: 9, minute: 30);
   TimeOfDay _eveningStart = const TimeOfDay(hour: 18, minute: 0);
   TimeOfDay _eveningEnd = const TimeOfDay(hour: 20, minute: 0);
-  String _monthlySalary = '5000';
+  String _monthlySalary = '';
   String _allowedLeaves = '2';
 
   bool _isDetectingGps = false;
@@ -56,8 +56,8 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
   @override
   void initState() {
     super.initState();
-    _fullName = widget.initialName ?? 'Priya Sharma';
-    _phoneNumber = widget.initialPhone ?? '9876543210';
+    _fullName = widget.initialName ?? '';
+    _phoneNumber = widget.initialPhone ?? '';
   }
 
   Future<void> _detectGpsLocation() async {
@@ -338,7 +338,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Employer Full Name *',
-                              placeholder: 'e.g. Priya Sharma',
+                              placeholder: 'Enter employer full name',
                               value: _fullName,
                               leadingIcon: Icons.person_rounded,
                               onValueChange: (v) => setState(() => _fullName = v),
@@ -346,7 +346,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Mobile Number *',
-                              placeholder: '9876543210',
+                              placeholder: 'Enter 10-digit phone number',
                               prefixText: '+91 ',
                               value: _phoneNumber,
                               type: Ux4gInputFieldType.number,
@@ -374,7 +374,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'House / Flat Name *',
-                              placeholder: 'e.g. Sharma Residence - Flat 402',
+                              placeholder: 'e.g. Flat 402, Green Heights',
                               value: _houseName,
                               leadingIcon: Icons.apartment_rounded,
                               onValueChange: (v) => setState(() => _houseName = v),
@@ -382,7 +382,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Street Address *',
-                              placeholder: 'e.g. B-Block, Green Park Heights, New Delhi',
+                              placeholder: 'Enter society name & street address',
                               value: _address,
                               leadingIcon: Icons.signpost_outlined,
                               onValueChange: (v) => setState(() => _address = v),
@@ -526,7 +526,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                                 Expanded(
                                   child: Ux4gInputField(
                                     label: 'Monthly Base Salary *',
-                                    placeholder: '5000',
+                                    placeholder: 'e.g. 5000',
                                     prefixText: '₹ ',
                                     value: _monthlySalary,
                                     type: Ux4gInputFieldType.number,
@@ -560,7 +560,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Custom / Generated Invite Code',
-                              placeholder: 'SHARMA402',
+                              placeholder: 'e.g. HOME2026',
                               value: _inviteCode,
                               leadingIcon: Icons.qr_code_2_rounded,
                               caption: 'A 6 to 8 character alphanumeric code that your maid will enter to join.',

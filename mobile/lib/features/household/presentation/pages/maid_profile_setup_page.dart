@@ -28,13 +28,13 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   late int _maidId;
   late String _fullName;
   late String _phoneNumber;
-  String _emergencyContact = '9811122200';
-  String _upiId = 'sunita@okhdfcbank';
+  String _emergencyContact = '';
+  String _upiId = '';
   String _bankAccount = '';
   String _ifscCode = '';
 
   // Selected Services
-  final Set<String> _selectedServices = {'COOKING', 'CLEANING'};
+  final Set<String> _selectedServices = {};
 
   // Linked households
   List<HouseholdEntity> _linkedHouseholds = [];
@@ -58,8 +58,8 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   void initState() {
     super.initState();
     _maidId = widget.maidId ?? 2;
-    _fullName = widget.initialName ?? 'Sunita Devi';
-    _phoneNumber = widget.initialPhone ?? '9811122233';
+    _fullName = widget.initialName ?? '';
+    _phoneNumber = widget.initialPhone ?? '';
     _fetchLinkedHouseholds();
   }
 
@@ -217,7 +217,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Full Name *',
-                              placeholder: 'Sunita Devi',
+                              placeholder: 'Enter full name',
                               value: _fullName,
                               leadingIcon: Icons.person_outline_rounded,
                               onValueChange: (v) => setState(() => _fullName = v),
@@ -225,7 +225,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Mobile Number *',
-                              placeholder: '9811122233',
+                              placeholder: 'Enter 10-digit mobile number',
                               prefixText: '+91 ',
                               value: _phoneNumber,
                               type: Ux4gInputFieldType.number,
@@ -235,7 +235,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'Emergency Contact (Family / Relative) *',
-                              placeholder: '9811122200',
+                              placeholder: 'Enter emergency mobile number',
                               prefixText: '+91 ',
                               value: _emergencyContact,
                               type: Ux4gInputFieldType.number,
@@ -305,7 +305,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             const SizedBox(height: 12),
                             Ux4gInputField(
                               label: 'UPI ID (PhonePe / Google Pay / Paytm / BHIM) *',
-                              placeholder: 'e.g. sunita@paytm or 9811122233@upi',
+                              placeholder: 'e.g. mobile@upi or name@bank',
                               value: _upiId,
                               leadingIcon: Icons.qr_code_rounded,
                               caption: 'Salary will be directly transferred to this UPI VPA.',
@@ -318,7 +318,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                   flex: 3,
                                   child: Ux4gInputField(
                                     label: 'Bank A/c Number (Optional)',
-                                    placeholder: '123456789012',
+                                    placeholder: 'Enter account number',
                                     value: _bankAccount,
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.account_balance_rounded,

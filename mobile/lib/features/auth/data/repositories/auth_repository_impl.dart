@@ -23,8 +23,8 @@ class AuthRepositoryImpl implements AuthRepository {
         fullName: fullName,
       );
     } catch (_) {
-      // Offline/Demo fallback: if backend is unreachable, provide a full offline user session
-      final defaultName = role == UserRole.maid ? 'Sunita Devi' : 'Priya Sharma';
+      // Offline fallback: if backend is unreachable, provide a clean offline user session
+      final defaultName = role == UserRole.maid ? 'Domestic Assistant' : 'Household Employer';
       final name = (fullName != null && fullName.trim().isNotEmpty) ? fullName.trim() : defaultName;
       final userId = role == UserRole.maid ? 1 : 2;
 
@@ -33,8 +33,8 @@ class AuthRepositoryImpl implements AuthRepository {
         phoneNumber: phoneNumber,
         fullName: name,
         role: role,
-        token: 'offline_demo_jwt_token_${DateTime.now().millisecondsSinceEpoch}',
-        upiId: role == UserRole.maid ? 'sunita@upi' : null,
+        token: 'offline_session_jwt_token_${DateTime.now().millisecondsSinceEpoch}',
+        upiId: null,
       );
     }
   }
@@ -58,10 +58,10 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (_) {
       return UserModel(
         id: userId,
-        phoneNumber: userId == 1 ? '+919811122233' : '+919876543210',
-        fullName: userId == 1 ? 'Sunita Devi' : 'Priya Sharma',
+        phoneNumber: '',
+        fullName: userId == 1 ? 'Domestic Assistant' : 'Household Employer',
         role: userId == 1 ? UserRole.maid : UserRole.employer,
-        upiId: userId == 1 ? 'sunita@upi' : null,
+        upiId: null,
       );
     }
   }
@@ -76,10 +76,10 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (_) {
       return UserModel(
         id: userId,
-        phoneNumber: '+919811122233',
-        fullName: (data['fullName'] as String?) ?? 'Sunita Devi',
+        phoneNumber: (data['phoneNumber'] as String?) ?? '',
+        fullName: (data['fullName'] as String?) ?? 'Domestic Assistant',
         role: UserRole.maid,
-        upiId: (data['upiId'] as String?) ?? 'sunita@upi',
+        upiId: data['upiId'] as String?,
       );
     }
   }

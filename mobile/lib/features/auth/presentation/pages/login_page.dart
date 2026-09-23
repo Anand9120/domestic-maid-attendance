@@ -20,22 +20,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  String _phone = '9811122233';
-  String _name = 'Sunita Devi';
+  String _phone = '';
+  String _name = '';
   UserRole _selectedRole = UserRole.maid;
-
-  void _quickDemoLogin(UserRole role) {
-    final phone = role == UserRole.maid ? '+919811122233' : '+919876543210';
-    final name = role == UserRole.maid ? 'Sunita Devi' : 'Priya Sharma';
-    context.read<AuthBloc>().add(
-          VerifyOtpSubmitted(
-            phoneNumber: phone,
-            otp: '123456',
-            role: role,
-            fullName: name,
-          ),
-        );
-  }
 
   void _onGetOtpPressed() {
     final cleanPhone = _phone.trim();
@@ -210,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
                                     onValueChange: (val) => setState(() => _name = val),
                                     label: a11y.tr('full_name'),
                                     required: true,
-                                    placeholder: 'e.g. Sunita Devi',
+                                    placeholder: 'Enter full name',
                                     leadingIcon: Icons.badge_outlined,
                                     size: Ux4gInputFieldSize.large,
                                   ),
@@ -222,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
                                     onValueChange: (val) => setState(() => _phone = val),
                                     label: a11y.tr('phone_number'),
                                     required: true,
-                                    placeholder: '9811122233',
+                                    placeholder: 'Enter 10-digit mobile number',
                                     prefixText: '+91 ',
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.phone_android_rounded,
@@ -246,127 +233,7 @@ class _LoginPageState extends State<LoginPage> {
                                       );
                                     },
                                   ),
-                                  const SizedBox(height: 16),
-
-                                   // 1-Tap Offline Demo Mode (Works with or without backend server)
-                                   Container(
-                                     padding: const EdgeInsets.all(14),
-                                     decoration: BoxDecoration(
-                                       color: isContrast ? AppColors.hcSurface : const Color(0xFFF0FDF4),
-                                       borderRadius: BorderRadius.circular(10),
-                                       border: Border.all(
-                                         color: isContrast ? Colors.yellow : const Color(0xFF86EFAC),
-                                         width: isContrast ? 2 : 1.5,
-                                       ),
-                                     ),
-                                     child: Column(
-                                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                                       children: [
-                                         Row(
-                                           children: [
-                                             Icon(
-                                               Icons.bolt_rounded,
-                                               size: 20,
-                                               color: isContrast ? Colors.yellow : const Color(0xFF16A34A),
-                                             ),
-                                             const SizedBox(width: 8),
-                                             Expanded(
-                                               child: Text(
-                                                 '1-Tap Offline Demo (बिना सर्वर के लॉगिन)',
-                                                 style: TextStyle(
-                                                   fontSize: 12,
-                                                   fontWeight: FontWeight.bold,
-                                                   color: isContrast ? Colors.yellow : const Color(0xFF15803D),
-                                                 ),
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                         const SizedBox(height: 10),
-                                         Row(
-                                           children: [
-                                             Expanded(
-                                               child: SizedBox(
-                                                 height: 48,
-                                                 child: ElevatedButton(
-                                                   style: ElevatedButton.styleFrom(
-                                                     backgroundColor: isContrast ? Colors.yellow : const Color(0xFF16A34A),
-                                                     foregroundColor: isContrast ? Colors.black : Colors.white,
-                                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                     elevation: 0,
-                                                   ),
-                                                   onPressed: () => _quickDemoLogin(UserRole.maid),
-                                                   child: Row(
-                                                     mainAxisAlignment: MainAxisAlignment.center,
-                                                     children: [
-                                                       const Icon(Icons.person_rounded, size: 16),
-                                                       const SizedBox(width: 4),
-                                                       Flexible(
-                                                         child: FittedBox(
-                                                           fit: BoxFit.scaleDown,
-                                                           child: Text(
-                                                             'Maid Demo\nसुनीता देवी',
-                                                             textAlign: TextAlign.center,
-                                                             style: TextStyle(
-                                                               fontSize: 11,
-                                                               fontWeight: FontWeight.bold,
-                                                               height: 1.15,
-                                                               color: isContrast ? Colors.black : Colors.white,
-                                                             ),
-                                                           ),
-                                                         ),
-                                                       ),
-                                                     ],
-                                                   ),
-                                                 ),
-                                               ),
-                                             ),
-                                             const SizedBox(width: 8),
-                                             Expanded(
-                                               child: SizedBox(
-                                                 height: 48,
-                                                 child: ElevatedButton(
-                                                   style: ElevatedButton.styleFrom(
-                                                     backgroundColor: isContrast ? Colors.black : const Color(0xFF4338CA),
-                                                     foregroundColor: Colors.white,
-                                                     side: isContrast ? const BorderSide(color: Colors.yellow) : null,
-                                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                                     elevation: 0,
-                                                   ),
-                                                   onPressed: () => _quickDemoLogin(UserRole.employer),
-                                                   child: const Row(
-                                                     mainAxisAlignment: MainAxisAlignment.center,
-                                                     children: [
-                                                       Icon(Icons.home_work_rounded, size: 16),
-                                                       SizedBox(width: 4),
-                                                       Flexible(
-                                                         child: FittedBox(
-                                                           fit: BoxFit.scaleDown,
-                                                           child: Text(
-                                                             'Employer Demo\nप्रिया शर्मा',
-                                                             textAlign: TextAlign.center,
-                                                             style: TextStyle(
-                                                               fontSize: 11,
-                                                               fontWeight: FontWeight.bold,
-                                                               height: 1.15,
-                                                               color: Colors.white,
-                                                             ),
-                                                           ),
-                                                         ),
-                                                       ),
-                                                     ],
-                                                   ),
-                                                 ),
-                                               ),
-                                             ),
-                                           ],
-                                         ),
-                                       ],
-                                     ),
-                                   ),
-                                   const SizedBox(height: 20),
+                                  const SizedBox(height: 24),
 
                                   // Divider
                                   Row(
@@ -495,13 +362,6 @@ class _LoginPageState extends State<LoginPage> {
         onTap: () {
           setState(() {
             _selectedRole = role;
-            if (role == UserRole.employer) {
-              _phone = '9876543210';
-              _name = 'Priya Sharma';
-            } else {
-              _phone = '9811122233';
-              _name = 'Sunita Devi';
-            }
           });
         },
         borderRadius: BorderRadius.circular(8),
