@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/upi_payment_launcher.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
+import '../../../../core/ux4g/ux4g.dart';
 import '../../../salary/domain/entities/salary_calculation_entity.dart';
 import '../../../salary/domain/entities/salary_settlement_entity.dart';
 import '../../../salary/presentation/bloc/salary_bloc.dart';
@@ -595,7 +596,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: _buildMetricTile(
-                                        label: 'Deductions',
+                                        label: a11y.tr('deductions'),
                                         value: '${report.calculatedDeductions.toStringAsFixed(1)}d',
                                         color: isContrast ? Colors.yellow : Colors.deepOrange,
                                         isContrast: isContrast,
@@ -641,7 +642,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Visual Monthly Calendar',
+                                        a11y.tr('visual_calendar'),
                                         style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.bold,
@@ -848,7 +849,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'मासिक वेतन विवरण (Salary Breakdown)',
+                        a11y.tr('salary_breakdown'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -917,7 +918,7 @@ _Generated via Digital Civic Maid Attendance System_''';
             children: [
               Expanded(
                 child: Text(
-                  'Base Monthly Salary:',
+                  '${a11y.tr("base_monthly_salary")}:',
                   style: TextStyle(fontSize: 12, color: isContrast ? Colors.white70 : AppColors.textSecondary),
                 ),
               ),
@@ -964,7 +965,7 @@ _Generated via Digital Civic Maid Attendance System_''';
             children: [
               Expanded(
                 child: Text(
-                  'देय शुद्ध वेतन (Net Payable):',
+                  '${a11y.tr("net_payable")}:',
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
@@ -1020,6 +1021,7 @@ _Generated via Digital Civic Maid Attendance System_''';
     required bool isContrast,
     required bool isSettled,
   }) {
+    final a11y = AccessibilityController.instance;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -1110,15 +1112,15 @@ _Generated via Digital Civic Maid Attendance System_''';
                   _showSettleDialog(_latestCalculation!);
                 }
               },
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.assignment_turned_in_rounded, size: 18),
-                  SizedBox(width: 8),
+                  const Icon(Icons.assignment_turned_in_rounded, size: 18),
+                  const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'वेतन निपटान दर्ज करें (Record Settlement)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                      a11y.tr('settle_salary'),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -1145,15 +1147,15 @@ _Generated via Digital Civic Maid Attendance System_''';
               padding: const EdgeInsets.symmetric(horizontal: 12),
             ),
             onPressed: () => _shareSalarySlipOnWhatsApp(report, netPayable, deductionAmount),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.share_rounded, size: 18),
-                SizedBox(width: 8),
+                const Icon(Icons.share_rounded, size: 18),
+                const SizedBox(width: 8),
                 Flexible(
                   child: Text(
-                    'Share Salary Slip on WhatsApp (व्हाट्सएप पर्ची)',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    '${a11y.tr("share_salary_slip")} (WhatsApp)',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -1172,39 +1174,38 @@ _Generated via Digital Civic Maid Attendance System_''';
     required Color color,
     required bool isContrast,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      decoration: BoxDecoration(
-        color: isContrast ? Colors.white10 : color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isContrast ? Colors.yellow : color.withOpacity(0.2),
-          width: isContrast ? 1.5 : 1,
+    return Ux4gCard(
+      elevation: 0,
+      cornerRadius: 10,
+      backgroundColor: isContrast ? Colors.white10 : color.withOpacity(0.08),
+      borderColor: isContrast ? Colors.yellow : color.withOpacity(0.25),
+      borderWidth: isContrast ? 1.5 : 1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isContrast ? Colors.yellow : color,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+                color: isContrast ? Colors.white70 : AppColors.textSecondary,
+              ),
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: isContrast ? Colors.yellow : color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w500,
-              color: isContrast ? Colors.white70 : AppColors.textSecondary,
-            ),
-          ),
-        ],
       ),
     );
   }

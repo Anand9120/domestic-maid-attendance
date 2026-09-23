@@ -563,7 +563,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                   Expanded(
                                     child: _buildActionCard(
                                       title: a11y.tr('view_ledger'),
-                                      subtitle: 'Salary & Monthly Attendance',
+                                      subtitle: a11y.tr('salary_and_attendance'),
                                       icon: Icons.calendar_month_rounded,
                                       color: AppColors.primary,
                                       isContrast: isContrast,
@@ -611,8 +611,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _buildActionCard(
-                                        title: 'Profile & Payout',
-                                        subtitle: 'UPI, Work & Homes',
+                                        title: a11y.tr('profile_and_payout'),
+                                        subtitle: a11y.tr('upi_work_homes'),
                                         icon: Icons.account_circle_rounded,
                                         color: AppColors.secondary,
                                         isContrast: isContrast,
@@ -636,8 +636,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                               if (isEmployer) ...[
                                 const SizedBox(height: 12),
                                 _buildActionCard(
-                                  title: 'Invite Maid (आमंत्रण कोड)',
-                                  subtitle: 'Code: $_inviteCode • Tap to view QR & Share',
+                                  title: a11y.tr('invite_maid'),
+                                  subtitle: 'Code: $_inviteCode • ${a11y.tr("invite_maid_subtitle")}',
                                   icon: Icons.qr_code_2_rounded,
                                   color: AppColors.present,
                                   isContrast: isContrast,
@@ -689,17 +689,15 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
       currentStep = 1;
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-      decoration: BoxDecoration(
-        color: isContrast ? AppColors.hcSurface : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isContrast ? AppColors.hcBorder : AppColors.border,
-          width: isContrast ? 2 : 1,
-        ),
-      ),
-      child: Column(
+    return Ux4gCard(
+      elevation: 0,
+      cornerRadius: 12,
+      backgroundColor: isContrast ? AppColors.hcSurface : Colors.white,
+      borderColor: isContrast ? AppColors.hcBorder : AppColors.border,
+      borderWidth: isContrast ? 2 : 1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -775,6 +773,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -789,19 +788,16 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     return Semantics(
       button: true,
       label: '$title: $subtitle',
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
+      child: Ux4gCard(
+        isClickable: true,
+        onPressed: onTap,
+        elevation: 0,
+        cornerRadius: 12,
+        backgroundColor: isContrast ? AppColors.hcSurface : Colors.white,
+        borderColor: isContrast ? AppColors.hcBorder : AppColors.border,
+        borderWidth: isContrast ? 2 : 1,
+        child: Padding(
           padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isContrast ? AppColors.hcSurface : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isContrast ? AppColors.hcBorder : AppColors.border,
-              width: isContrast ? 2 : 1,
-            ),
-          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
