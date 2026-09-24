@@ -1,3 +1,4 @@
+import '../../../../core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class DepartureCountdownBanner extends StatelessWidget {
@@ -19,10 +20,10 @@ class DepartureCountdownBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.amber.shade900.withOpacity(0.3) : const Color(0xFFFEF7E0),
+        color: isContrast ? AppColors.darkLateBg : const Color(0xFFFEF7E0),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isContrast ? Colors.yellow : const Color(0xFFF9AB00),
+          color: isContrast ? AppColors.darkLate : const Color(0xFFF9AB00),
           width: 1.5,
         ),
       ),
@@ -42,7 +43,7 @@ class DepartureCountdownBanner extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.yellow : const Color(0xFFB06000),
+                        color: isContrast ? AppColors.darkLate : const Color(0xFFB06000),
                       ),
                     ),
                     Text(
@@ -58,7 +59,7 @@ class DepartureCountdownBanner extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isContrast ? Colors.black : Colors.white,
+                  color: isContrast ? AppColors.darkSurfaceElevated : Colors.white,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: const Color(0xFFF9AB00)),
                 ),

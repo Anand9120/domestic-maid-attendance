@@ -72,33 +72,37 @@ class AppTheme {
     );
   }
 
+  /// UX4G & GIGW 3.0 Ergonomic Dark Theme
+  /// Replaces harsh OLED black & neon yellow with deep civic slate & sky blue
   static ThemeData get highContrastTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.hcBackground,
+      scaffoldBackgroundColor: AppColors.darkBackground,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.hcHighlight,
-        secondary: AppColors.hcHighlight,
-        surface: AppColors.hcSurface,
-        error: Colors.redAccent,
+        primary: AppColors.darkPrimary,
+        secondary: AppColors.darkSecondary,
+        surface: AppColors.darkSurface,
+        error: AppColors.darkAbsent,
+        onPrimary: Color(0xFF0F172A),
+        onSurface: AppColors.darkTextPrimary,
       ),
       fontFamily: 'Roboto',
       appBarTheme: const AppBarTheme(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.darkSurface,
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: AppColors.hcHighlight),
+        iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
         titleTextStyle: TextStyle(
-          color: AppColors.hcHighlight,
+          color: AppColors.darkTextPrimary,
           fontSize: 18,
           fontWeight: FontWeight.bold,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.hcHighlight,
-          foregroundColor: Colors.black,
+          backgroundColor: AppColors.darkPrimary,
+          foregroundColor: const Color(0xFF0F172A),
           minimumSize: const Size(double.infinity, 48),
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -111,11 +115,32 @@ class AppTheme {
         ),
       ),
       cardTheme: CardThemeData(
-        color: AppColors.hcSurface,
+        color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: const BorderSide(color: AppColors.hcBorder, width: 2),
+          side: const BorderSide(color: AppColors.darkBorder, width: 1),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.darkSurfaceElevated,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.darkPrimary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.darkAbsent),
         ),
       ),
     );

@@ -55,7 +55,7 @@ class HardwareTelemetryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isContrast ? AppColors.hcBorder : AppColors.border,
-          width: isContrast ? 2 : 1,
+          width: 1,
         ),
       ),
       child: Column(
@@ -79,7 +79,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
                   color: isInsideGeofence
-                      ? (isContrast ? Colors.yellow.withOpacity(0.2) : AppColors.present.withOpacity(0.1))
+                      ? (isContrast ? AppColors.darkPresentBg : AppColors.present.withOpacity(0.1))
                       : (isContrast ? Colors.white12 : Colors.grey.withOpacity(0.1)),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -89,7 +89,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
                     color: isInsideGeofence
-                        ? (isContrast ? Colors.yellow : AppColors.present)
+                        ? (isContrast ? AppColors.darkPresent : AppColors.present)
                         : (isContrast ? Colors.white70 : AppColors.textSecondary),
                   ),
                 ),
@@ -228,7 +228,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                 color: isContrast ? Colors.amber.shade900.withOpacity(0.2) : const Color(0xFFFEF7E0),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isContrast ? Colors.yellow : const Color(0xFFF9AB00),
+                  color: isContrast ? AppColors.darkLate : const Color(0xFFF9AB00),
                 ),
               ),
               child: Column(
@@ -239,7 +239,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                       Icon(
                         Icons.hourglass_top_rounded,
                         size: 20,
-                        color: isContrast ? Colors.yellow : const Color(0xFFB06000),
+                        color: isContrast ? AppColors.darkLate : const Color(0xFFB06000),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -248,7 +248,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: isContrast ? Colors.yellow : const Color(0xFFB06000),
+                            color: isContrast ? AppColors.darkLate : const Color(0xFFB06000),
                           ),
                         ),
                       ),
@@ -281,7 +281,7 @@ class HardwareTelemetryCard extends StatelessWidget {
                   Icon(
                     Icons.location_searching_rounded,
                     size: 18,
-                    color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                    color: isContrast ? AppColors.darkPrimary : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 8),
                   Expanded(

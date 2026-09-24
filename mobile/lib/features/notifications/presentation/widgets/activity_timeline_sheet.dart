@@ -69,14 +69,14 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
                         color: widget.isContrast
-                            ? Colors.yellow.withOpacity(0.2)
+                            ? AppColors.darkPrimary.withOpacity(0.15)
                             : const Color(0xFFE0E7FF),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.history_rounded,
                         size: 22,
-                        color: widget.isContrast ? Colors.yellow : const Color(0xFF4338CA),
+                        color: widget.isContrast ? AppColors.darkPrimary : const Color(0xFF4338CA),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -112,7 +112,7 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                         style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
                       ),
                       style: TextButton.styleFrom(
-                        foregroundColor: widget.isContrast ? Colors.yellow : AppColors.primary,
+                        foregroundColor: widget.isContrast ? AppColors.darkPrimary : AppColors.primary,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                       ),
                       onPressed: () {
@@ -221,12 +221,12 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: isSelected
-              ? (widget.isContrast ? Colors.yellow : AppColors.primary)
+              ? (widget.isContrast ? AppColors.darkPrimary : AppColors.primary)
               : (widget.isContrast ? Colors.white10 : const Color(0xFFF1F5F9)),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
-                ? (widget.isContrast ? Colors.yellow : AppColors.primary)
+                ? (widget.isContrast ? AppColors.darkPrimary : AppColors.primary)
                 : (widget.isContrast ? Colors.white24 : const Color(0xFFE2E8F0)),
           ),
         ),
@@ -278,13 +278,13 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
           color: item.isRead
               ? (widget.isContrast ? Colors.white.withOpacity(0.04) : const Color(0xFFFAFAFA))
               : (widget.isContrast
-                  ? Colors.yellow.withOpacity(0.08)
+                  ? AppColors.darkPrimary.withOpacity(0.08)
                   : config.badgeBg.withOpacity(0.18)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: item.isRead
                 ? (widget.isContrast ? AppColors.hcBorder : const Color(0xFFE2E8F0))
-                : (widget.isContrast ? Colors.yellow : config.color.withOpacity(0.4)),
+                : (widget.isContrast ? AppColors.darkBorder : config.color.withOpacity(0.4)),
             width: item.isRead ? 1 : 1.5,
           ),
         ),
@@ -295,7 +295,7 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: widget.isContrast
-                    ? (item.isRead ? Colors.white24 : Colors.yellow.withOpacity(0.25))
+                    ? (item.isRead ? Colors.white24 : AppColors.darkPrimary.withOpacity(0.25))
                     : config.badgeBg,
                 shape: BoxShape.circle,
               ),
@@ -303,7 +303,7 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                 config.icon,
                 size: 18,
                 color: widget.isContrast
-                    ? (item.isRead ? Colors.white70 : Colors.yellow)
+                    ? (item.isRead ? Colors.white70 : AppColors.darkPrimary)
                     : config.color,
               ),
             ),
@@ -330,7 +330,7 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                           width: 7,
                           height: 7,
                           decoration: BoxDecoration(
-                            color: widget.isContrast ? Colors.yellow : config.color,
+                            color: config.color,
                             shape: BoxShape.circle,
                           ),
                         ),

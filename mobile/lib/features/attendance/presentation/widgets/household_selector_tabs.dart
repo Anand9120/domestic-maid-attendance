@@ -43,13 +43,13 @@ class HouseholdSelectorTabs extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isContrast
-                        ? Colors.yellow
+                        ? AppColors.darkPrimary
                         : (isInside ? const Color(0xFF0F766E) : AppColors.primary))
                     : (isContrast ? AppColors.hcSurface : Colors.white),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: isSelected
-                      ? (isContrast ? Colors.yellow : Colors.transparent)
+                      ? (isContrast ? AppColors.darkPrimary : Colors.transparent)
                       : (isInside
                           ? const Color(0xFF22C55E)
                           : (isContrast ? AppColors.hcBorder : AppColors.border)),
@@ -58,7 +58,7 @@ class HouseholdSelectorTabs extends StatelessWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: (isContrast ? Colors.yellow : AppColors.primary).withOpacity(0.25),
+                          color: (isContrast ? AppColors.darkPrimary : AppColors.primary).withOpacity(0.25),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         )

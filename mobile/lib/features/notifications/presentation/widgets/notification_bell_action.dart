@@ -36,7 +36,7 @@ class NotificationBellAction extends StatelessWidget {
                     ? Icons.notifications_active_rounded
                     : Icons.notifications_none_rounded,
                 color: isContrast
-                    ? (unreadCount > 0 ? Colors.yellow : Colors.white)
+                    ? (unreadCount > 0 ? AppColors.darkSecondary : AppColors.darkTextPrimary)
                     : (unreadCount > 0 ? AppColors.primary : AppColors.textPrimary),
                 size: 24,
               ),
@@ -61,10 +61,10 @@ class NotificationBellAction extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: isContrast ? Colors.yellow : const Color(0xFFEF4444),
+                    color: isContrast ? AppColors.darkSecondary : const Color(0xFFEF4444),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isContrast ? Colors.black : Colors.white,
+                      color: isContrast ? AppColors.darkSurface : Colors.white,
                       width: 1.5,
                     ),
                   ),
@@ -78,7 +78,7 @@ class NotificationBellAction extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.black : Colors.white,
+                        color: isContrast ? AppColors.darkSurface : Colors.white,
                       ),
                     ),
                   ),

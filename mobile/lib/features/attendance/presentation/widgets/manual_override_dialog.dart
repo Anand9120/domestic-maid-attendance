@@ -62,7 +62,7 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
               color: isContrast ? AppColors.hcBorder : AppColors.border,
-              width: isContrast ? 2 : 1,
+              width: 1,
             ),
           ),
           child: Padding(
@@ -78,13 +78,13 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: isContrast
-                              ? Colors.yellow.withOpacity(0.2)
+                              ? AppColors.darkPrimary.withOpacity(0.15)
                               : AppColors.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
                           Icons.edit_calendar_rounded,
-                          color: isContrast ? Colors.yellow : AppColors.primary,
+                          color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -132,7 +132,7 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                       return ChoiceChip(
                         label: Text(status.name.toUpperCase()),
                         selected: isSelected,
-                        selectedColor: isContrast ? Colors.yellow : AppColors.primaryLight.withOpacity(0.2),
+                        selectedColor: isContrast ? AppColors.darkPrimary.withOpacity(0.2) : AppColors.primaryLight.withOpacity(0.2),
                         labelStyle: TextStyle(
                           fontSize: 12,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,

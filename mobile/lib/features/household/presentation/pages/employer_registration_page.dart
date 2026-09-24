@@ -302,7 +302,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
           appBar: AppBar(
             title: const Text('Household Registration'),
-            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            backgroundColor: isContrast ? AppColors.darkSurface : AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
           ),
@@ -393,10 +393,10 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             Container(
                               padding: const EdgeInsets.all(14),
                               decoration: BoxDecoration(
-                                color: isContrast ? Colors.black : Colors.white,
+                                color: isContrast ? AppColors.darkSurface : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.3),
+                                  color: isContrast ? AppColors.darkPrimary : AppColors.primary.withOpacity(0.3),
                                   width: 1.5,
                                 ),
                               ),
@@ -407,7 +407,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                                     children: [
                                       Icon(
                                         Icons.gps_fixed_rounded,
-                                        color: isContrast ? Colors.yellow : AppColors.primary,
+                                        color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                         size: 20,
                                       ),
                                       const SizedBox(width: 8),
@@ -605,7 +605,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
           height: 28,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isContrast ? Colors.yellow : AppColors.primary,
+            color: isContrast ? AppColors.darkPrimary : AppColors.primary,
             shape: BoxShape.circle,
           ),
           child: Text(
@@ -613,12 +613,12 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
-              color: isContrast ? Colors.black : Colors.white,
+              color: isContrast ? AppColors.darkSurface : Colors.white,
             ),
           ),
         ),
         const SizedBox(width: 10),
-        Icon(icon, size: 20, color: isContrast ? Colors.yellow : AppColors.primary),
+        Icon(icon, size: 20, color: isContrast ? AppColors.darkPrimary : AppColors.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -643,16 +643,16 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.black : AppColors.primary.withOpacity(0.06),
+        color: isContrast ? AppColors.darkSurfaceElevated : AppColors.primary.withOpacity(0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.25),
+          color: isContrast ? AppColors.darkPrimary : AppColors.primary.withOpacity(0.25),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: isContrast ? Colors.yellow : AppColors.primary, size: 24),
+          Icon(icon, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -663,7 +663,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: isContrast ? Colors.yellow : AppColors.primary,
+                    color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -696,9 +696,9 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.black : Colors.white,
+        color: isContrast ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isContrast ? Colors.white24 : AppColors.border),
+        border: Border.all(color: isContrast ? AppColors.darkBorder : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -724,7 +724,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
             min: min,
             max: max,
             divisions: divisions,
-            activeColor: isContrast ? Colors.yellow : AppColors.primary,
+            activeColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
             inactiveColor: isContrast ? Colors.white24 : Colors.grey.shade300,
             label: value.toInt().toString(),
             onChanged: onChanged,
@@ -745,9 +745,9 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.black : Colors.white,
+        color: isContrast ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isContrast ? Colors.white24 : AppColors.border),
+        border: Border.all(color: isContrast ? AppColors.darkBorder : AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -757,7 +757,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 13,
-              color: isContrast ? Colors.yellow : AppColors.primary,
+              color: isContrast ? AppColors.darkPrimary : AppColors.primary,
             ),
           ),
           const SizedBox(height: 8),

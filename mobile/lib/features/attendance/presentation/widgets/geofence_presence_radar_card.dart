@@ -33,7 +33,7 @@ class GeofencePresenceRadarCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isContrast ? AppColors.hcBorder : AppColors.border,
-          width: isContrast ? 2 : 1,
+          width: 1,
         ),
       ),
       child: Column(
@@ -45,7 +45,7 @@ class GeofencePresenceRadarCard extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isInsideGeofence
-                      ? (isContrast ? Colors.yellow.withOpacity(0.2) : AppColors.present.withOpacity(0.1))
+                      ? (isContrast ? AppColors.darkPresentBg : AppColors.present.withOpacity(0.1))
                       : (isContrast ? Colors.white12 : AppColors.border),
                   shape: BoxShape.circle,
                 ),
@@ -53,7 +53,7 @@ class GeofencePresenceRadarCard extends StatelessWidget {
                   Icons.radar_rounded,
                   size: 26,
                   color: isInsideGeofence
-                      ? (isContrast ? Colors.yellow : AppColors.present)
+                      ? (isContrast ? AppColors.darkPresent : AppColors.present)
                       : (isContrast ? Colors.white60 : AppColors.textSecondary),
                 ),
               ),
@@ -78,7 +78,7 @@ class GeofencePresenceRadarCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         color: isInsideGeofence
-                            ? (isContrast ? Colors.yellow : AppColors.present)
+                            ? (isContrast ? AppColors.darkPresent : AppColors.present)
                             : (isContrast ? Colors.white70 : AppColors.textSecondary),
                         fontWeight: isInsideGeofence ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -98,8 +98,8 @@ class GeofencePresenceRadarCard extends StatelessWidget {
                 backgroundColor: isContrast ? Colors.white24 : AppColors.border,
                 valueColor: AlwaysStoppedAnimation<Color>(
                   dwellCountdown >= requiredDwellSeconds
-                      ? (isContrast ? Colors.yellow : AppColors.present)
-                      : (isContrast ? Colors.amber : AppColors.late),
+                      ? (isContrast ? AppColors.darkPresent : AppColors.present)
+                      : (isContrast ? AppColors.darkLate : AppColors.late),
                 ),
               ),
             ),
@@ -123,8 +123,8 @@ class GeofencePresenceRadarCard extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: dwellCountdown >= requiredDwellSeconds
-                        ? (isContrast ? Colors.yellow : AppColors.present)
-                        : (isContrast ? Colors.amber : AppColors.late),
+                        ? (isContrast ? AppColors.darkPresent : AppColors.present)
+                        : (isContrast ? AppColors.darkLate : AppColors.late),
                   ),
                 ),
               ],

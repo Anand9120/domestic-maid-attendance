@@ -30,7 +30,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isContrast ? AppColors.hcBorder : AppColors.border,
-          width: isContrast ? 2 : 1.2,
+          width: 1,
         ),
         boxShadow: [
           if (!isContrast)
@@ -51,7 +51,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: controller.isInsideGeofence
-                      ? (isContrast ? Colors.yellow.withOpacity(0.2) : AppColors.present.withOpacity(0.12))
+                      ? (isContrast ? AppColors.darkPresentBg : AppColors.present.withOpacity(0.12))
                       : (isContrast ? Colors.white12 : const Color(0xFFE0E7FF)),
                   shape: BoxShape.circle,
                 ),
@@ -59,7 +59,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                   Icons.share_location_rounded,
                   size: 24,
                   color: controller.isInsideGeofence
-                      ? (isContrast ? Colors.yellow : AppColors.present)
+                      ? (isContrast ? AppColors.darkPresent : AppColors.present)
                       : (isContrast ? Colors.white70 : const Color(0xFF4338CA)),
                 ),
               ),
@@ -93,7 +93,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                 decoration: BoxDecoration(
                   color: controller.isInsideGeofence
-                      ? (isContrast ? Colors.yellow.withOpacity(0.25) : const Color(0xFFDCFCE7))
+                      ? (isContrast ? AppColors.darkPresentBg : const Color(0xFFDCFCE7))
                       : (isContrast ? Colors.white12 : const Color(0xFFF1F5F9)),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -104,7 +104,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                       Icons.radar_rounded,
                       size: 13,
                       color: controller.isInsideGeofence
-                          ? (isContrast ? Colors.yellow : const Color(0xFF16A34A))
+                          ? (isContrast ? AppColors.darkPresent : const Color(0xFF16A34A))
                           : (isContrast ? Colors.white60 : Colors.blueGrey),
                     ),
                     const SizedBox(width: 4),
@@ -114,7 +114,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.bold,
                         color: controller.isInsideGeofence
-                            ? (isContrast ? Colors.yellow : const Color(0xFF166534))
+                            ? (isContrast ? AppColors.darkPresent : const Color(0xFF166534))
                             : (isContrast ? Colors.white70 : Colors.blueGrey),
                       ),
                     ),
@@ -159,14 +159,14 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? (isContrast
-                              ? (isInside ? Colors.yellow.withOpacity(0.15) : Colors.white10)
+                              ? (isInside ? AppColors.darkPresentBg : Colors.white10)
                               : (isInside ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC)))
                           : (isContrast ? Colors.transparent : Colors.transparent),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
                             ? (isInside
-                                ? (isContrast ? Colors.yellow : const Color(0xFF22C55E))
+                                ? (isContrast ? AppColors.darkPresent : const Color(0xFF22C55E))
                                 : (isContrast ? Colors.white38 : const Color(0xFF94A3B8)))
                             : (isContrast ? Colors.white12 : const Color(0xFFE2E8F0)),
                         width: isSelected ? (isInside ? 2 : 1.5) : 1,
@@ -181,7 +181,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                               padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
                                 color: isInside
-                                    ? (isContrast ? Colors.yellow : const Color(0xFF22C55E))
+                                    ? (isContrast ? AppColors.darkPresent : const Color(0xFF22C55E))
                                     : (isContrast ? Colors.white24 : const Color(0xFFE2E8F0)),
                                 shape: BoxShape.circle,
                               ),
@@ -218,7 +218,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                           decoration: BoxDecoration(
                                             color: isInside
-                                                ? (isContrast ? Colors.yellow : const Color(0xFF16A34A))
+                                                ? (isContrast ? AppColors.darkPresent : const Color(0xFF16A34A))
                                                 : (isContrast ? Colors.white24 : const Color(0xFF64748B)),
                                             borderRadius: BorderRadius.circular(10),
                                           ),
@@ -259,7 +259,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                     color: isInside
-                                        ? (isContrast ? Colors.yellow : const Color(0xFF16A34A))
+                                        ? (isContrast ? AppColors.darkPresent : const Color(0xFF16A34A))
                                         : (dist != null && dist <= 100
                                             ? (isContrast ? Colors.amber : const Color(0xFFEA580C))
                                             : (isContrast ? Colors.white70 : AppColors.textSecondary)),
@@ -270,7 +270,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     color: isInside
-                                        ? (isContrast ? Colors.yellow : const Color(0xFF16A34A))
+                                        ? (isContrast ? AppColors.darkPresent : const Color(0xFF16A34A))
                                         : (isContrast ? Colors.white54 : AppColors.textSecondary),
                                   ),
                                 ),
@@ -291,7 +291,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                               backgroundColor: isContrast ? Colors.white24 : const Color(0xFFE2E8F0),
                               valueColor: AlwaysStoppedAnimation<Color>(
                                 controller.dwellCountdown >= controller.requiredDwellSeconds
-                                    ? (isContrast ? Colors.yellow : AppColors.present)
+                                    ? (isContrast ? AppColors.darkPresent : AppColors.present)
                                     : (isContrast ? Colors.amber : AppColors.late),
                               ),
                             ),
@@ -312,7 +312,7 @@ class MultiHouseholdRadarCard extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.bold,
-                                  color: isContrast ? Colors.yellow : AppColors.present,
+                                  color: isContrast ? AppColors.darkPresent : AppColors.present,
                                 ),
                               ),
                             ],

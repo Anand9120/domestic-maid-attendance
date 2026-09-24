@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../accessibility/accessibility_controller.dart';
+import '../constants/app_colors.dart';
 
 class Ux4gCivicBar extends StatelessWidget {
   final bool showTitle;
@@ -50,10 +51,10 @@ class Ux4gCivicBar extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: isContrast ? Colors.black : const Color(0xFF0B3866),
+                color: isContrast ? const Color(0xFF0B192C) : const Color(0xFF0B3866),
                 border: Border(
                   bottom: BorderSide(
-                    color: isContrast ? Colors.yellow : const Color(0xFF1D5490),
+                    color: isContrast ? AppColors.darkBorder : const Color(0xFF1D5490),
                     width: 1,
                   ),
                 ),
@@ -62,10 +63,10 @@ class Ux4gCivicBar extends StatelessWidget {
                 children: [
                   // Civic Emblem / Logo + Text
                   if (showTitle) ...[
-                    const Icon(
+                    Icon(
                       Icons.account_balance_rounded,
                       size: 18,
-                      color: Colors.white,
+                      color: isContrast ? AppColors.darkPrimary : Colors.white,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -74,7 +75,7 @@ class Ux4gCivicBar extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: isContrast ? Colors.yellow : Colors.white,
+                          color: isContrast ? AppColors.darkTextPrimary : Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.2,
@@ -110,26 +111,26 @@ class Ux4gCivicBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
 
-                  // High Contrast Toggle
+                  // High Contrast / Dark Mode Toggle
                   Semantics(
                     button: true,
-                    label: 'Toggle High Contrast Theme',
+                    label: 'Toggle Dark / High Contrast Theme',
                     child: InkWell(
                       onTap: () => controller.toggleHighContrast(),
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isContrast ? Colors.yellow : Colors.white12,
+                          color: isContrast ? AppColors.darkPrimary : Colors.white12,
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: isContrast ? Colors.black : Colors.white30,
+                            color: isContrast ? AppColors.darkPrimary : Colors.white30,
                           ),
                         ),
                         child: Icon(
                           Icons.contrast_rounded,
                           size: 15,
-                          color: isContrast ? Colors.black : Colors.white,
+                          color: isContrast ? const Color(0xFF0F172A) : Colors.white,
                         ),
                       ),
                     ),
@@ -146,15 +147,15 @@ class Ux4gCivicBar extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isContrast ? Colors.yellow : const Color(0xFFE05A1B),
+                          color: isContrast ? AppColors.darkSecondary : const Color(0xFFE05A1B),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           controller.isHindi ? 'English' : 'हिन्दी',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
-                            color: isContrast ? Colors.black : Colors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -186,11 +187,13 @@ class Ux4gCivicBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isContrast ? Colors.yellow : Colors.white)
+                ? (isContrast ? AppColors.darkPrimary : Colors.white)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(4),
             border: Border.all(
-              color: isContrast ? Colors.yellow : Colors.white38,
+              color: isContrast
+                  ? (isSelected ? AppColors.darkPrimary : AppColors.darkBorder)
+                  : Colors.white38,
             ),
           ),
           child: Text(
@@ -199,8 +202,8 @@ class Ux4gCivicBar extends StatelessWidget {
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: isSelected
-                  ? (isContrast ? Colors.black : const Color(0xFF0B3866))
-                  : (isContrast ? Colors.yellow : Colors.white),
+                  ? (isContrast ? const Color(0xFF0F172A) : const Color(0xFF0B3866))
+                  : (isContrast ? AppColors.darkTextPrimary : Colors.white),
             ),
           ),
         ),

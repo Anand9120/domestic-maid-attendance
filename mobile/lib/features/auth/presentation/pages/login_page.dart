@@ -97,18 +97,18 @@ class _LoginPageState extends State<LoginPage> {
                                 height: 68,
                                 decoration: BoxDecoration(
                                   color: isContrast
-                                      ? Colors.yellow.withOpacity(0.2)
+                                      ? AppColors.darkPrimary.withOpacity(0.15)
                                       : AppColors.primary.withOpacity(0.08),
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: isContrast ? Colors.yellow : AppColors.primary,
+                                    color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                     width: 1.5,
                                   ),
                                 ),
                                 child: Icon(
                                   Icons.account_balance_rounded,
                                   size: 36,
-                                  color: isContrast ? Colors.yellow : AppColors.primary,
+                                  color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                 ),
                               ),
                             ),
@@ -247,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
                                             fontSize: 11,
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 1,
-                                            color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                                            color: isContrast ? AppColors.darkSecondary : AppColors.textSecondary,
                                           ),
                                         ),
                                       ),
@@ -263,21 +263,21 @@ class _LoginPageState extends State<LoginPage> {
                                       style: OutlinedButton.styleFrom(
                                         minimumSize: const Size(double.infinity, 48),
                                         side: BorderSide(
-                                          color: isContrast ? Colors.yellow : AppColors.primary,
+                                          color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                         ),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                       ),
                                       icon: Icon(
                                         Icons.add_home_work_rounded,
                                         size: 18,
-                                        color: isContrast ? Colors.yellow : AppColors.primary,
+                                        color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                       ),
                                       label: Text(
                                         'Register New Household (नया घर जोड़ें)',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          color: isContrast ? Colors.yellow : AppColors.primary,
+                                          color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -370,13 +370,13 @@ class _LoginPageState extends State<LoginPage> {
           padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: isSelected
-                ? (isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.08))
-                : (isContrast ? Colors.black : Colors.grey.shade50),
+                ? (isContrast ? AppColors.darkPrimary.withOpacity(0.18) : AppColors.primary.withOpacity(0.08))
+                : (isContrast ? AppColors.darkSurfaceElevated : Colors.grey.shade50),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: isSelected
-                  ? (isContrast ? Colors.yellow : AppColors.primary)
-                  : (isContrast ? Colors.white38 : AppColors.border),
+                  ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                  : (isContrast ? AppColors.darkBorder : AppColors.border),
               width: isSelected ? 2 : 1,
             ),
           ),
@@ -387,8 +387,8 @@ class _LoginPageState extends State<LoginPage> {
                 icon,
                 size: 20,
                 color: isSelected
-                    ? (isContrast ? Colors.black : AppColors.primary)
-                    : (isContrast ? Colors.white70 : AppColors.textSecondary),
+                    ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                    : (isContrast ? AppColors.darkTextSecondary : AppColors.textSecondary),
               ),
               const SizedBox(width: 8),
               Flexible(
@@ -400,8 +400,8 @@ class _LoginPageState extends State<LoginPage> {
                     fontSize: 13,
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
                     color: isSelected
-                        ? (isContrast ? Colors.black : AppColors.primary)
-                        : (isContrast ? Colors.white : AppColors.textPrimary),
+                        ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                        : (isContrast ? AppColors.darkTextPrimary : AppColors.textPrimary),
                   ),
                 ),
               ),

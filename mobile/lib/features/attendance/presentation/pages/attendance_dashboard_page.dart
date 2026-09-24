@@ -304,7 +304,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
         return Scaffold(
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
           appBar: AppBar(
-            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            backgroundColor: isContrast ? AppColors.darkSurface : AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
             title: Column(
@@ -318,7 +318,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                   '${widget.user.fullName} (${widget.user.role == UserRole.employer ? a11y.tr('employer_role') : a11y.tr('maid_role')})',
                   style: TextStyle(
                     fontSize: 11,
-                    color: isContrast ? Colors.yellow : Colors.white70,
+                    color: isContrast ? AppColors.darkTextSecondary : Colors.white70,
                   ),
                 ),
               ],
@@ -705,7 +705,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               Icon(
                 Icons.linear_scale_rounded,
                 size: 18,
-                color: isContrast ? Colors.yellow : AppColors.primary,
+                color: isContrast ? AppColors.darkPrimary : AppColors.primary,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -724,7 +724,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.08),
+                  color: isContrast ? AppColors.darkPrimary : AppColors.primary.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -732,7 +732,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
-                    color: isContrast ? Colors.black : AppColors.primary,
+                    color: isContrast ? const Color(0xFF0F172A) : AppColors.primary,
                   ),
                 ),
               ),
@@ -804,12 +804,12 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isContrast ? Colors.yellow.withOpacity(0.2) : color.withOpacity(0.1),
+                  color: isContrast ? color.withOpacity(0.25) : color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   icon,
-                  color: isContrast ? Colors.yellow : color,
+                  color: color,
                   size: 22,
                 ),
               ),
@@ -906,14 +906,14 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
       context: context,
       builder: (ctx) {
         return AlertDialog(
-          backgroundColor: isContrast ? Colors.black : Colors.white,
+          backgroundColor: isContrast ? AppColors.darkSurface : Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
+            side: BorderSide(color: isContrast ? AppColors.darkBorder : Colors.transparent),
           ),
           title: Row(
             children: [
-              Icon(Icons.qr_code_2_rounded, color: isContrast ? Colors.yellow : AppColors.primary, size: 26),
+              Icon(Icons.qr_code_2_rounded, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 26),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
@@ -956,9 +956,9 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isContrast ? Colors.grey.shade900 : AppColors.primary.withOpacity(0.08),
+                    color: isContrast ? AppColors.darkSurfaceElevated : AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.3)),
+                    border: Border.all(color: isContrast ? AppColors.darkBorderHighlight : AppColors.primary.withOpacity(0.3)),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -972,7 +972,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 3,
-                              color: isContrast ? Colors.yellow : AppColors.primary,
+                              color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                             ),
                           ),
                         ),
@@ -983,7 +983,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                         constraints: const BoxConstraints(),
                         padding: const EdgeInsets.all(4),
                         visualDensity: VisualDensity.compact,
-                        icon: Icon(Icons.copy_rounded, color: isContrast ? Colors.yellow : AppColors.primary, size: 20),
+                        icon: Icon(Icons.copy_rounded, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 20),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: _inviteCode));
                           ScaffoldMessenger.of(context).showSnackBar(

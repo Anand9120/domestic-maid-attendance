@@ -112,7 +112,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isContrast ? Colors.yellow : const Color(0xFF137333),
+          color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
           width: isContrast ? 2 : 1,
         ),
       ),
@@ -130,7 +130,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isContrast ? Colors.yellow : const Color(0xFFE6F4EA),
+                      color: isContrast ? AppColors.darkPresentBg : const Color(0xFFE6F4EA),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
@@ -149,7 +149,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                            color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                           ),
                         ),
                         Text(
@@ -165,7 +165,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                      color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -265,7 +265,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: isContrast ? Colors.yellow : AppColors.textPrimary,
+                        color: isContrast ? AppColors.darkTextPrimary : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -288,7 +288,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.shield_outlined, size: 14, color: isContrast ? Colors.yellow : AppColors.present),
+                          Icon(Icons.shield_outlined, size: 14, color: isContrast ? AppColors.darkPresent : AppColors.present),
                           const SizedBox(width: 6),
                           Expanded(
                             child: Text(
@@ -314,7 +314,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                 decoration: BoxDecoration(
                   color: isContrast ? Colors.black : const Color(0xFFF9FBE7),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isContrast ? Colors.yellow : const Color(0xFFC0CA33)),
+                  border: Border.all(color: isContrast ? AppColors.darkBorder : const Color(0xFFC0CA33)),
                 ),
                 child: Column(
                   children: [
@@ -348,7 +348,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                            color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                           ),
                         ),
                       ],
@@ -364,8 +364,8 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                   Expanded(
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isContrast ? Colors.yellow : const Color(0xFF25D366),
-                        foregroundColor: isContrast ? Colors.black : Colors.white,
+                        backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF25D366),
+                        foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -424,7 +424,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
           style: TextStyle(
             fontSize: 11,
             fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: valueColor ?? (isContrast ? (isBold ? Colors.yellow : Colors.white) : AppColors.textPrimary),
+            color: valueColor ?? (isContrast ? (isBold ? AppColors.darkPrimary : AppColors.darkTextPrimary) : AppColors.textPrimary),
           ),
         ),
       ],
@@ -439,7 +439,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: isContrast ? Colors.yellow : (color ?? AppColors.textPrimary),
+            color: isContrast ? (color ?? AppColors.darkTextPrimary) : (color ?? AppColors.textPrimary),
           ),
         ),
         Text(

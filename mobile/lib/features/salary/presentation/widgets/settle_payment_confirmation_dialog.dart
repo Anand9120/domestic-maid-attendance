@@ -39,12 +39,12 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
       backgroundColor: isContrast ? AppColors.hcBackground : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
+        side: BorderSide(color: isContrast ? AppColors.darkBorder : Colors.transparent),
       ),
       actionsOverflowDirection: VerticalDirection.down,
       title: Row(
         children: [
-          Icon(Icons.check_circle_rounded, color: isContrast ? Colors.yellow : const Color(0xFF137333), size: 24),
+          Icon(Icons.check_circle_rounded, color: isContrast ? AppColors.darkPresent : const Color(0xFF137333), size: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -97,7 +97,7 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                      color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                     ),
                   ),
                 ],
@@ -177,8 +177,8 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
-            foregroundColor: isContrast ? Colors.black : Colors.white,
+            backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+            foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
           ),
           onPressed: () {
             Navigator.pop(context);

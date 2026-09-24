@@ -181,7 +181,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
           appBar: AppBar(
             title: const Text('Maid Profile & Onboarding'),
-            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            backgroundColor: isContrast ? AppColors.darkSurface : AppColors.primary,
             foregroundColor: Colors.white,
             elevation: 0,
           ),
@@ -265,17 +265,17 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                     fontSize: 13,
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     color: isSelected
-                                        ? (isContrast ? Colors.black : Colors.white)
+                                        ? (isContrast ? const Color(0xFF0F172A) : Colors.white)
                                         : (isContrast ? Colors.white : AppColors.textPrimary),
                                   ),
-                                  selectedColor: isContrast ? Colors.yellow : AppColors.primary,
-                                  backgroundColor: isContrast ? Colors.black : Colors.grey.shade100,
-                                  checkmarkColor: isContrast ? Colors.black : Colors.white,
+                                  selectedColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                  backgroundColor: isContrast ? AppColors.darkSurfaceElevated : Colors.grey.shade100,
+                                  checkmarkColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(20),
                                     side: BorderSide(
                                       color: isSelected
-                                          ? (isContrast ? Colors.yellow : AppColors.primary)
+                                          ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
                                           : (isContrast ? Colors.white24 : AppColors.border),
                                     ),
                                   ),
@@ -351,10 +351,10 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: isContrast ? Colors.black : Colors.white,
+                                color: isContrast ? AppColors.darkSurface : Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.3),
+                                  color: isContrast ? AppColors.darkPrimary : AppColors.primary.withOpacity(0.3),
                                   width: 1.5,
                                 ),
                               ),
@@ -380,7 +380,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                           decoration: InputDecoration(
                                             hintText: 'e.g. SHARMA402',
                                             filled: true,
-                                            fillColor: isContrast ? Colors.grey.shade900 : Colors.grey.shade50,
+                                            fillColor: isContrast ? AppColors.darkSurfaceElevated : Colors.grey.shade50,
                                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(8),
@@ -393,8 +393,8 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                       const SizedBox(width: 10),
                                       ElevatedButton.icon(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: isContrast ? Colors.yellow : AppColors.primary,
-                                          foregroundColor: isContrast ? Colors.black : Colors.white,
+                                          backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                          foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
                                           minimumSize: const Size(120, 48),
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                         ),
@@ -449,7 +449,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                     margin: const EdgeInsets.only(bottom: 8),
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: isContrast ? Colors.black : Colors.white,
+                                      color: isContrast ? AppColors.darkSurface : Colors.white,
                                       borderRadius: BorderRadius.circular(10),
                                       border: Border.all(
                                         color: isContrast ? Colors.white38 : AppColors.border,
@@ -578,7 +578,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
           height: 28,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isContrast ? Colors.yellow : AppColors.primary,
+            color: isContrast ? AppColors.darkPrimary : AppColors.primary,
             shape: BoxShape.circle,
           ),
           child: Text(
@@ -586,12 +586,12 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
-              color: isContrast ? Colors.black : Colors.white,
+              color: isContrast ? AppColors.darkSurface : Colors.white,
             ),
           ),
         ),
         const SizedBox(width: 10),
-        Icon(icon, size: 20, color: isContrast ? Colors.yellow : AppColors.primary),
+        Icon(icon, size: 20, color: isContrast ? AppColors.darkPrimary : AppColors.primary),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
@@ -616,16 +616,16 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isContrast ? Colors.black : AppColors.primary.withOpacity(0.06),
+        color: isContrast ? AppColors.darkSurfaceElevated : AppColors.primary.withOpacity(0.06),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.25),
+          color: isContrast ? AppColors.darkPrimary : AppColors.primary.withOpacity(0.25),
         ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: isContrast ? Colors.yellow : AppColors.primary, size: 24),
+          Icon(icon, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 24),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -636,7 +636,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: isContrast ? Colors.yellow : AppColors.primary,
+                    color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 4),

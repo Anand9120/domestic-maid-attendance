@@ -59,7 +59,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         return Scaffold(
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
           appBar: AppBar(
-            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            backgroundColor: isContrast ? AppColors.darkSurface : AppColors.primary,
             foregroundColor: Colors.white,
             title: Text(
               a11y.tr('verify_phone'),
@@ -98,17 +98,17 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: isContrast
-                                        ? Colors.yellow.withOpacity(0.2)
+                                        ? AppColors.darkPrimary.withOpacity(0.15)
                                         : AppColors.primary.withOpacity(0.08),
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: isContrast ? Colors.yellow : AppColors.primary,
+                                      color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                     ),
                                   ),
                                   child: Icon(
                                     Icons.sms_outlined,
                                     size: 38,
-                                    color: isContrast ? Colors.yellow : AppColors.primary,
+                                    color: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                   ),
                                 ),
                               ),

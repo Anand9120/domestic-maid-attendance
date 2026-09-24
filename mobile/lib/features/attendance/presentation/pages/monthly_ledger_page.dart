@@ -258,10 +258,10 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: isContrast ? Colors.black : Colors.white,
+        backgroundColor: isContrast ? AppColors.darkSurface : Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: isContrast ? Colors.yellow : Colors.transparent),
+          side: BorderSide(color: isContrast ? AppColors.darkBorder : Colors.transparent),
         ),
         title: Row(
           children: [
@@ -320,7 +320,7 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('UPI ID:', style: TextStyle(fontSize: 10, color: isContrast ? Colors.white60 : AppColors.textSecondary)),
-                          Text(_upiId.isNotEmpty ? _upiId : 'Not Configured', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isContrast ? Colors.yellow : AppColors.textPrimary)),
+                          Text(_upiId.isNotEmpty ? _upiId : 'Not Configured', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: isContrast ? AppColors.darkPrimary : AppColors.textPrimary)),
                         ],
                       ),
                     ),
@@ -346,8 +346,8 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
         actions: [
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
-              foregroundColor: isContrast ? Colors.black : Colors.white,
+              backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+              foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
             ),
             icon: const Icon(Icons.check_circle_outline, size: 16),
             label: const Text('Record Settlement (निपटान दर्ज करें)'),
@@ -442,7 +442,7 @@ _Generated via Digital Civic Maid Attendance System_''';
         return Scaffold(
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
           appBar: AppBar(
-            backgroundColor: isContrast ? Colors.black : AppColors.primary,
+            backgroundColor: isContrast ? AppColors.darkSurface : AppColors.primary,
             foregroundColor: Colors.white,
             title: Text(
               '${widget.maidName} - ${a11y.tr('view_ledger')}',
@@ -536,7 +536,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                       decoration: BoxDecoration(
-                                        color: isContrast ? Colors.yellow : AppColors.primary.withOpacity(0.08),
+                                        color: isContrast ? AppColors.darkPrimary.withOpacity(0.15) : AppColors.primary.withOpacity(0.08),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
@@ -544,7 +544,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.bold,
-                                          color: isContrast ? Colors.black : AppColors.primary,
+                                          color: isContrast ? const Color(0xFF0F172A) : AppColors.primary,
                                         ),
                                       ),
                                     ),
@@ -608,7 +608,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                       child: _buildMetricTile(
                                         label: a11y.tr('deductions'),
                                         value: '${report.calculatedDeductions.toStringAsFixed(1)}d',
-                                        color: isContrast ? Colors.yellow : Colors.deepOrange,
+                                        color: isContrast ? AppColors.darkSecondary : Colors.deepOrange,
                                         isContrast: isContrast,
                                       ),
                                     ),
@@ -752,7 +752,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                                     Icon(
                                                       Icons.schedule_rounded,
                                                       size: 13,
-                                                      color: isContrast ? Colors.yellow : AppColors.textSecondary,
+                                                      color: isContrast ? AppColors.darkTextSecondary : AppColors.textSecondary,
                                                     ),
                                                     const SizedBox(width: 4),
                                                     Expanded(
@@ -765,7 +765,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                                           fontWeight: FontWeight.w500,
                                                           color: hasOut
                                                               ? (isContrast ? Colors.white70 : AppColors.textSecondary)
-                                                              : (isContrast ? Colors.yellow : const Color(0xFF1A73E8)),
+                                                              : (isContrast ? AppColors.darkPrimary : const Color(0xFF1A73E8)),
                                                         ),
                                                       ),
                                                     ),
@@ -777,7 +777,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                                     'Overridden: ${log.overrideByEmployerName}',
                                                     style: TextStyle(
                                                       fontSize: 11,
-                                                      color: isContrast ? Colors.yellow : AppColors.secondary,
+                                                      color: isContrast ? AppColors.darkSecondary : AppColors.secondary,
                                                     ),
                                                     maxLines: 1,
                                                     overflow: TextOverflow.ellipsis,
@@ -837,7 +837,7 @@ _Generated via Digital Civic Maid Attendance System_''';
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isSettled
-              ? (isContrast ? Colors.yellow : const Color(0xFF137333))
+              ? (isContrast ? AppColors.darkPresent : const Color(0xFF137333))
               : (isContrast ? AppColors.hcBorder : const Color(0xFFDADCE0)),
           width: isContrast || isSettled ? 2 : 1,
         ),
@@ -853,7 +853,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                   children: [
                     Icon(
                       isSettled ? Icons.verified_rounded : Icons.payments_rounded,
-                      color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                      color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                       size: 20,
                     ),
                     const SizedBox(width: 8),
@@ -882,9 +882,9 @@ _Generated via Digital Civic Maid Attendance System_''';
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.edit_outlined, size: 14, color: isContrast ? Colors.yellow : AppColors.primary),
+                        Icon(Icons.edit_outlined, size: 14, color: isContrast ? AppColors.darkPrimary : AppColors.primary),
                         const SizedBox(width: 2),
-                        Text('Edit', style: TextStyle(fontSize: 11, color: isContrast ? Colors.yellow : AppColors.primary, fontWeight: FontWeight.bold)),
+                        Text('Edit', style: TextStyle(fontSize: 11, color: isContrast ? AppColors.darkPrimary : AppColors.primary, fontWeight: FontWeight.bold)),
                       ],
                     ),
                   ),
@@ -893,7 +893,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: isContrast ? Colors.yellow : const Color(0xFFE6F4EA),
+                    color: isContrast ? AppColors.darkPresentBg : const Color(0xFFE6F4EA),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -901,7 +901,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.bold,
-                      color: isContrast ? Colors.black : const Color(0xFF137333),
+                      color: isContrast ? const Color(0xFF0F172A) : const Color(0xFF137333),
                     ),
                   ),
                 ),
@@ -914,7 +914,7 @@ _Generated via Digital Civic Maid Attendance System_''';
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -957,7 +957,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                     const SizedBox(width: 4),
                     Tooltip(
                       message: '$allowedLeaves paid allowed leaves applied without deduction',
-                      child: Icon(Icons.info_outline, size: 13, color: isContrast ? Colors.yellow : AppColors.primary),
+                      child: Icon(Icons.info_outline, size: 13, color: isContrast ? AppColors.darkPrimary : AppColors.primary),
                     ),
                   ],
                 ),
@@ -989,7 +989,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
-                  color: isContrast ? Colors.yellow : const Color(0xFF137333),
+                  color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
                 ),
               ),
             ],
@@ -998,13 +998,13 @@ _Generated via Digital Civic Maid Attendance System_''';
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
-              color: isContrast ? Colors.black45 : Colors.white,
+              color: isContrast ? AppColors.darkSurfaceElevated : Colors.white,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: isContrast ? Colors.white24 : const Color(0xFFE0E0E0)),
             ),
             child: Row(
               children: [
-                Icon(Icons.account_balance_wallet_outlined, size: 16, color: isContrast ? Colors.yellow : const Color(0xFF137333)),
+                Icon(Icons.account_balance_wallet_outlined, size: 16, color: isContrast ? AppColors.darkPresent : const Color(0xFF137333)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -1041,8 +1041,8 @@ _Generated via Digital Civic Maid Attendance System_''';
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
-                foregroundColor: isContrast ? Colors.black : Colors.white,
+                backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+                foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 2,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1081,8 +1081,8 @@ _Generated via Digital Civic Maid Attendance System_''';
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
-                foregroundColor: isContrast ? Colors.black : Colors.white,
+                backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+                foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 elevation: 2,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1112,8 +1112,8 @@ _Generated via Digital Civic Maid Attendance System_''';
             height: 44,
             child: OutlinedButton(
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: isContrast ? Colors.yellow : const Color(0xFF137333)),
-                foregroundColor: isContrast ? Colors.yellow : const Color(0xFF137333),
+                side: BorderSide(color: isContrast ? AppColors.darkBorderHighlight : const Color(0xFF137333)),
+                foregroundColor: isContrast ? AppColors.darkPrimary : const Color(0xFF137333),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 padding: const EdgeInsets.symmetric(horizontal: 12),
               ),
@@ -1148,9 +1148,9 @@ _Generated via Digital Civic Maid Attendance System_''';
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               backgroundColor: isContrast ? AppColors.hcSurface : const Color(0xFFE8F5E9),
-              foregroundColor: isContrast ? Colors.yellow : const Color(0xFF2E7D32),
+              foregroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF2E7D32),
               side: BorderSide(
-                color: isContrast ? Colors.yellow : const Color(0xFF4CAF50),
+                color: isContrast ? AppColors.darkPresent : const Color(0xFF4CAF50),
                 width: 1.5,
               ),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1188,7 +1188,7 @@ _Generated via Digital Civic Maid Attendance System_''';
       elevation: 0,
       cornerRadius: 10,
       backgroundColor: isContrast ? Colors.white10 : color.withOpacity(0.08),
-      borderColor: isContrast ? Colors.yellow : color.withOpacity(0.25),
+      borderColor: isContrast ? AppColors.darkBorder : color.withOpacity(0.25),
       borderWidth: isContrast ? 1.5 : 1,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -1199,7 +1199,7 @@ _Generated via Digital Civic Maid Attendance System_''';
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: isContrast ? Colors.yellow : color,
+                color: color,
               ),
             ),
             const SizedBox(height: 4),
