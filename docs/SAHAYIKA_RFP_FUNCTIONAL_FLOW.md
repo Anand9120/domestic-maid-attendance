@@ -38,6 +38,9 @@ Across urban Indian residential complexes, gated communities, and standalone hou
 
 ## 2. Stakeholders & User Personas
 
+
+![System Stakeholders & User Personas Diagram](images/diagrams/01_stakeholders.png)
+
 ```mermaid
 graph TD
     subgraph Users["System Stakeholders"]
@@ -70,6 +73,9 @@ graph TD
 
 The complete operational flow of Sahayika spans seven interconnected phases:
 
+
+![End-to-End Operational Lifecycle Flowchart](images/diagrams/02_operational_lifecycle.png)
+
 ```mermaid
 flowchart TD
     A([1. Household Setup & Calibration]) --> B([2. Maid Onboarding & QR/Code Linking])
@@ -83,6 +89,9 @@ flowchart TD
 ---
 
 ### Phase 1: Household Setup & GPS Calibration
+
+
+![Household Setup & GPS Calibration Sequence](images/diagrams/03_household_calibration_seq.png)
 
 ```mermaid
 sequenceDiagram
@@ -116,6 +125,9 @@ sequenceDiagram
 
 ### Phase 2: Maid Onboarding & Multi-Household Linking
 
+
+![Maid Onboarding & Household Linking Sequence](images/diagrams/04_maid_onboarding_seq.png)
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -141,6 +153,9 @@ sequenceDiagram
 ---
 
 ### Phase 3: Zero-Touch Attendance Pipeline & Anti-Fraud Verification
+
+
+![Zero-Touch Attendance & Anti-Fraud Verification Pipeline](images/diagrams/05_attendance_pipeline_flow.png)
 
 ```mermaid
 flowchart TD
@@ -187,6 +202,9 @@ flowchart TD
 
 When a helper works across multiple apartments in a high-rise society, Sahayika avoids confusing manual check-ins:
 
+
+![Multi-Household Society Auto-Switching Radar State Machine](images/diagrams/06_multi_household_radar_state.png)
+
 ```mermaid
 stateDiagram-v2
     [*] --> IdleOutsideSociety: Helper Outside Geofence
@@ -217,6 +235,9 @@ stateDiagram-v2
 
 Urban buildings frequently suffer from cellular dead-zones in elevators, basements, and staircases.
 
+
+![Offline-First Hive DB Buffer Architecture](images/diagrams/07_offline_buffer_sync.png)
+
 ```mermaid
 graph LR
     subgraph ClientDevice["Helper Mobile Device"]
@@ -239,6 +260,9 @@ graph LR
 ---
 
 ### Phase 6: Monthly Ledger, Payroll & Pro-Rata Salary Calculations
+
+
+![Monthly Payroll & Pro-Rata Deduction Calculation Sequence](images/diagrams/08_payroll_calculation_seq.png)
 
 ```mermaid
 sequenceDiagram
@@ -272,6 +296,9 @@ $$\text{Net Payable Salary (कुल देय वेतन)} = \max(0.0, \text
 
 ### Phase 7: Digital Settlement, UPI Deep-Linking & WhatsApp Slip
 
+
+![NPCI UPI Deep-Link Digital Settlement Sequence](images/diagrams/09_upi_settlement_seq.png)
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -299,6 +326,9 @@ sequenceDiagram
 ---
 
 ## 4. Technical Architecture & Component Stack
+
+
+![Full-Stack Technical Architecture Diagram](images/diagrams/10_technical_architecture.png)
 
 ```mermaid
 graph TB
@@ -353,6 +383,9 @@ Sahayika strictly enforces the **Government of India UX4G Design Guidelines** an
 ---
 
 ## 6. Database Schema & Data Dictionary (MySQL 8.0)
+
+
+![MySQL 8.0 Relational Entity-Relationship Diagram](images/diagrams/11_database_er_diagram.png)
 
 ```mermaid
 erDiagram

@@ -35,6 +35,14 @@ public interface AttendanceLogRepository extends JpaRepository<AttendanceLog, Lo
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
+    @Query("SELECT a FROM AttendanceLog a WHERE a.householdLocation.id = :householdId AND a.maid.id = :maidId " +
+           "AND a.attendanceDate BETWEEN :startDate AND :endDate ORDER BY a.attendanceDate ASC, a.checkInTime ASC")
+    List<AttendanceLog> findMonthlyLogsForHouseholdAndMaid(
+            @Param("householdId") Long householdId,
+            @Param("maidId") Long maidId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
+
     @Query("SELECT COUNT(a) FROM AttendanceLog a WHERE a.maid.id = :maidId " +
            "AND a.attendanceDate BETWEEN :startDate AND :endDate AND a.status = :status")
     long countByMaidIdAndDateRangeAndStatus(

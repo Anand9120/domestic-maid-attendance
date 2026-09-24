@@ -26,13 +26,14 @@ public class ReportController {
                description = "Calculates total working days, present/late/half-day counts, and salary deductions for the month")
     public ResponseEntity<ApiResponse<MonthlyReportSummaryDto>> getMonthlyReport(
             @RequestParam Long maidId,
+            @RequestParam(required = false) Long householdId,
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month) {
 
         int targetYear = (year != null) ? year : LocalDate.now().getYear();
         int targetMonth = (month != null) ? month : LocalDate.now().getMonthValue();
 
-        MonthlyReportSummaryDto report = reportService.generateMonthlyReport(maidId, targetYear, targetMonth);
+        MonthlyReportSummaryDto report = reportService.generateMonthlyReport(maidId, householdId, targetYear, targetMonth);
         return ResponseEntity.ok(ApiResponse.ok("Monthly report generated successfully", report));
     }
 }

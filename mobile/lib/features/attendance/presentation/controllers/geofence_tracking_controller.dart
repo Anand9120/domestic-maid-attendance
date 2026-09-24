@@ -41,6 +41,21 @@ class GeofenceTrackingController extends ChangeNotifier {
   final Map<int, String> _householdCheckInTimes = {};
   final Map<int, String> _householdCheckOutTimes = {};
   final Map<int, String> _householdWorkDurations = {};
+  int _lastTrackingDay = DateTime.now().day;
+
+  void _checkMidnightRollover() {
+    final currentDay = DateTime.now().day;
+    if (currentDay != _lastTrackingDay) {
+      _lastTrackingDay = currentDay;
+      _householdCheckedIn.clear();
+      _householdCheckedOut.clear();
+      _householdCheckInTimes.clear();
+      _householdCheckOutTimes.clear();
+      _householdWorkDurations.clear();
+      elapsedWorkSeconds = 0;
+      workDurationString = '0m';
+    }
+  }
 
   int dwellCountdown = 0;
   Timer? _dwellTimer;
@@ -213,6 +228,7 @@ class GeofenceTrackingController extends ChangeNotifier {
   }
 
   void _evaluateMultiHouseholdPosition(Position pos) {
+    _checkMidnightRollover();
     currentPosition = pos;
     isMockGpsDetected = pos.isMocked;
     isLoadingGps = false;
@@ -319,10 +335,12 @@ class GeofenceTrackingController extends ChangeNotifier {
       return;
     }
 
-    // Run dwell verification timer
+    // Run dwell verification timer using wall-clock timestamp comparison
+    final dwellStartTime = DateTime.now();
     _dwellTimer?.cancel();
     _dwellTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      dwellCountdown++;
+      final elapsed = DateTime.now().difference(dwellStartTime).inSeconds;
+      dwellCountdown = elapsed;
       notifyListeners();
 
       if (dwellCountdown >= requiredDwellSeconds) {

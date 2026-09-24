@@ -16,6 +16,7 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +33,11 @@ public class ReportServiceImpl implements ReportService {
 
     @Override
     public MonthlyReportSummaryDto generateMonthlyReport(Long maidId, int year, int month) {
+        return generateMonthlyReport(maidId, null, year, month);
+    }
+
+    @Override
+    public MonthlyReportSummaryDto generateMonthlyReport(Long maidId, Long householdId, int year, int month) {
         User maid = userRepository.findById(maidId)
                 .orElseThrow(() -> new ResourceNotFoundException("Maid not found with ID: " + maidId));
 
@@ -39,10 +45,16 @@ public class ReportServiceImpl implements ReportService {
         LocalDate startDate = yearMonth.atDay(1);
         LocalDate endDate = yearMonth.atEndOfMonth();
 
-        List<AttendanceLog> logs = attendanceLogRepository.findMonthlyLogsForMaid(maidId, startDate, endDate);
+        // 1. Fetch logs: Scoped to specific household if provided, or across all households for maid self-view
+        List<AttendanceLog> logs;
+        if (householdId != null) {
+            logs = attendanceLogRepository.findMonthlyLogsForHouseholdAndMaid(householdId, maidId, startDate, endDate);
+        } else {
+            logs = attendanceLogRepository.findMonthlyLogsForMaid(maidId, startDate, endDate);
+        }
 
         int totalDaysInMonth = yearMonth.lengthOfMonth();
-        // Calculate working days in month (standard 26 working days excluding Sundays)
+        // Calculate working days in month (standard excluding Sundays)
         int workingDays = 0;
         for (int d = 1; d <= totalDaysInMonth; d++) {
             LocalDate date = yearMonth.atDay(d);
@@ -50,28 +62,40 @@ public class ReportServiceImpl implements ReportService {
                 workingDays++;
             }
         }
+        if (workingDays <= 0) {
+            workingDays = 26; // Guard against division by zero
+        }
+
+        // 2. Group logs by calendar date to avoid multi-shift / multi-household overcounting on single day
+        Map<LocalDate, List<AttendanceLog>> logsByDate = logs.stream()
+                .collect(Collectors.groupingBy(AttendanceLog::getAttendanceDate));
 
         int presentCount = 0;
         int lateCount = 0;
         int halfDayCount = 0;
         int absentCount = 0;
 
-        for (AttendanceLog log : logs) {
-            switch (log.getStatus()) {
-                case PRESENT -> presentCount++;
-                case LATE -> lateCount++;
-                case HALF_DAY -> halfDayCount++;
-                case ABSENT -> absentCount++;
+        for (Map.Entry<LocalDate, List<AttendanceLog>> entry : logsByDate.entrySet()) {
+            List<AttendanceLog> dayLogs = entry.getValue();
+            // Determine best status for the day: PRESENT > LATE > HALF_DAY > ABSENT
+            if (dayLogs.stream().anyMatch(l -> l.getStatus() == AttendanceLog.AttendanceStatus.PRESENT)) {
+                presentCount++;
+            } else if (dayLogs.stream().anyMatch(l -> l.getStatus() == AttendanceLog.AttendanceStatus.LATE)) {
+                lateCount++;
+            } else if (dayLogs.stream().anyMatch(l -> l.getStatus() == AttendanceLog.AttendanceStatus.HALF_DAY)) {
+                halfDayCount++;
+            } else {
+                absentCount++;
             }
         }
 
-        // Maid attendance is the sum of present, late, and half days
+        // Unrecorded working days count towards absent count
         int attendedDays = presentCount + lateCount;
         int unrecordedWorkingDays = Math.max(0, workingDays - (attendedDays + halfDayCount + absentCount));
         absentCount += unrecordedWorkingDays;
 
         double weightedAttendance = attendedDays + (halfDayCount * 0.5);
-        double attendancePercent = workingDays > 0 ? (weightedAttendance / workingDays) * 100.0 : 0.0;
+        double attendancePercent = workingDays > 0 ? Math.min(100.0, (weightedAttendance / workingDays) * 100.0) : 0.0;
         double salaryDeductionUnits = absentCount + (halfDayCount * 0.5);
 
         MonthlyReportSummaryDto dto = new MonthlyReportSummaryDto();

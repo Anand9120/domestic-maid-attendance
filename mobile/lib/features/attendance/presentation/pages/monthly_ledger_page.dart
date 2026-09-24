@@ -516,7 +516,8 @@ _Generated via Digital Civic Maid Attendance System_''';
                             final report = state.report;
 
                             // Payroll Computation with backend allowance integration
-                            final totalWorkingDays = _latestCalculation?.totalWorkingDays ?? (report.totalWorkingDays > 0 ? report.totalWorkingDays : 26);
+                            final rawWorkingDays = _latestCalculation?.totalWorkingDays ?? (report.totalWorkingDays > 0 ? report.totalWorkingDays : 26);
+                            final totalWorkingDays = rawWorkingDays > 0 ? rawWorkingDays : 26;
                             final perDaySalary = _baseSalary / totalWorkingDays;
                             final fallbackDeductionAmount = (report.calculatedDeductions * perDaySalary).roundToDouble();
                             final deductionAmount = _latestCalculation?.deductionAmount ?? fallbackDeductionAmount;

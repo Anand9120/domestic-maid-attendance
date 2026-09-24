@@ -113,8 +113,14 @@ public class AttendanceServiceImpl implements AttendanceService {
                     maid.getId(), household.getId());
         }
 
-        // 7. Determine Shift & Timing Status
+        // 7. Determine Shift & Timing Status with Clock Drift Guard
         LocalDateTime deviceTime = request.getDeviceTimestamp();
+        LocalDateTime serverNow = LocalDateTime.now();
+        if (deviceTime == null || Math.abs(java.time.Duration.between(deviceTime, serverNow).toMinutes()) > 15) {
+            log.warn("[SECURITY FLAG] Device timestamp drift detected (Device: {}, Server: {}). Normalizing to server time.",
+                    deviceTime, serverNow);
+            deviceTime = serverNow;
+        }
         LocalDate attendanceDate = deviceTime.toLocalDate();
         LocalTime checkInTime = deviceTime.toLocalTime();
 
@@ -134,13 +140,20 @@ public class AttendanceServiceImpl implements AttendanceService {
             }
         }
 
-        // 8. Prevent duplicate check-in for same shift on same day
+        // 8. Prevent duplicate check-in for same shift or unshifted household on same day
         if (matchingShift != null) {
             Optional<AttendanceLog> existing = attendanceLogRepository
                     .findByMaidIdAndHouseholdLocationIdAndAttendanceDateAndShiftScheduleId(
                             maid.getId(), household.getId(), attendanceDate, matchingShift.getId());
             if (existing.isPresent()) {
                 throw new DuplicateCheckInException("Check-in already recorded today for shift: " + matchingShift.getShiftName());
+            }
+        } else {
+            Optional<AttendanceLog> existing = attendanceLogRepository
+                    .findFirstByMaidIdAndHouseholdLocationIdAndAttendanceDateOrderByCheckInTimeDesc(
+                            maid.getId(), household.getId(), attendanceDate);
+            if (existing.isPresent() && existing.get().getCheckOutTime() == null) {
+                throw new DuplicateCheckInException("Active check-in already recorded today for " + household.getHouseName());
             }
         }
 
