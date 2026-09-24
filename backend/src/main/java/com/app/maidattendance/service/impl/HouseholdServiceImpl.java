@@ -41,8 +41,22 @@ public class HouseholdServiceImpl implements HouseholdService {
         User employer = userRepository.findById(request.getEmployerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Employer not found with ID: " + request.getEmployerId()));
 
-        List<HouseholdLocation> existing = householdLocationRepository.findByEmployerId(employer.getId());
-        HouseholdLocation location = existing.isEmpty() ? new HouseholdLocation() : existing.get(0);
+        HouseholdLocation location = null;
+        if (request.getHouseholdId() != null) {
+            location = householdLocationRepository.findById(request.getHouseholdId())
+                    .filter(h -> h.getEmployer().getId().equals(employer.getId()))
+                    .orElse(null);
+        }
+
+        if (location == null) {
+            // Find existing property by house name or instantiate new property without destroying other properties
+            List<HouseholdLocation> existing = householdLocationRepository.findByEmployerId(employer.getId());
+            location = existing.stream()
+                    .filter(h -> h.getHouseName() != null && h.getHouseName().equalsIgnoreCase(request.getHouseName()))
+                    .findFirst()
+                    .orElse(new HouseholdLocation());
+        }
+
         location.setEmployer(employer);
         location.setHouseName(request.getHouseName());
         location.setAddress(request.getAddress());
@@ -66,8 +80,13 @@ public class HouseholdServiceImpl implements HouseholdService {
 
         HouseholdLocation savedLocation = householdLocationRepository.save(location);
 
-        // Configure default or provided shift schedules
+        // Configure shift schedules: replace prior shifts to prevent unbounded duplication
         if (request.getShifts() != null && !request.getShifts().isEmpty()) {
+            List<ShiftSchedule> existingShifts = shiftScheduleRepository.findByHouseholdLocationId(savedLocation.getId());
+            if (!existingShifts.isEmpty()) {
+                shiftScheduleRepository.deleteAll(existingShifts);
+            }
+
             for (HouseholdSetupRequestDto.ShiftDto shiftDto : request.getShifts()) {
                 ShiftSchedule shift = new ShiftSchedule();
                 shift.setHouseholdLocation(savedLocation);

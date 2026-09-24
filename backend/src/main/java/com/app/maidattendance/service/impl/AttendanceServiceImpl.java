@@ -111,13 +111,14 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (isMock) {
             log.warn("[SECURITY FLAG] Mock location detected during check-in for maid ID {} at household ID {}",
                     maid.getId(), household.getId());
+            throw new GeofenceValidationException("Check-in rejected: Fake GPS / Mock location spoofing detected. Anti-spoofing policy violated.");
         }
 
         // 7. Determine Shift & Timing Status with Clock Drift Guard
         LocalDateTime deviceTime = request.getDeviceTimestamp();
         LocalDateTime serverNow = LocalDateTime.now();
-        if (deviceTime == null || Math.abs(java.time.Duration.between(deviceTime, serverNow).toMinutes()) > 15) {
-            log.warn("[SECURITY FLAG] Device timestamp drift detected (Device: {}, Server: {}). Normalizing to server time.",
+        if (deviceTime == null || deviceTime.isAfter(serverNow.plusMinutes(15))) {
+            log.warn("[SECURITY FLAG] Invalid or future device timestamp drift detected (Device: {}, Server: {}). Normalizing to server time.",
                     deviceTime, serverNow);
             deviceTime = serverNow;
         }
@@ -176,7 +177,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         logEntity.setStatus(status);
         logEntity.setEntryType(AttendanceLog.EntryType.AUTOMATED_GEOFENCE);
         logEntity.setDeviceTimestamp(deviceTime);
-        logEntity.setIsMockLocation(isMock);
+        logEntity.setIsMockLocation(false);
 
         AttendanceLog saved = attendanceLogRepository.save(logEntity);
 
@@ -225,19 +226,43 @@ public class AttendanceServiceImpl implements AttendanceService {
         HouseholdLocation household = householdLocationRepository.findById(request.getHouseholdId())
                 .orElseThrow(() -> new ResourceNotFoundException("Household location not found with ID: " + request.getHouseholdId()));
 
-        LocalDate attendanceDate = request.getDeviceTimestamp().toLocalDate();
+        // Anti-Spoofing Check for Checkout
+        if (Boolean.TRUE.equals(request.getIsMockLocation())) {
+            log.warn("[SECURITY FLAG] Mock location detected during check-out for maid ID {} at household ID {}",
+                    maid.getId(), household.getId());
+            throw new GeofenceValidationException("Check-out rejected: Fake GPS / Mock location spoofing detected.");
+        }
+
+        // Clock Drift Guard & Null Fallback for Checkout
+        LocalDateTime deviceTime = request.getDeviceTimestamp();
+        LocalDateTime serverNow = LocalDateTime.now();
+        if (deviceTime == null || deviceTime.isAfter(serverNow.plusMinutes(15))) {
+            log.warn("[SECURITY FLAG] Invalid or future checkout device timestamp drift detected. Normalizing to server time.");
+            deviceTime = serverNow;
+        }
+
+        LocalDate attendanceDate = deviceTime.toLocalDate();
 
         AttendanceLog logEntity = attendanceLogRepository
                 .findFirstByMaidIdAndHouseholdLocationIdAndAttendanceDateOrderByCheckInTimeDesc(
                         maid.getId(), household.getId(), attendanceDate)
                 .orElseThrow(() -> new IllegalStateException("Cannot check-out: No check-in record found for today (" + attendanceDate + ")"));
 
-        LocalTime checkOutTime = request.getDeviceTimestamp().toLocalTime();
+        // Idempotency Guard: Prevent duplicate check-out from overwriting recorded departure time
+        if (logEntity.getCheckOutTime() != null) {
+            log.info("Check-out already finalized today for maid {} at {}: {}", maid.getId(), household.getId(), logEntity.getCheckOutTime());
+            return mapToDto(logEntity);
+        }
+
+        LocalTime checkOutTime = deviceTime.toLocalTime();
         logEntity.setCheckOutTime(checkOutTime);
 
         String durationStr = "N/A";
         if (logEntity.getCheckInTime() != null) {
             long minutesWorked = java.time.Duration.between(logEntity.getCheckInTime(), checkOutTime).toMinutes();
+            if (minutesWorked < 0) {
+                minutesWorked += 24 * 60; // Safe cross-midnight calculation
+            }
             long hours = minutesWorked / 60;
             long mins = minutesWorked % 60;
             durationStr = (hours > 0 ? hours + "h " : "") + mins + "m";

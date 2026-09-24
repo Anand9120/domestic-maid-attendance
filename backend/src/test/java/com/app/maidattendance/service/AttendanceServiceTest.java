@@ -222,4 +222,27 @@ class AttendanceServiceTest {
         assertEquals(LocalTime.of(9, 30), result.getCheckOutTime());
         verify(fcmNotificationService, times(1)).sendPushNotification(eq(1L), contains("Maid Departed"), anyString(), anyMap());
     }
+
+    @Test
+    @DisplayName("Should strictly reject check-in when mock location or Fake GPS is detected")
+    void testCheckInRejectedWhenMockLocationDetected() {
+        CheckInRequestDto request = new CheckInRequestDto(
+                2L, 1L, 1L,
+                new BigDecimal("28.6315500"), new BigDecimal("77.2167200"),
+                LocalDateTime.now(),
+                true, // Mock location flagged by hardware sensors
+                180
+        );
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(maid));
+        when(householdLocationRepository.findById(1L)).thenReturn(Optional.of(household));
+        when(assignmentRepository.findByMaidIdAndHouseholdLocationId(2L, 1L)).thenReturn(Optional.of(assignment));
+        when(geofenceValidationService.calculateDistanceMeters(any(), any(), any(), any())).thenReturn(10.0);
+
+        GeofenceValidationException ex = assertThrows(GeofenceValidationException.class, 
+                () -> attendanceService.recordCheckIn(request));
+        assertTrue(ex.getMessage().contains("Fake GPS / Mock location spoofing detected"));
+        verify(attendanceLogRepository, never()).save(any());
+    }
 }
+

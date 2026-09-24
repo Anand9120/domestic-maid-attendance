@@ -87,10 +87,14 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   Future<void> _initTracker() async {
     await _tracker.startTracking(
       onCheckIn: (pos, dwell, household) {
-        final maidId = widget.user.role == UserRole.employer ? 2 : widget.user.id;
+        // Only domestic maids record automated check-in via hardware geofence!
+        // Employers observing their dashboard should NEVER auto-check-in for their maids!
+        if (widget.user.role == UserRole.employer) {
+          return;
+        }
         context.read<AttendanceBloc>().add(
               CheckInEventTriggered(
-                maidId: maidId,
+                maidId: widget.user.id,
                 householdId: household.id,
                 latitude: pos.latitude,
                 longitude: pos.longitude,
@@ -101,10 +105,13 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             );
       },
       onCheckOut: (pos, household) {
-        final maidId = widget.user.role == UserRole.employer ? 2 : widget.user.id;
+        // Only domestic maids record automated check-out via hardware geofence!
+        if (widget.user.role == UserRole.employer) {
+          return;
+        }
         context.read<AttendanceBloc>().add(
               CheckOutEventTriggered(
-                maidId: maidId,
+                maidId: widget.user.id,
                 householdId: household.id,
                 latitude: pos.latitude,
                 longitude: pos.longitude,
@@ -203,21 +210,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             duration: _computeDuration(inTime, outTime),
           );
         } else if (inTime != null) {
-          try {
-            final parts = inTime.split(':').map(int.parse).toList();
-            final now = DateTime.now();
-            final checkInDate = DateTime(
-              now.year,
-              now.month,
-              now.day,
-              parts[0],
-              parts[1],
-              parts.length > 2 ? parts[2] : 0,
-            );
-            _tracker.markCheckedIn(householdId: hid, time: inTime, checkInDateTime: checkInDate);
-          } catch (_) {
-            _tracker.markCheckedIn(householdId: hid, time: inTime);
-          }
+          final checkInDate = _parseCheckInDateTime(inTime);
+          _tracker.markCheckedIn(householdId: hid, time: inTime, checkInDateTime: checkInDate);
         }
       }
     } catch (_) {
@@ -225,14 +219,52 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
     }
   }
 
+  DateTime? _parseCheckInDateTime(String inTime) {
+    try {
+      final trimmed = inTime.trim().toUpperCase();
+      final isPM = trimmed.endsWith('PM');
+      final isAM = trimmed.endsWith('AM');
+      final clean = trimmed.replaceAll('AM', '').replaceAll('PM', '').trim();
+      final parts = clean.split(':').map((s) => int.tryParse(s) ?? 0).toList();
+      if (parts.isEmpty) return null;
+      int hours = parts[0];
+      int minutes = parts.length > 1 ? parts[1] : 0;
+      int seconds = parts.length > 2 ? parts[2] : 0;
+      if (isPM && hours < 12) hours += 12;
+      if (isAM && hours == 12) hours = 0;
+      final now = DateTime.now();
+      return DateTime(now.year, now.month, now.day, hours, minutes, seconds);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  int? _parseTimeToMinutes(String timeStr) {
+    try {
+      final trimmed = timeStr.trim().toUpperCase();
+      final isPM = trimmed.endsWith('PM');
+      final isAM = trimmed.endsWith('AM');
+      final clean = trimmed.replaceAll('AM', '').replaceAll('PM', '').trim();
+      final parts = clean.split(':').map((s) => int.tryParse(s) ?? 0).toList();
+      if (parts.isEmpty) return null;
+      int hours = parts[0];
+      int minutes = parts.length > 1 ? parts[1] : 0;
+      if (isPM && hours < 12) hours += 12;
+      if (isAM && hours == 12) hours = 0;
+      return hours * 60 + minutes;
+    } catch (_) {
+      return null;
+    }
+  }
 
   String _computeDuration(String? inTime, String? outTime) {
     if (inTime == null || outTime == null) return '';
     try {
-      final inParts = inTime.split(':').map(int.parse).toList();
-      final outParts = outTime.split(':').map(int.parse).toList();
-      int diffMinutes = (outParts[0] * 60 + outParts[1]) - (inParts[0] * 60 + inParts[1]);
-      if (diffMinutes < 0) diffMinutes += 24 * 60;
+      final inMins = _parseTimeToMinutes(inTime);
+      final outMins = _parseTimeToMinutes(outTime);
+      if (inMins == null || outMins == null) return '';
+      int diffMinutes = outMins - inMins;
+      if (diffMinutes < 0) diffMinutes += 24 * 60; // Safe cross-midnight calculation
       final hrs = diffMinutes ~/ 60;
       final mins = diffMinutes % 60;
       return hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';

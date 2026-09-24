@@ -86,6 +86,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public User updateUserProfile(Long userId, com.app.maidattendance.dto.request.UserProfileUpdateRequestDto request) {
         User user = getUserById(userId);
+
+        // IDOR Protection: Caller can only modify their own profile and banking info
+        org.springframework.security.core.Authentication auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated() && !("anonymousUser".equals(auth.getPrincipal()))) {
+            String principalPhone = auth.getName();
+            if (!user.getPhoneNumber().equals(principalPhone)) {
+                throw new org.springframework.security.access.AccessDeniedException("IDOR Security Violation: You cannot modify another user's profile.");
+            }
+        }
+
         if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
             user.setFullName(request.getFullName().trim());
         }

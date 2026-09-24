@@ -1,3 +1,4 @@
+import '../../../../core/network/network_info.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -5,8 +6,12 @@ import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
+  final NetworkClient? networkClient;
 
-  AuthRepositoryImpl({required this.remoteDataSource});
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    this.networkClient,
+  });
 
   @override
   Future<UserEntity> verifyOtp({
@@ -86,6 +91,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> logout() async {
-    // Clear tokens and cached sessions
+    networkClient?.clearAuthToken();
   }
 }

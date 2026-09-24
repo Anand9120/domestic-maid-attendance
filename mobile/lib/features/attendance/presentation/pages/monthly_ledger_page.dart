@@ -103,13 +103,32 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
     return (month >= 1 && month <= 12) ? months[month - 1] : 'Month $month';
   }
 
+  int? _parseTimeToMinutes(String timeStr) {
+    try {
+      final trimmed = timeStr.trim().toUpperCase();
+      final isPM = trimmed.endsWith('PM');
+      final isAM = trimmed.endsWith('AM');
+      final clean = trimmed.replaceAll('AM', '').replaceAll('PM', '').trim();
+      final parts = clean.split(':').map((s) => int.tryParse(s) ?? 0).toList();
+      if (parts.isEmpty) return null;
+      int hours = parts[0];
+      int minutes = parts.length > 1 ? parts[1] : 0;
+      if (isPM && hours < 12) hours += 12;
+      if (isAM && hours == 12) hours = 0;
+      return hours * 60 + minutes;
+    } catch (_) {
+      return null;
+    }
+  }
+
   String _computeDuration(String? inTime, String? outTime) {
     if (inTime == null || outTime == null) return '';
     try {
-      final inParts = inTime.split(':').map(int.parse).toList();
-      final outParts = outTime.split(':').map(int.parse).toList();
-      int diffMinutes = (outParts[0] * 60 + outParts[1]) - (inParts[0] * 60 + inParts[1]);
-      if (diffMinutes < 0) diffMinutes += 24 * 60;
+      final inMins = _parseTimeToMinutes(inTime);
+      final outMins = _parseTimeToMinutes(outTime);
+      if (inMins == null || outMins == null) return '';
+      int diffMinutes = outMins - inMins;
+      if (diffMinutes < 0) diffMinutes += 24 * 60; // Safe cross-midnight calculation
       final hrs = diffMinutes ~/ 60;
       final mins = diffMinutes % 60;
       return hrs > 0 ? '${hrs}h ${mins}m' : '${mins}m';

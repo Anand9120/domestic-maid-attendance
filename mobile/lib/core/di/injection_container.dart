@@ -131,7 +131,10 @@ class ServiceLocator {
     salaryLocalDataSource = SalaryLocalDataSourceImpl();
 
     // 3. Repositories
-    authRepository = AuthRepositoryImpl(remoteDataSource: authRemoteDataSource);
+    authRepository = AuthRepositoryImpl(
+      remoteDataSource: authRemoteDataSource,
+      networkClient: networkClient,
+    );
     attendanceRepository = AttendanceRepositoryImpl(
       remoteDataSource: attendanceRemoteDataSource,
       localDataSource: attendanceLocalDataSource,

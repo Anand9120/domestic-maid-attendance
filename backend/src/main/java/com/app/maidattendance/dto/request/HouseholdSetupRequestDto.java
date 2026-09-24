@@ -8,6 +8,8 @@ import java.util.List;
 
 public class HouseholdSetupRequestDto {
 
+    private Long householdId;
+
     @NotNull(message = "Employer ID is required")
     private Long employerId;
 
@@ -60,6 +62,9 @@ public class HouseholdSetupRequestDto {
     }
 
     public HouseholdSetupRequestDto() {}
+
+    public Long getHouseholdId() { return householdId; }
+    public void setHouseholdId(Long householdId) { this.householdId = householdId; }
 
     public Long getEmployerId() { return employerId; }
     public void setEmployerId(Long employerId) { this.employerId = employerId; }

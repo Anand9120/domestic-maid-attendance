@@ -89,13 +89,27 @@ public class ReportServiceImpl implements ReportService {
             }
         }
 
-        // Unrecorded working days count towards absent count
         int attendedDays = presentCount + lateCount;
-        int unrecordedWorkingDays = Math.max(0, workingDays - (attendedDays + halfDayCount + absentCount));
+
+        // Determine elapsed working days for ongoing month to avoid penalizing upcoming dates
+        YearMonth currentYearMonth = YearMonth.now();
+        int evalWorkingDays = workingDays;
+        if (yearMonth.equals(currentYearMonth) && LocalDate.now().getDayOfMonth() < totalDaysInMonth) {
+            int elapsedWorkingDays = 0;
+            for (int d = 1; d <= LocalDate.now().getDayOfMonth(); d++) {
+                if (yearMonth.atDay(d).getDayOfWeek().getValue() != 7) {
+                    elapsedWorkingDays++;
+                }
+            }
+            evalWorkingDays = Math.max(attendedDays + halfDayCount + absentCount, Math.max(1, elapsedWorkingDays));
+        }
+
+        // Unrecorded working days up to active evaluation horizon count towards absent count
+        int unrecordedWorkingDays = Math.max(0, evalWorkingDays - (attendedDays + halfDayCount + absentCount));
         absentCount += unrecordedWorkingDays;
 
         double weightedAttendance = attendedDays + (halfDayCount * 0.5);
-        double attendancePercent = workingDays > 0 ? Math.min(100.0, (weightedAttendance / workingDays) * 100.0) : 0.0;
+        double attendancePercent = evalWorkingDays > 0 ? Math.min(100.0, (weightedAttendance / evalWorkingDays) * 100.0) : 0.0;
         double salaryDeductionUnits = absentCount + (halfDayCount * 0.5);
 
         MonthlyReportSummaryDto dto = new MonthlyReportSummaryDto();
