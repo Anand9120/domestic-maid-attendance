@@ -93,7 +93,7 @@ class SalarySettlementServiceTest {
             logs.add(log);
         }
         when(attendanceLogRepository.findMonthlyLogsForMaid(eq(2L), any(), any())).thenReturn(logs);
-        when(salarySettlementRepository.findByMaidIdAndYearAndMonth(2L, 2026, 9)).thenReturn(Optional.empty());
+        when(salarySettlementRepository.findByMaidIdAndHouseholdIdAndYearAndMonth(2L, 1L, 2026, 9)).thenReturn(Optional.empty());
 
         SalaryCalculationResponseDto result = salarySettlementService.calculateSalary(2L, 1L, 2026, 9);
 
@@ -125,7 +125,7 @@ class SalarySettlementServiceTest {
         when(userRepository.findById(2L)).thenReturn(Optional.of(maid));
         when(householdLocationRepository.findById(1L)).thenReturn(Optional.of(household));
         when(attendanceLogRepository.findMonthlyLogsForMaid(eq(2L), any(), any())).thenReturn(List.of());
-        when(salarySettlementRepository.findByMaidIdAndYearAndMonth(2L, 2026, 9)).thenReturn(Optional.empty());
+        when(salarySettlementRepository.findByMaidIdAndHouseholdIdAndYearAndMonth(2L, 1L, 2026, 9)).thenReturn(Optional.empty());
 
         when(salarySettlementRepository.save(any(SalarySettlement.class))).thenAnswer(inv -> {
             SalarySettlement s = inv.getArgument(0);
@@ -161,4 +161,32 @@ class SalarySettlementServiceTest {
         verify(fcmNotificationService, times(1)).sendPushNotification(
                 eq(1L), contains("वेतन भुगतान सफल"), anyString(), anyMap());
     }
+
+    @Test
+    @DisplayName("calculateSalary should maintain isolation between multiple employers for same maid in same month")
+    void testMultiHouseholdSettlementIsolation() {
+        HouseholdLocation household2 = new HouseholdLocation(
+                2L, new User(3L, "Rahul Verma", "+919876543299", User.Role.EMPLOYER, true),
+                "Verma Residence - Flat 101", "A-Block",
+                new BigDecimal("28.6320"), new BigDecimal("77.2170"), 50, 3,
+                "VERMA101", new BigDecimal("7000.00"), 3
+        );
+
+        when(userRepository.findById(2L)).thenReturn(Optional.of(maid));
+        when(householdLocationRepository.findById(2L)).thenReturn(Optional.of(household2));
+        when(attendanceLogRepository.findMonthlyLogsForMaid(eq(2L), any(), any())).thenReturn(List.of());
+
+        // Household 2 has NOT settled yet (even if household 1 might have)
+        when(salarySettlementRepository.findByMaidIdAndHouseholdIdAndYearAndMonth(2L, 2L, 2026, 9))
+                .thenReturn(Optional.empty());
+
+        SalaryCalculationResponseDto result = salarySettlementService.calculateSalary(2L, 2L, 2026, 9);
+
+        assertNotNull(result);
+        assertEquals(2L, result.getHouseholdId());
+        assertEquals("Verma Residence - Flat 101", result.getHouseName());
+        assertFalse(result.getIsAlreadySettled());
+        assertEquals(new BigDecimal("7000.00"), result.getMonthlyBaseSalary());
+    }
 }
+

@@ -144,5 +144,77 @@ void main() {
       expect(controller.hasCheckedInToday, true);
       expect(controller.checkInTimeString, '07:35 AM');
     });
+
+    test('rejects degraded GPS accuracy fixes (> 40.0m) to prevent cell-tower jitter', () {
+      controller.setAssignedHouseholds([home1]);
+
+      // Position inside geofence but with bad accuracy (85m)
+      final badAccuracyPos = Position(
+        latitude: home1.latitude,
+        longitude: home1.longitude,
+        timestamp: DateTime.now(),
+        accuracy: 85.0,
+        altitude: 10.0,
+        heading: 0.0,
+        speed: 0.0,
+        speedAccuracy: 0.0,
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
+        isMocked: false,
+      );
+
+      controller.evaluatePositionForTesting(badAccuracyPos);
+
+      // Should not trigger inside geofence
+      expect(controller.isInsideGeofence, false);
+      expect(controller.gpsStatusInfo, contains('GPS Signal Weak'));
+    });
+
+    test('pauses and resets geofence dwell when vehicular speed (> 3.0 m/s) is detected', () {
+      controller.setAssignedHouseholds([home1]);
+
+      // Position inside geofence but driving in a vehicle (speed = 8.0 m/s ~ 28.8 km/h)
+      final vehiclePos = Position(
+        latitude: home1.latitude,
+        longitude: home1.longitude,
+        timestamp: DateTime.now(),
+        accuracy: 10.0,
+        altitude: 10.0,
+        heading: 0.0,
+        speed: 8.0,
+        speedAccuracy: 0.0,
+        altitudeAccuracy: 0.0,
+        headingAccuracy: 0.0,
+        isMocked: false,
+      );
+
+      controller.evaluatePositionForTesting(vehiclePos);
+
+      // Should not start dwell or mark inside
+      expect(controller.dwellCountdown, 0);
+      expect(controller.gpsStatusInfo, contains('Vehicular speed detected'));
+    });
+
+    test('supports 2 shifts per day (Morning + Evening) by resetting checkout on re-entry', () {
+      controller.setAssignedHouseholds([home1]);
+
+      // 1. Morning Shift Check-in & Check-out
+      controller.markCheckedIn(householdId: 1, time: '08:00 AM');
+      expect(controller.hasCheckedInToday, true);
+      expect(controller.isCheckedOutToday, false);
+
+      controller.markCheckedOut(householdId: 1, time: '10:00 AM', duration: '2h 0m');
+      expect(controller.isCheckedOutToday, true);
+
+      // 2. Evening Shift: Maid returns inside the geofence at 6:00 PM
+      final eveningPos = createPosition(latitude: home1.latitude, longitude: home1.longitude);
+      controller.evaluatePositionForTesting(eveningPos);
+
+      // Checkout flag should be cleared to allow evening shift verification
+      expect(controller.isCheckedOutToday, false);
+      expect(controller.isInsideGeofence, true);
+      expect(controller.status, TrackingStatus.dwelling);
+    });
   });
 }
+

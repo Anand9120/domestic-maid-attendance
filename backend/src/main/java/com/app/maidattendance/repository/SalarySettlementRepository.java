@@ -17,6 +17,13 @@ public interface SalarySettlementRepository extends JpaRepository<SalarySettleme
                                                            @Param("year") int year, 
                                                            @Param("month") int month);
 
+    @Query("SELECT s FROM SalarySettlement s WHERE s.maid.id = :maidId AND s.household.id = :householdId AND s.payoutYear = :year AND s.payoutMonth = :month")
+    Optional<SalarySettlement> findByMaidIdAndHouseholdIdAndYearAndMonth(
+            @Param("maidId") Long maidId,
+            @Param("householdId") Long householdId,
+            @Param("year") int year, 
+            @Param("month") int month);
+
     @Query("SELECT s FROM SalarySettlement s WHERE s.maid.id = :maidId ORDER BY s.settledAt DESC")
     List<SalarySettlement> findByMaidIdOrderBySettledAtDesc(@Param("maidId") Long maidId);
 

@@ -149,9 +149,9 @@ public class SalarySettlementServiceImpl implements SalarySettlementService {
         dto.setDeductionAmount(deductionAmount);
         dto.setNetPayableSalary(netPayable.setScale(2, RoundingMode.HALF_UP));
 
-        // Check if settlement already exists
+        // Check if settlement already exists for this specific household
         Optional<SalarySettlement> existingSettlement = salarySettlementRepository
-                .findByMaidIdAndYearAndMonth(maidId, year, month);
+                .findByMaidIdAndHouseholdIdAndYearAndMonth(maidId, householdId, year, month);
         if (existingSettlement.isPresent()) {
             SalarySettlement s = existingSettlement.get();
             dto.setIsAlreadySettled(true);
@@ -180,9 +180,9 @@ public class SalarySettlementServiceImpl implements SalarySettlementService {
         SalaryCalculationResponseDto calc = calculateSalary(
                 request.getMaidId(), request.getHouseholdId(), request.getYear(), request.getMonth());
 
-        // Check if already settled
+        // Check if already settled for this household (prevents cross-household overwrite)
         SalarySettlement settlement = salarySettlementRepository
-                .findByMaidIdAndYearAndMonth(request.getMaidId(), request.getYear(), request.getMonth())
+                .findByMaidIdAndHouseholdIdAndYearAndMonth(request.getMaidId(), request.getHouseholdId(), request.getYear(), request.getMonth())
                 .orElse(new SalarySettlement());
 
         settlement.setMaid(maid);

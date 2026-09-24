@@ -60,24 +60,28 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
 
   @override
   Future<int> syncOfflineLogs() async {
-    final queued = await localDataSource.getQueuedOfflineCheckIns();
-    if (queued.isEmpty) return 0;
+    final entries = await localDataSource.getQueuedEntries();
+    if (entries.isEmpty) return 0;
 
     int syncedCount = 0;
-    final remaining = <Map<String, dynamic>>[];
 
-    for (final log in queued) {
+    for (final entry in entries) {
+      final key = entry['key'];
+      final data = entry['data'] as Map<String, dynamic>;
       try {
-        await remoteDataSource.checkIn(log);
+        final action = data['action'] ?? 'CHECK_IN';
+        if (action == 'CHECK_OUT') {
+          await remoteDataSource.checkOut(data);
+        } else {
+          await remoteDataSource.checkIn(data);
+        }
+        // Granular key-based deletion: delete ONLY this synced entry.
+        // Avoids race condition with in-flight check-ins/check-outs added during sync.
+        await localDataSource.removeQueuedEntryByKey(key);
         syncedCount++;
-      } catch (e) {
-        remaining.add(log);
+      } catch (_) {
+        // Retain un-synced entries in Hive for next connection attempt
       }
-    }
-
-    await localDataSource.clearQueue();
-    for (final item in remaining) {
-      await localDataSource.cacheOfflineCheckIn(item);
     }
 
     return syncedCount;
@@ -174,11 +178,15 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
       'longitude': longitude,
       'deviceTimestamp': deviceTimestamp.toIso8601String(),
       'isMockLocation': isMockLocation,
+      'action': 'CHECK_OUT',
     };
 
     try {
       return await remoteDataSource.checkOut(payload);
     } catch (_) {
+      // Buffer offline check-out into Hive so it is synced once connectivity is restored
+      await localDataSource.cacheOfflineCheckOut(payload);
+
       return AttendanceLogEntity(
         maidId: maidId,
         householdId: householdId,
@@ -186,7 +194,7 @@ class AttendanceRepositoryImpl implements AttendanceRepository {
         checkInTime: '08:00 AM',
         checkOutTime: '${deviceTimestamp.hour.toString().padLeft(2, '0')}:${deviceTimestamp.minute.toString().padLeft(2, '0')}',
         status: AttendanceStatus.present,
-        entryType: EntryType.automatedGeofence,
+        entryType: EntryType.offlineSync,
         deviceTimestamp: deviceTimestamp,
         isMockLocation: isMockLocation,
       );

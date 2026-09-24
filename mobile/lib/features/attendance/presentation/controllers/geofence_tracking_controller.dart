@@ -233,6 +233,26 @@ class GeofenceTrackingController extends ChangeNotifier {
     isMockGpsDetected = pos.isMocked;
     isLoadingGps = false;
 
+    // 0. GPS Telemetry Guard 1: Filter degraded GPS accuracy fixes (> 40.0m)
+    // Prevents false geofence triggering caused by cell-tower/Wi-Fi triangulation drift
+    if (pos.accuracy > 40.0) {
+      gpsStatusInfo = 'GPS Signal Weak (±${pos.accuracy.toInt()}m > 40m threshold). Awaiting precise fix...';
+      notifyListeners();
+      return;
+    }
+
+    // 0. GPS Telemetry Guard 2: Filter vehicular movement / traffic jam crawl (> 3.0 m/s = 10.8 km/h)
+    // Prevents false dwell triggers when sitting in traffic or passing by in a bus/auto
+    if (pos.speed > 3.0) {
+      if (_dwellTimer != null && _dwellTimer!.isActive) {
+        _dwellTimer?.cancel();
+        dwellCountdown = 0;
+      }
+      gpsStatusInfo = 'Vehicular speed detected (${(pos.speed * 3.6).toStringAsFixed(1)} km/h). Geofence dwell paused.';
+      notifyListeners();
+      return;
+    }
+
     // 1. Calculate distances to all assigned households
     HouseholdEntity? insideHousehold;
     double minDistance = double.infinity;
@@ -319,6 +339,14 @@ class GeofenceTrackingController extends ChangeNotifier {
     isInsideGeofence = true;
     dwellCountdown = 0;
 
+    // Multi-Shift Support (Morning + Evening):
+    // If maid has already checked out from an earlier shift today,
+    // re-entering the boundary resets the checkout flag to allow Shift 2 dwell verification
+    if (isCheckedOutToday) {
+      _householdCheckedOut[household.id] = false;
+      _householdCheckedIn[household.id] = false;
+    }
+
     onTimelineEventGenerated?.call(
       NotificationEntity(
         userId: household.employerId,
@@ -401,6 +429,7 @@ class GeofenceTrackingController extends ChangeNotifier {
     DateTime? checkInDateTime,
   }) {
     _householdCheckedIn[householdId] = true;
+    _householdCheckedOut[householdId] = false;
     _householdCheckInTimes[householdId] = time;
     startWorkTimer(checkInDateTime ?? DateTime.now());
     notifyListeners();
