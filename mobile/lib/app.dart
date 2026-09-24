@@ -39,7 +39,7 @@ class MaidAttendanceApp extends StatelessWidget {
           return Ux4gTheme(
             isDark: a11y.isHighContrast,
             child: MaterialApp(
-              title: 'Domestic Maid Attendance System (UX4G / GIGW)',
+              title: 'Sahayika (सहायिका) - Domestic Attendance',
               debugShowCheckedModeBanner: false,
               theme: a11y.isHighContrast ? AppTheme.highContrastTheme : AppTheme.lightTheme,
               builder: (context, child) {

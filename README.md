@@ -1,4 +1,10 @@
-# 🏠 Domestic Maid Attendance & Transparent Payroll System
+# 🏠 Sahayika (सहायिका) — Domestic Help Attendance & Transparent Payroll System
+
+<p align="center">
+  <img src="docs/images/sahayika_logo.png" width="130" height="130" alt="Sahayika Logo" style="border-radius: 26px;" /><br/>
+  <b>Sahayika (सहायिका) • Haazri aur Bharosa (हाज़िरी और भरोसा)</b><br/>
+  <i>National e-Governance Standard (UX4G & GIGW 3.0 Compliant Civic-Tech Platform)</i>
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Flutter-3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter" />

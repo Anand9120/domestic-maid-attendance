@@ -90,43 +90,49 @@ class _LoginPageState extends State<LoginPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Civic Portal Header
+                            // Civic Portal Header with Sahayika Logo
                             Center(
                               child: Container(
-                                width: 68,
-                                height: 68,
+                                width: 84,
+                                height: 84,
                                 decoration: BoxDecoration(
-                                  color: isContrast
-                                      ? AppColors.darkPrimary.withOpacity(0.15)
-                                      : AppColors.primary.withOpacity(0.08),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isContrast ? AppColors.darkPrimary : AppColors.primary,
-                                    width: 1.5,
-                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: (isContrast ? AppColors.darkPrimary : AppColors.primary).withOpacity(0.15),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
                                 ),
-                                child: Icon(
-                                  Icons.account_balance_rounded,
-                                  size: 36,
-                                  color: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Image.asset(
+                                    'assets/images/sahayika_logo.png',
+                                    width: 84,
+                                    height: 84,
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                             ),
                             const SizedBox(height: 16),
 
                             Text(
-                              a11y.tr('gov_portal_title'),
+                              'Sahayika | सहायिका',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: isContrast ? Colors.white : AppColors.textPrimary,
+                                color: isContrast ? AppColors.darkTextPrimary : AppColors.textPrimary,
                                 letterSpacing: -0.3,
                               ),
                             ),
-                            const SizedBox(height: 6),
+                            const SizedBox(height: 4),
                             Text(
-                              a11y.tr('zero_touch_desc'),
+                              a11y.isHindi
+                                  ? 'घरेलू सहायिका उपस्थिति एवं पारदर्शी वेतन'
+                                  : 'Domestic Help Attendance & Dignified Payroll',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 13,

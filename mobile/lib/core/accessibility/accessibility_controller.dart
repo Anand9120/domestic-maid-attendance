@@ -46,7 +46,7 @@ class AccessibilityController extends ChangeNotifier {
   }
 
   static const Map<String, String> _englishStrings = {
-    'gov_portal_title': 'Domestic Maid Attendance Tracking System',
+    'gov_portal_title': 'Sahayika | सहायिका - Domestic Attendance',
     'gov_subtitle': 'National e-Governance Standard (UX4G & GIGW 3.0)',
     'maid_dashboard': 'Maid Presence Dashboard',
     'employer_dashboard': 'Employer Dashboard',
@@ -152,7 +152,7 @@ class AccessibilityController extends ChangeNotifier {
   };
 
   static const Map<String, String> _hindiStrings = {
-    'gov_portal_title': 'घरेलू सहायिका उपस्थिति प्रणाली',
+    'gov_portal_title': 'सहायिका (Sahayika) - घरेलू उपस्थिति प्रणाली',
     'gov_subtitle': 'राष्ट्रीय ई-गवर्नेंस मानक (UX4G एवं GIGW 3.0)',
     'maid_dashboard': 'सहायिका उपस्थिति डैशबोर्ड',
     'employer_dashboard': 'नियोक्ता डैशबोर्ड',
