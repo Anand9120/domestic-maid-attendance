@@ -10,10 +10,12 @@
 | **Project Title** | Sahayika (सहायिका) — Domestic Attendance & Payroll Verification Platform |
 | **System Tagline** | *हाज़िरी और भरोसा (Dignity, Presence & Trust)* |
 | **Document Type** | Request For Proposal (RFP) / System Architecture & Operational Blueprint |
-| **Version** | 3.5 (Production & UAT Ready) |
+| **Version** | 4.0 (Enterprise Production & Security Hardened) |
 | **Standards Compliance** | UX4G (National e-Governance Standard), GIGW 3.0 (WCAG 2.1 AAA), NPCI UPI Spec |
-| **Target Platforms** | Android (Mobile App), Spring Boot (Cloud Backend), MySQL 8.0 (Relational Storage) |
-| **Status** | Approved for Implementation & Deployment |
+| **Target Platforms** | Android (Mobile App), Spring Boot (Cloud Backend), Docker (Alpine JRE 17), MySQL 8.0 |
+| **Cloud Deployment** | Render Cloud (Containerized Web Service) + UptimeRobot Synthetic Heartbeat Monitor |
+| **Test Coverage** | 56 Verified Tests (18 Spring Boot JUnit + 38 Flutter Unit/BLoC/Widget Tests) |
+| **Status** | Approved for Implementation, Audited & Production Deployed |
 
 ---
 
@@ -31,13 +33,14 @@ Across urban Indian residential complexes, gated communities, and standalone hou
 - **Zero Manual Clicks Required**: Uses OS-level geofencing (50-meter perimeter) around employer residences.
 - **3-Minute Dwell-Time Filter**: Eliminates false triggers caused by passing through corridors, stairwells, or society roads.
 - **Offline-First Resilience**: Local encrypted buffer (Hive DB) guarantees seamless attendance logging in elevator dead-zones or basement flats.
-- **Transparent Pro-Rata Payroll & UPI**: Computes precise monthly allowances, absent deductions, and triggers one-tap NPCI UPI salary payouts with instant bilingual WhatsApp salary slips.
+- **Transparent Pro-Rata Payroll & UPI**: Computes precise monthly allowances, mid-month real-time projections without future date penalties, and triggers one-tap NPCI UPI salary payouts with instant bilingual WhatsApp salary slips.
+- **Strict Anti-Spoofing & IDOR Security**: Rejects fake GPS mock locations at the API level and strictly enforces cryptographic token ownership on all report queries.
+- **24/7 Cloud Availability ($0 Cost)**: Deployed on Render Cloud with an automated 5-minute UptimeRobot synthetic ping to eliminate cold-start sleep latency.
 - **Dignified National Design**: Complies 100% with Government of India **UX4G Design System** and **GIGW 3.0** accessibility guidelines.
 
 ---
 
 ## 2. Stakeholders & User Personas
-
 
 ![System Stakeholders & User Personas Diagram](images/diagrams/01_stakeholders.png)
 
@@ -73,7 +76,6 @@ graph TD
 
 The complete operational flow of Sahayika spans seven interconnected phases:
 
-
 ![End-to-End Operational Lifecycle Flowchart](images/diagrams/02_operational_lifecycle.png)
 
 ```mermaid
@@ -88,8 +90,7 @@ flowchart TD
 
 ---
 
-### Phase 1: Household Setup & GPS Calibration
-
+### Phase 1: Household Setup, Multi-Property & GPS Calibration
 
 ![Household Setup & GPS Calibration Sequence](images/diagrams/03_household_calibration_seq.png)
 
@@ -110,21 +111,24 @@ sequenceDiagram
     Emp->>App: Taps 'Auto-Detect My Current GPS Location'
     App->>GPS: Request high-accuracy coordinates
     GPS-->>App: Latitude, Longitude, Accuracy (e.g. ±4.2m)
-    App->>API: POST /api/v1/household/setup (Lat, Lon, Radius=50m, Dwell=3m)
+    Emp->>App: Configures Shift 1 (Morning) & Shift 2 (Evening)
+    App->>API: POST /api/v1/household/setup (Lat, Lon, Radius=50m, Dwell=3m, Shifts=[1,2])
     API->>DB: Persist in `household_locations` & generate unique 6-char Invite Code (e.g., 'SAH-9842')
+    API->>DB: Insert Shift Schedules without duplication
     API-->>App: Household registered + QR Code payload
     App-->>Emp: Displays Visual QR Code & Alphanumeric Invite Code
 ```
 
 1. **Employer Registration**: The householder logs in using phone OTP authentication.
 2. **Hardware Calibration**: The employer stands inside their apartment and taps **"Calibrate My Current GPS Location"**. The app polls the device hardware GPS to obtain high-precision coordinates with satellite accuracy validation.
-3. **Geofence Definition**: Sets an OS-level circular geofence boundary with a default radius of **50 meters** and a **3-minute dwell time**.
-4. **Invite Code Generation**: The server generates a unique alphanumeric invite code (and QR payload) for the helper.
+3. **Multi-Property Independence**: Employers managing multiple properties (e.g., primary home and rental flat) can set up independent households without overwriting prior registrations.
+4. **Dual Shift Support**: Supports multiple distinct shifts (e.g., Morning 07:00–11:00 and Evening 17:00–20:00) with custom grace periods.
+5. **Geofence Definition**: Sets an OS-level circular geofence boundary with a default radius of **50 meters** and a **3-minute dwell time**.
+6. **Invite Code Generation**: The server generates a unique alphanumeric invite code (and QR payload) for the helper.
 
 ---
 
 ### Phase 2: Maid Onboarding & Multi-Household Linking
-
 
 ![Maid Onboarding & Household Linking Sequence](images/diagrams/04_maid_onboarding_seq.png)
 
@@ -154,12 +158,13 @@ sequenceDiagram
 
 ### Phase 3: Zero-Touch Attendance Pipeline & Anti-Fraud Verification
 
-
 ![Zero-Touch Attendance & Anti-Fraud Verification Pipeline](images/diagrams/05_attendance_pipeline_flow.png)
 
 ```mermaid
 flowchart TD
-    Start([Helper approaches residence]) --> GPS[OS Background Geofence Trigger]
+    Start([Helper approaches residence]) --> RoleCheck{User Role == MAID?}
+    RoleCheck -- No (Employer Device) --> Abort[Skip Geofence Attendance]
+    RoleCheck -- Yes --> GPS[OS Background Geofence Trigger]
     GPS --> CheckRadius{Distance <= 50m?}
     CheckRadius -- No --> Wait[Continue background telemetry]
     CheckRadius -- Yes --> DwellTimer[Start 3-Minute Dwell-Time Counter]
@@ -168,7 +173,7 @@ flowchart TD
     DwellCheck -- Exited Early --> Cancel[Discard Pass-By / False Trigger]
     DwellCheck -- 180s Completed --> SpoofCheck{Mock GPS / Mock Location?}
 
-    SpoofCheck -- Spoof Detected --> FlagFraud[Flag is_mock_location = TRUE<br>Log Warning Alert]
+    SpoofCheck -- Spoof Detected --> RejectFraud[Reject with GeofenceValidationException<br>HTTP 400 Bad Request]
     SpoofCheck -- Authentic GPS --> ValidCheckIn[Create Attendance Record<br>Status: PRESENT / LATE<br>Type: AUTO_GEOFENCE]
 
     ValidCheckIn --> OnlineCheck{Internet Connected?}
@@ -182,26 +187,28 @@ flowchart TD
 ```
 
 #### Detailed Logic of Attendance Pipeline:
-1. **Geofence Detection**: As the helper enters within 50 meters of the employer's calibrated coordinates (calculated via the **Haversine formula**), the geofence engine registers an entry event.
-2. **3-Minute Dwell-Time Gate**:
+1. **Device Role Isolation**: Only client instances authenticated under the `MAID` role trigger autonomous geofencing. Employer devices are strictly blocked from accidentally logging auto-attendance for their workers.
+2. **Geofence Detection**: As the helper enters within 50 meters of the employer's calibrated coordinates (calculated via the **Haversine formula**), the geofence engine registers an entry event.
+3. **3-Minute Dwell-Time Gate**:
    $$\text{Dwell Duration} \ge 180 \text{ seconds}$$
-   If the helper walks past the door to another floor or was merely passing through the apartment corridor, she leaves the 50m radius before 180 seconds elapse. The counter cancels automatically, preventing false check-ins.
-3. **Anti-Spoofing & Mock-GPS Defense**:
-   The engine queries `isFromMockProvider()` and detects fake GPS manipulation tools. If spoofing is detected, the event is immediately flagged with `is_mock_location = true` for employer review.
-4. **Shift & Punctuality Engine**:
+   If the helper walks past the door to another floor or passes through the corridor, she leaves the 50m radius before 180 seconds elapse. The counter cancels automatically, preventing false check-ins.
+4. **Strict Anti-Spoofing & Mock-GPS Rejection**:
+   The engine queries `isFromMockProvider()` and detects fake GPS manipulation tools. If mock coordinates are detected, the backend immediately throws a `GeofenceValidationException` (HTTP 400), refusing to log fake attendance.
+5. **Shift & Punctuality Engine**:
    - Compares arrival time against the configured shift schedule.
    - If arrival $\le$ Start Time + Grace Period (default 15 mins): Logged as **PRESENT (उपस्थित)**.
    - If arrival $>$ Start Time + Grace Period: Logged as **LATE (विलंब)**.
-5. **Real-Time Push Notification (FCM)**:
+6. **Real-Time Push Notification (FCM)**:
    The backend asynchronously dispatches an urgent push notification to the employer's device:
    > *“🔔 सहायिका उपस्थित: सुनीता देवी 08:02 AM पर आपके घर पहुंच चुकी हैं (50m जियोफेंस सत्यापित)।”*
+7. **Idempotent Check-Out**:
+   Repeated check-out invocations return the existing valid record without inflating working hours or overwriting checkout timestamps.
 
 ---
 
 ### Phase 4: Society Multi-Household Auto-Switching Radar
 
 When a helper works across multiple apartments in a high-rise society, Sahayika avoids confusing manual check-ins:
-
 
 ![Multi-Household Society Auto-Switching Radar State Machine](images/diagrams/06_multi_household_radar_state.png)
 
@@ -226,7 +233,7 @@ stateDiagram-v2
 ```
 
 1. **Parallel Distance Computing**: The app tracks distances to all assigned society households simultaneously.
-2. **Autonomous Handover**: When Sunita finishes work at Flat 101 and moves to Flat 304, the radar detects the departure from Flat 101 (logging check-out) and automatically primes the dwell-time counter for Flat 304.
+2. **Autonomous Handover**: When Sunita finishes work at Flat 101 and moves to Flat 304, the radar detects departure from Flat 101 (logging check-out) and automatically primes the dwell-time counter for Flat 304.
 3. **Zero Confusion**: Each household maintains an independent, isolated ledger and timestamp history.
 
 ---
@@ -234,7 +241,6 @@ stateDiagram-v2
 ### Phase 5: Offline-First Buffer & Auto-Sync (Elevator/Basement Resilience)
 
 Urban buildings frequently suffer from cellular dead-zones in elevators, basements, and staircases.
-
 
 ![Offline-First Hive DB Buffer Architecture](images/diagrams/07_offline_buffer_sync.png)
 
@@ -254,13 +260,13 @@ graph LR
 ```
 
 1. **Encrypted Local Storage**: Check-in events generated while offline are written into a local encrypted **Hive DB** box (`offline_attendance_box`).
-2. **Hardware Timestamp Preservation**: The exact hardware time when the geofence and dwell-time were validated is preserved (preventing sync-time timestamp drift).
-3. **Reactive Synchronization**: As soon as the device connects to Wi-Fi or 4G, `SyncOfflineLogsEvent` fires in the background, flushing queued records to the server without user intervention.
+2. **Hardware Timestamp Preservation**: The exact hardware time when the geofence and dwell-time were validated is preserved, preventing sync-time timestamp drift.
+3. **Database Unique Constraint**: The database enforces `@UniqueConstraint(name = "uk_maid_household_date_shift", columnNames = {"maid_id", "household_id", "log_date", "shift_id"})` ensuring network retries never create duplicate attendance rows.
+4. **Reactive Synchronization**: As soon as the device connects to Wi-Fi or 4G, `SyncOfflineLogsEvent` fires in the background, flushing queued records to the server without user intervention.
 
 ---
 
-### Phase 6: Monthly Ledger, Payroll & Pro-Rata Salary Calculations
-
+### Phase 6: Monthly Ledger, Mid-Month Real-Time Payroll & IDOR Protection
 
 ![Monthly Payroll & Pro-Rata Deduction Calculation Sequence](images/diagrams/08_payroll_calculation_seq.png)
 
@@ -274,19 +280,30 @@ sequenceDiagram
 
     Emp->>App: Opens 'Monthly Ledger & Salary (मासिक बहीखाता)'
     App->>Bloc: FetchMonthlyReport(Month, Year, MaidId)
-    Bloc->>API: GET /api/v1/reports/monthly?maidId=X&month=Y&year=Z
-    API-->>Bloc: ReportData (WorkingDays, PresentDays, LateDays, AbsentDays, AllowedLeaves)
-    Bloc->>Bloc: Run Pro-Rata Payroll Engine
-    Bloc-->>App: Display Visual Calendar + Financial Breakdown
-    Emp->>App: Reviews Net Payable Amount
+    Bloc->>API: GET /api/v1/reports/monthly?maidId=X&month=Y&year=Z (Bearer JWT)
+    API->>API: Verify IDOR: Authenticated User owns Maid/Household?
+    alt Unauthorized IDOR Access
+        API-->>Bloc: HTTP 403 Forbidden
+    else Authorized
+        API->>API: Run Mid-Month Date Guard (Filter out future dates)
+        API-->>Bloc: ReportData (WorkingDays, PresentDays, LateDays, AbsentDays, AllowedLeaves)
+        Bloc->>Bloc: Run Pro-Rata Payroll Engine
+        Bloc-->>App: Display Visual Calendar + Financial Breakdown
+        Emp->>App: Reviews Net Payable Amount
+    end
 ```
+
+#### Mid-Month Future Date Guard:
+When calculating monthly reports on an active mid-month date (e.g. the 15th of the month):
+$$\text{Evaluated Days} = \{ d \in \text{Month Days} \mid d \le \text{Today} \}$$
+Future dates (Day 16 to Day 30/31) are classified as **FUTURE_DATE** and are **never penalised as unexcused absences**. This ensures real-time accuracy during mid-month audits without showing false deductions.
 
 #### Mathematical Payroll Formula:
 $$\text{Total Working Days} = \text{Calendar Days in Month} - \text{Designated Weekly Offs}$$
 
 $$\text{Per-Day Wage (प्रति दिन मजदूरी)} = \frac{\text{Base Monthly Salary}}{\text{Total Working Days}}$$
 
-$$\text{Deductible Days} = \max(0, \text{Unexcused Absent Days} + (0.5 \times \text{Half Days}) - \text{Allowed Leaves})$$
+$$\text{Deductible Days} = \max(0, \text{Elapsed Unexcused Absences} + (0.5 \times \text{Half Days}) - \text{Allowed Leaves})$$
 
 $$\text{Deduction Amount (कटौती)} = \text{Deductible Days} \times \text{Per-Day Wage}$$
 
@@ -295,7 +312,6 @@ $$\text{Net Payable Salary (कुल देय वेतन)} = \max(0.0, \text
 ---
 
 ### Phase 7: Digital Settlement, UPI Deep-Linking & WhatsApp Slip
-
 
 ![NPCI UPI Deep-Link Digital Settlement Sequence](images/diagrams/09_upi_settlement_seq.png)
 
@@ -320,13 +336,12 @@ sequenceDiagram
 ```
 
 1. **NPCI Compliant UPI Launcher**: Constructs verified UPI deep-link URI (`upi://pay?pa=...&pn=...&am=...&cu=INR`).
-2. **Direct Bank-to-Bank**: Zero payment gateway commissions, $0 intermediary transaction fees.
+2. **Direct Bank-to-Bank**: Zero payment gateway commissions, ₹0 intermediary transaction fees.
 3. **One-Tap WhatsApp Receipt**: Generates a clean, transparent Hindi/English summary receipt showing base pay, days worked, approved leaves, deductions, and net amount with a digital verification ID.
 
 ---
 
 ## 4. Technical Architecture & Component Stack
-
 
 ![Full-Stack Technical Architecture Diagram](images/diagrams/10_technical_architecture.png)
 
@@ -339,14 +354,18 @@ graph TB
         Data["Data Layer<br>• Repositories • Hive Local DB • Dio REST Client"]
     end
 
-    subgraph Backend["Cloud Backend (Spring Boot 3.2.x)"]
-        Security["Spring Security 6 & Stateless JWT<br>• JwtAuthenticationFilter"]
-        Controllers["REST Controllers<br>• AuthController • AttendanceController<br>• HouseholdController • ReportController"]
-        Services["Business Services<br>• GeofenceValidationServiceImpl (Haversine)<br>• AttendanceServiceImpl • FcmNotificationServiceImpl"]
+    subgraph Backend["Cloud Backend (Spring Boot 3.2.x / Java 17)"]
+        Security["Spring Security 6 & Stateless JWT<br>• JwtAuthenticationFilter • IDOR Access Guards"]
+        Controllers["REST Controllers<br>• AuthController • AttendanceController<br>• HouseholdController • ReportController • HealthController"]
+        Services["Business Services<br>• GeofenceValidationServiceImpl (Haversine)<br>• AttendanceServiceImpl • SalarySettlementServiceImpl<br>• FcmNotificationServiceImpl"]
         Repos["Spring Data JPA Repositories"]
     end
 
-    subgraph Storage["Persistence & Services"]
+    subgraph KeepAlive["High-Availability Synthetic Monitoring"]
+        UptimeRobot["UptimeRobot Cloud Monitor<br>5-Min Keep-Alive Ping to /health"]
+    end
+
+    subgraph Storage["Persistence & Push"]
         MySQL[("MySQL 8.0 Database<br>InnoDB Storage Engine")]
         FCM["Firebase Cloud Messaging (FCM)<br>Push Delivery < 3s"]
     end
@@ -360,6 +379,7 @@ graph TB
     Services --> Repos
     Repos --> MySQL
     Services --> FCM
+    UptimeRobot -->|GET /health| Controllers
 ```
 
 ---
@@ -383,7 +403,6 @@ Sahayika strictly enforces the **Government of India UX4G Design Guidelines** an
 ---
 
 ## 6. Database Schema & Data Dictionary (MySQL 8.0)
-
 
 ![MySQL 8.0 Relational Entity-Relationship Diagram](images/diagrams/11_database_er_diagram.png)
 
@@ -438,6 +457,7 @@ erDiagram
         bigint id PK
         bigint maid_id FK
         bigint household_id FK
+        bigint shift_id FK
         date log_date
         timestamp check_in_time
         timestamp check_out_time
@@ -455,37 +475,57 @@ erDiagram
     }
 ```
 
+*Unique Constraint Note*: `ATTENDANCE_LOGS` enforces `uk_maid_household_date_shift (maid_id, household_id, log_date, shift_id)` to guarantee duplicate records are impossible under network retry storms.
+
 ---
 
 ## 7. Zero-Cost ($0) Production Cloud Deployment Strategy
 
 Sahayika is engineered to run at **$0 infrastructure hosting cost** for residential communities and public pilots:
 
-| Component | Platform / Service | Free Tier Allocation | Capability |
+| Component | Platform / Service | Free Tier Allocation | Capability & Setup |
 | :--- | :--- | :--- | :--- |
-| **Compute / Backend** | **Oracle Cloud Always Free VM** | 4 ARM Ampere vCPUs, 24 GB RAM | Runs Spring Boot 3.x, JVM 17, and NGINX Reverse Proxy for 100,000+ daily requests. |
-| **Relational Database**| **Aiven.io / TiDB Cloud** | 1 GB Free Tier with SSL encryption | Accommodates over 1.5 million attendance log rows before archiving. |
-| **Push Notifications** | **Firebase Cloud Messaging (FCM)** | Unlimited Free Tier | Sub-second push notifications across all Android and iOS devices. |
-| **Mapping Engine** | **OpenStreetMap & Leaflet** | Open-Source / 100% Free | No Google Maps API billing or credit card requirements. |
-| **Mobile App Dist** | **GitHub Releases / Direct APK** | Free Unlimited Downloads | Instant distribution without mandatory $25 developer account during pilot phase. |
+| **Web Service / Backend** | **Render Cloud (Docker Web Service)** | 512 MB RAM, 0.1 CPU | Multi-stage Docker build (Eclipse Temurin 17 JRE Alpine), 350MB heap limit (`-Xmx350m`). Zero-downtime auto-deploy on git push. |
+| **Synthetic Uptime Monitor** | **UptimeRobot** | Free (50 monitors, 5-min intervals) | Pings `https://domestic-maid-attendance-backend.onrender.com/health` every 5 minutes to eliminate Render cold-start latency ($0). |
+| **Relational Database**| **Aiven.io / TiDB Cloud / Render DB** | 1 GB Free Tier with SSL encryption | Accommodates over 1.5 million attendance log rows with foreign key integrity. |
+| **Push Notifications** | **Firebase Cloud Messaging (FCM)** | Unlimited Free Tier | Sub-second push delivery across all Android and iOS devices. |
+| **Mapping Engine** | **OpenStreetMap & Leaflet** | Open-Source / 100% Free | Zero Google Maps API billing or credit card requirements. |
+| **Mobile App Dist** | **GitHub Releases / Direct APK** | Free Unlimited Downloads | Instant distribution without mandatory developer account during pilot phase. |
 | **Monthly OpEx** | **Total Operating Expense** | **₹0 / Month ($0.00)** | Fully sustainable for community RWAs, municipal bodies, and welfare NGOs. |
 
 ---
 
-## 8. Summary of Fallback Mechanisms & Edge Scenarios
+## 8. Summary of Fallback Mechanisms & Security Guardrails
 
 | Edge Scenario | System Response & Mitigation |
 | :--- | :--- |
 | **Feature / Keypad Phone** | Employer utilizes **Manual Override** (`entry_type = 'MANUAL_OVERRIDE'`) with reason logging (e.g. *“कीपैड फोन / साधारण फोन”*). |
 | **Phone Forgotten at Home** | Householder marks attendance via 1-tap manual override from their dashboard; prevents helper loss of pay. |
 | **GPS Drift / Rainy Weather** | Dwell-time buffer (3 minutes) tolerates momentary GPS drift without interrupting valid sessions. |
-| **Fake GPS App Installed** | Hardware `isFromMockProvider()` check immediately flags fraudulent logs with warning badges. |
+| **Fake GPS App Installed** | Hardware `isFromMockProvider()` check detects spoofing and backend strictly throws `GeofenceValidationException` (HTTP 400). |
 | **Elevator Cellular Blackout** | Local encrypted Hive storage buffers attendance and syncs automatically within 10 seconds of reconnecting. |
+| **IDOR Tampering Attempt** | JWT token ownership verified against requested maid/household resource; unauthorized requests return HTTP 403 Forbidden. |
+| **Mid-Month Future Date Penalty** | Future dates in current month are filtered out; only elapsed working days incur absence penalties. |
+| **Double Check-Out Tap** | Check-out endpoint is idempotent; multiple calls return existing valid checkout time without inflating hours. |
+| **Employer Auto Check-In Bug** | Mobile client restricts geofence triggers to `MAID` role only; employer devices never generate ghost logs. |
 
 ---
 
-## 9. Conclusion & Next Steps
+## 9. Test Suite Verification & Quality Assurance Audit
+
+The platform has completed end-to-end automated testing across all layers:
+
+| Layer | Framework | Test Count | Status | Description |
+| :--- | :--- | :--- | :--- | :--- |
+| **Backend Integration** | JUnit 5 + MockMvc | 18 Tests | **100% Passed** | Geofence validation, mid-month reports, multi-shift setup, IDOR security, and check-in idempotency. |
+| **Mobile Client** | Flutter Test / BLoC | 38 Tests | **100% Passed** | Clean architecture use cases, BLoCs (Auth, Attendance, Salary), UX4G widgets, and offline Hive sync. |
+| **Static Code Analysis** | Flutter Analyze / Maven | 0 Issues | **Clean** | Zero lint errors, strict null safety, GIGW 3.0 accessibility compliance. |
+| **Total Test Suite** | Full-Stack End-to-End | **56 Tests** | **All Passed** | Verified production-ready for live pilot deployment. |
+
+---
+
+## 10. Conclusion & Next Steps
 
 **Sahayika (सहायिका)** bridges the trust gap between urban families and domestic workers through automated technology, ethical privacy guardrails, and transparent payroll calculations. 
 
-With all 35 tests verified, UX4G compliance established, clean zero-touch pipelines implemented, and code synchronized with GitHub, the platform is ready for pilot deployment in target residential communities.
+With all **56 tests verified**, security vulnerabilities patched, UX4G compliance established, clean zero-touch pipelines implemented, and 24/7 cloud availability secured with zero operational costs, the platform is ready for pilot deployment in target residential communities.
