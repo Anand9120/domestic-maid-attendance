@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/form_validators.dart';
 
 class PhoneInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -16,9 +17,13 @@ class PhoneInputField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.phone,
+      maxLength: 10,
+      inputFormatters: FormValidators.phoneFormatters,
+      validator: (val) => FormValidators.validateIndianPhoneNumber(val),
       decoration: InputDecoration(
         labelText: 'Mobile Number',
-        hintText: '+91 98765 43210',
+        hintText: '9876543210',
+        counterText: '',
         errorText: errorText,
         prefixIcon: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 14),

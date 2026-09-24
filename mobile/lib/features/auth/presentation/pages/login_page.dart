@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/auth_bloc.dart';
@@ -23,17 +24,72 @@ class _LoginPageState extends State<LoginPage> {
   String _phone = '';
   String _name = '';
   UserRole _selectedRole = UserRole.maid;
+  String? _phoneError;
+  String? _nameError;
+
+  void _validatePhone(String val) {
+    setState(() {
+      _phone = val;
+      if (_phone.isNotEmpty) {
+        _phoneError = FormValidators.validateIndianPhoneNumber(
+          _phone,
+          isHindi: AccessibilityController.instance.isHindi,
+        );
+      } else {
+        _phoneError = null;
+      }
+    });
+  }
+
+  void _validateName(String val) {
+    setState(() {
+      _name = val;
+      if (_name.isNotEmpty) {
+        _nameError = FormValidators.validateFullName(
+          _name,
+          label: AccessibilityController.instance.tr('full_name'),
+          isHindi: AccessibilityController.instance.isHindi,
+        );
+      } else {
+        _nameError = null;
+      }
+    });
+  }
 
   void _onGetOtpPressed() {
-    final cleanPhone = _phone.trim();
-    if (cleanPhone.isEmpty || cleanPhone.length < 10) {
+    final a11y = AccessibilityController.instance;
+    final nameErr = FormValidators.validateFullName(
+      _name,
+      label: a11y.tr('full_name'),
+      isHindi: a11y.isHindi,
+    );
+    final phoneErr = FormValidators.validateIndianPhoneNumber(
+      _phone,
+      isHindi: a11y.isHindi,
+    );
+
+    if (nameErr != null || phoneErr != null) {
+      setState(() {
+        _nameError = nameErr;
+        _phoneError = phoneErr;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid 10-digit mobile number')),
+        SnackBar(
+          content: Text(nameErr ?? phoneErr!),
+          backgroundColor: AppColors.absent,
+        ),
       );
       return;
     }
 
-    final formattedPhone = cleanPhone.startsWith('+') ? cleanPhone : '+91$cleanPhone';
+    final cleanPhone = _phone.trim().replaceAll(RegExp(r'[\s\-]'), '');
+    final tenDigitPhone = cleanPhone.startsWith('+91')
+        ? cleanPhone.substring(3)
+        : cleanPhone.startsWith('91') && cleanPhone.length == 12
+            ? cleanPhone.substring(2)
+            : cleanPhone;
+
+    final formattedPhone = '+91$tenDigitPhone';
 
     context.read<AuthBloc>().add(SendOtpRequested(formattedPhone));
 
@@ -200,26 +256,40 @@ class _LoginPageState extends State<LoginPage> {
                                   // Full Name Field (Ux4gInputField)
                                   Ux4gInputField(
                                     value: _name,
-                                    onValueChange: (val) => setState(() => _name = val),
+                                    onValueChange: _validateName,
                                     label: a11y.tr('full_name'),
                                     required: true,
-                                    placeholder: 'Enter full name',
+                                    placeholder: a11y.isHindi ? 'पूरा नाम दर्ज करें' : 'Enter full name',
                                     leadingIcon: Icons.badge_outlined,
                                     size: Ux4gInputFieldSize.large,
+                                    maxLength: 50,
+                                    inputFormatters: FormValidators.nameFormatters,
+                                    status: _nameError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _nameError,
                                   ),
                                   const SizedBox(height: 18),
 
                                   // Phone Number Field (Ux4gInputField)
                                   Ux4gInputField(
                                     value: _phone,
-                                    onValueChange: (val) => setState(() => _phone = val),
+                                    onValueChange: _validatePhone,
                                     label: a11y.tr('phone_number'),
                                     required: true,
-                                    placeholder: 'Enter 10-digit mobile number',
+                                    placeholder: a11y.isHindi
+                                        ? '10-अंकों का मोबाइल नंबर दर्ज करें'
+                                        : 'Enter 10-digit mobile number',
                                     prefixText: '+91 ',
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.phone_android_rounded,
                                     size: Ux4gInputFieldSize.large,
+                                    maxLength: 10,
+                                    inputFormatters: FormValidators.phoneFormatters,
+                                    status: _phoneError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _phoneError,
                                   ),
                                   const SizedBox(height: 26),
 

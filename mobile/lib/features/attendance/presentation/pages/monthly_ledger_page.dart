@@ -7,6 +7,7 @@ import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/di/injection_container.dart';
 import '../../../../core/services/upi_payment_launcher.dart';
+import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../salary/domain/entities/salary_calculation_entity.dart';
@@ -156,9 +157,12 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
               controller: controller,
               keyboardType: TextInputType.number,
               autofocus: true,
+              maxLength: 7,
+              inputFormatters: FormValidators.salaryFormatters,
               decoration: const InputDecoration(
                 prefixText: '₹ ',
                 labelText: 'Monthly Salary (रुपये)',
+                counterText: '',
                 border: OutlineInputBorder(),
               ),
             ),
@@ -171,6 +175,13 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
           ),
           ElevatedButton(
             onPressed: () {
+              final err = FormValidators.validateSalary(controller.text);
+              if (err != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(err), backgroundColor: AppColors.absent),
+                );
+                return;
+              }
               final val = double.tryParse(controller.text.trim());
               if (val != null && val > 0) {
                 setState(() => _baseSalary = val);

@@ -265,7 +265,7 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
                   keyboardType: _getKeyboardType(),
                   cursorColor: primary,
                   maxLength: widget.maxLength,
-                  inputFormatters: widget.inputFormatters,
+                  inputFormatters: _getEffectiveInputFormatters(),
                   textAlign: widget.textAlign,
                   style: (widget.style ?? bmDefault).copyWith(
                     color:
@@ -455,5 +455,19 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
       Ux4gInputFieldType.email => TextInputType.emailAddress,
       Ux4gInputFieldType.text => TextInputType.text,
     };
+  }
+
+  List<TextInputFormatter> _getEffectiveInputFormatters() {
+    if (widget.inputFormatters != null) {
+      return widget.inputFormatters!;
+    }
+    final formatters = <TextInputFormatter>[];
+    if (widget.type == Ux4gInputFieldType.number) {
+      formatters.add(FilteringTextInputFormatter.digitsOnly);
+    }
+    if (widget.maxLength != null) {
+      formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
+    }
+    return formatters;
   }
 }

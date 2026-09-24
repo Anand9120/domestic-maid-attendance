@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/utils/form_validators.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../attendance/presentation/pages/attendance_dashboard_page.dart';
@@ -32,6 +33,13 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   String _upiId = '';
   String _bankAccount = '';
   String _ifscCode = '';
+
+  // Validation Errors
+  String? _nameError;
+  String? _emergencyContactError;
+  String? _upiIdError;
+  String? _bankAccountError;
+  String? _ifscCodeError;
 
   // Selected Services
   final Set<String> _selectedServices = {};
@@ -85,10 +93,12 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   }
 
   Future<void> _linkHouseholdByInviteCode() async {
+    final a11y = AccessibilityController.instance;
     final code = _inviteCodeController.text.trim().toUpperCase();
-    if (code.isEmpty) {
+    final inviteErr = FormValidators.validateInviteCode(code, isHindi: a11y.isHindi);
+    if (inviteErr != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a 6-character invite code')),
+        SnackBar(content: Text(inviteErr), backgroundColor: AppColors.absent),
       );
       return;
     }
@@ -131,6 +141,35 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
   }
 
   Future<void> _saveProfile() async {
+    final a11y = AccessibilityController.instance;
+    final isHindi = a11y.isHindi;
+
+    final nameErr = FormValidators.validateFullName(_fullName, label: isHindi ? 'पूरा नाम' : 'Full Name', isHindi: isHindi);
+    final emergencyErr = _emergencyContact.trim().isNotEmpty
+        ? FormValidators.validateIndianPhoneNumber(_emergencyContact, isHindi: isHindi)
+        : null;
+    final upiErr = FormValidators.validateUpiId(_upiId, required: true, isHindi: isHindi);
+    final bankErr = FormValidators.validateBankAccount(_bankAccount, required: false, isHindi: isHindi);
+    final ifscErr = _bankAccount.trim().isNotEmpty
+        ? FormValidators.validateIfscCode(_ifscCode, required: true, isHindi: isHindi)
+        : FormValidators.validateIfscCode(_ifscCode, required: false, isHindi: isHindi);
+
+    setState(() {
+      _nameError = nameErr;
+      _emergencyContactError = emergencyErr;
+      _upiIdError = upiErr;
+      _bankAccountError = bankErr;
+      _ifscCodeError = ifscErr;
+    });
+
+    final firstErr = nameErr ?? emergencyErr ?? upiErr ?? bankErr ?? ifscErr;
+    if (firstErr != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(firstErr), backgroundColor: AppColors.absent),
+      );
+      return;
+    }
+
     setState(() => _isSavingProfile = true);
     try {
       final payload = {
@@ -220,7 +259,24 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                               placeholder: 'Enter full name',
                               value: _fullName,
                               leadingIcon: Icons.person_outline_rounded,
-                              onValueChange: (v) => setState(() => _fullName = v),
+                              maxLength: 50,
+                              inputFormatters: FormValidators.nameFormatters,
+                              status: _nameError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _nameError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _fullName = v;
+                                  if (_nameError != null) {
+                                    _nameError = FormValidators.validateFullName(
+                                      v,
+                                      label: 'Full Name',
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 12),
                             Ux4gInputField(
@@ -230,18 +286,38 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                               value: _phoneNumber,
                               type: Ux4gInputFieldType.number,
                               leadingIcon: Icons.phone_android_rounded,
+                              readOnly: true,
+                              maxLength: 10,
+                              inputFormatters: FormValidators.phoneFormatters,
                               onValueChange: (v) => setState(() => _phoneNumber = v),
                             ),
                             const SizedBox(height: 12),
                             Ux4gInputField(
-                              label: 'Emergency Contact (Family / Relative) *',
+                              label: 'Emergency Contact (Family / Relative)',
                               placeholder: 'Enter emergency mobile number',
                               prefixText: '+91 ',
                               value: _emergencyContact,
                               type: Ux4gInputFieldType.number,
                               leadingIcon: Icons.emergency_rounded,
-                              caption: 'Used for worker safety and emergency alert dispatch.',
-                              onValueChange: (v) => setState(() => _emergencyContact = v),
+                              maxLength: 10,
+                              inputFormatters: FormValidators.phoneFormatters,
+                              status: _emergencyContactError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _emergencyContactError ?? 'Used for worker safety and emergency alert dispatch.',
+                              onValueChange: (v) {
+                                setState(() {
+                                  _emergencyContact = v;
+                                  if (_emergencyContactError != null || v.length == 10) {
+                                    _emergencyContactError = v.isEmpty
+                                        ? null
+                                        : FormValidators.validateIndianPhoneNumber(
+                                            v,
+                                            isHindi: AccessibilityController.instance.isHindi,
+                                          );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 24),
 
@@ -308,11 +384,27 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                               placeholder: 'e.g. mobile@upi or name@bank',
                               value: _upiId,
                               leadingIcon: Icons.qr_code_rounded,
-                              caption: 'Salary will be directly transferred to this UPI VPA.',
-                              onValueChange: (v) => setState(() => _upiId = v),
+                              maxLength: 50,
+                              status: _upiIdError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _upiIdError ?? 'Salary will be directly transferred to this UPI VPA.',
+                              onValueChange: (v) {
+                                setState(() {
+                                  _upiId = v.trim();
+                                  if (_upiIdError != null) {
+                                    _upiIdError = FormValidators.validateUpiId(
+                                      v,
+                                      required: true,
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 12),
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   flex: 3,
@@ -322,7 +414,24 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                     value: _bankAccount,
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.account_balance_rounded,
-                                    onValueChange: (v) => setState(() => _bankAccount = v),
+                                    maxLength: 18,
+                                    inputFormatters: FormValidators.bankAccountFormatters,
+                                    status: _bankAccountError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _bankAccountError,
+                                    onValueChange: (v) {
+                                      setState(() {
+                                        _bankAccount = v.trim();
+                                        if (_bankAccountError != null) {
+                                          _bankAccountError = FormValidators.validateBankAccount(
+                                            v,
+                                            required: false,
+                                            isHindi: AccessibilityController.instance.isHindi,
+                                          );
+                                        }
+                                      });
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 10),
@@ -333,7 +442,24 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                     placeholder: 'SBIN0001234',
                                     value: _ifscCode,
                                     leadingIcon: Icons.numbers_rounded,
-                                    onValueChange: (v) => setState(() => _ifscCode = v.toUpperCase()),
+                                    maxLength: 11,
+                                    inputFormatters: FormValidators.ifscFormatters,
+                                    status: _ifscCodeError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _ifscCodeError,
+                                    onValueChange: (v) {
+                                      setState(() {
+                                        _ifscCode = v.trim().toUpperCase();
+                                        if (_ifscCodeError != null) {
+                                          _ifscCodeError = FormValidators.validateIfscCode(
+                                            _ifscCode,
+                                            required: false,
+                                            isHindi: AccessibilityController.instance.isHindi,
+                                          );
+                                        }
+                                      });
+                                    },
                                   ),
                                 ),
                               ],
@@ -372,6 +498,8 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                         child: TextField(
                                           controller: _inviteCodeController,
                                           textCapitalization: TextCapitalization.characters,
+                                          maxLength: 12,
+                                          inputFormatters: FormValidators.inviteCodeFormatters,
                                           style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
@@ -382,6 +510,7 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                             filled: true,
                                             fillColor: isContrast ? AppColors.darkSurfaceElevated : Colors.grey.shade50,
                                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                            counterText: "",
                                             border: OutlineInputBorder(
                                               borderRadius: BorderRadius.circular(8),
                                               borderSide: const BorderSide(color: AppColors.border),

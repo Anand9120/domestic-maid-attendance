@@ -1,5 +1,9 @@
 package com.app.maidattendance.dto.request;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -30,8 +34,12 @@ public class HouseholdSetupRequestDto {
 
     private String inviteCode;
 
+    @DecimalMin(value = "0.0", inclusive = true, message = "Monthly salary cannot be negative")
+    @DecimalMax(value = "500000.0", message = "Monthly salary cannot exceed ₹5,00,000")
     private BigDecimal monthlySalary = BigDecimal.ZERO;
 
+    @Min(value = 0, message = "Allowed leaves cannot be negative")
+    @Max(value = 31, message = "Allowed leaves cannot exceed 31 days")
     private Integer allowedLeaves = 2;
 
     private List<ShiftDto> shifts;

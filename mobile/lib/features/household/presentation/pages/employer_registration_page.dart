@@ -5,6 +5,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/di/injection_container.dart';
+import '../../../../core/utils/form_validators.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../../attendance/presentation/pages/attendance_dashboard_page.dart';
@@ -31,6 +32,15 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
   late String _fullName;
   late String _phoneNumber;
   String _email = '';
+
+  // Validation Errors
+  String? _nameError;
+  String? _phoneError;
+  String? _emailError;
+  String? _houseNameError;
+  String? _addressError;
+  String? _salaryError;
+  String? _leavesError;
 
   // Household Details
   String _houseName = '';
@@ -104,9 +114,34 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
   }
 
   Future<void> _submitRegistration() async {
-    if (_fullName.trim().isEmpty || _phoneNumber.trim().isEmpty) {
+    final a11y = AccessibilityController.instance;
+    final isHindi = a11y.isHindi;
+
+    final nameErr = FormValidators.validateFullName(_fullName, label: isHindi ? 'नियोक्ता का नाम' : 'Employer Full Name', isHindi: isHindi);
+    final phoneErr = FormValidators.validateIndianPhoneNumber(_phoneNumber, isHindi: isHindi);
+    final emailErr = FormValidators.validateEmail(_email, required: false, isHindi: isHindi);
+    final houseErr = FormValidators.validateHouseName(_houseName, isHindi: isHindi);
+    final addressErr = FormValidators.validateAddress(_address, isHindi: isHindi);
+    final salaryErr = FormValidators.validateSalary(_monthlySalary, isHindi: isHindi);
+    final leavesErr = FormValidators.validateAllowedLeaves(_allowedLeaves, isHindi: isHindi);
+
+    setState(() {
+      _nameError = nameErr;
+      _phoneError = phoneErr;
+      _emailError = emailErr;
+      _houseNameError = houseErr;
+      _addressError = addressErr;
+      _salaryError = salaryErr;
+      _leavesError = leavesErr;
+    });
+
+    final firstError = nameErr ?? phoneErr ?? houseErr ?? addressErr ?? salaryErr ?? leavesErr ?? emailErr;
+    if (firstError != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill employer name and phone number')),
+        SnackBar(
+          content: Text(firstError),
+          backgroundColor: AppColors.absent,
+        ),
       );
       return;
     }
@@ -341,7 +376,24 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                               placeholder: 'Enter employer full name',
                               value: _fullName,
                               leadingIcon: Icons.person_rounded,
-                              onValueChange: (v) => setState(() => _fullName = v),
+                              maxLength: 50,
+                              inputFormatters: FormValidators.nameFormatters,
+                              status: _nameError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _nameError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _fullName = v;
+                                  if (_nameError != null) {
+                                    _nameError = FormValidators.validateFullName(
+                                      v,
+                                      label: 'Employer Full Name',
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 12),
                             Ux4gInputField(
@@ -351,7 +403,23 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                               value: _phoneNumber,
                               type: Ux4gInputFieldType.number,
                               leadingIcon: Icons.phone_android_rounded,
-                              onValueChange: (v) => setState(() => _phoneNumber = v),
+                              maxLength: 10,
+                              inputFormatters: FormValidators.phoneFormatters,
+                              status: _phoneError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _phoneError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _phoneNumber = v;
+                                  if (_phoneError != null || v.length == 10) {
+                                    _phoneError = FormValidators.validateIndianPhoneNumber(
+                                      v,
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 12),
                             Ux4gInputField(
@@ -360,7 +428,23 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                               value: _email,
                               type: Ux4gInputFieldType.email,
                               leadingIcon: Icons.email_outlined,
-                              onValueChange: (v) => setState(() => _email = v),
+                              maxLength: 60,
+                              status: _emailError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _emailError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _email = v;
+                                  if (_emailError != null) {
+                                    _emailError = FormValidators.validateEmail(
+                                      v,
+                                      required: false,
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 24),
 
@@ -377,7 +461,22 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                               placeholder: 'e.g. Flat 402, Green Heights',
                               value: _houseName,
                               leadingIcon: Icons.apartment_rounded,
-                              onValueChange: (v) => setState(() => _houseName = v),
+                              maxLength: 60,
+                              status: _houseNameError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _houseNameError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _houseName = v;
+                                  if (_houseNameError != null) {
+                                    _houseNameError = FormValidators.validateHouseName(
+                                      v,
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 12),
                             Ux4gInputField(
@@ -385,7 +484,22 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                               placeholder: 'Enter society name & street address',
                               value: _address,
                               leadingIcon: Icons.signpost_outlined,
-                              onValueChange: (v) => setState(() => _address = v),
+                              maxLength: 150,
+                              status: _addressError != null
+                                  ? Ux4gInputFieldStatus.error
+                                  : Ux4gInputFieldStatus.defaultStatus,
+                              caption: _addressError,
+                              onValueChange: (v) {
+                                setState(() {
+                                  _address = v;
+                                  if (_addressError != null) {
+                                    _addressError = FormValidators.validateAddress(
+                                      v,
+                                      isHindi: AccessibilityController.instance.isHindi,
+                                    );
+                                  }
+                                });
+                              },
                             ),
                             const SizedBox(height: 14),
 
@@ -522,6 +636,7 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                             ),
                             const SizedBox(height: 14),
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Expanded(
                                   child: Ux4gInputField(
@@ -531,7 +646,23 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                                     value: _monthlySalary,
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.currency_rupee_rounded,
-                                    onValueChange: (v) => setState(() => _monthlySalary = v),
+                                    maxLength: 7,
+                                    inputFormatters: FormValidators.salaryFormatters,
+                                    status: _salaryError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _salaryError,
+                                    onValueChange: (v) {
+                                      setState(() {
+                                        _monthlySalary = v;
+                                        if (_salaryError != null) {
+                                          _salaryError = FormValidators.validateSalary(
+                                            v,
+                                            isHindi: AccessibilityController.instance.isHindi,
+                                          );
+                                        }
+                                      });
+                                    },
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -543,7 +674,23 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                                     value: _allowedLeaves,
                                     type: Ux4gInputFieldType.number,
                                     leadingIcon: Icons.event_available_rounded,
-                                    onValueChange: (v) => setState(() => _allowedLeaves = v),
+                                    maxLength: 2,
+                                    inputFormatters: FormValidators.leavesFormatters,
+                                    status: _leavesError != null
+                                        ? Ux4gInputFieldStatus.error
+                                        : Ux4gInputFieldStatus.defaultStatus,
+                                    caption: _leavesError,
+                                    onValueChange: (v) {
+                                      setState(() {
+                                        _allowedLeaves = v;
+                                        if (_leavesError != null) {
+                                          _leavesError = FormValidators.validateAllowedLeaves(
+                                            v,
+                                            isHindi: AccessibilityController.instance.isHindi,
+                                          );
+                                        }
+                                      });
+                                    },
                                   ),
                                 ),
                               ],

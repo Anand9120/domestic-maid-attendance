@@ -140,10 +140,12 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
             // Transaction Ref input
             TextField(
               controller: _refController,
+              maxLength: 30,
               decoration: InputDecoration(
                 isDense: true,
                 labelText: 'UPI UTR / Ref No (Optional)',
                 hintText: 'e.g. 423409182344',
+                counterText: '',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.auto_awesome, size: 16),
@@ -160,10 +162,12 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
             // Notes input
             TextField(
               controller: _notesController,
+              maxLength: 100,
               decoration: InputDecoration(
                 isDense: true,
                 labelText: 'Notes / टिप्पणी (Optional)',
                 hintText: 'e.g. Full month payment settled',
+                counterText: '',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),

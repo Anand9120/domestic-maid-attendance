@@ -2,13 +2,16 @@ package com.app.maidattendance.dto.request;
 
 import com.app.maidattendance.entity.User;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 public class VerifyOtpRequestDto {
 
     @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^(\\+91)?[6-9]\\d{9}$", message = "Phone number must be a valid 10-digit Indian mobile number")
     private String phoneNumber;
 
     @NotBlank(message = "OTP is required")
+    @Pattern(regexp = "^\\d{6}$", message = "OTP must be a 6-digit number")
     private String otp;
 
     private User.Role role = User.Role.MAID;

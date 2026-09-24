@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/utils/form_validators.dart';
 import '../../../../core/widgets/ux4g_civic_bar.dart';
 import '../../domain/entities/user_entity.dart';
 import '../bloc/auth_bloc.dart';
@@ -27,16 +28,37 @@ class OtpVerificationPage extends StatefulWidget {
 
 class _OtpVerificationPageState extends State<OtpVerificationPage> {
   String _otp = '';
+  String? _otpError;
+
+  void _validateOtp(String val) {
+    setState(() {
+      _otp = val;
+      if (_otp.isNotEmpty) {
+        _otpError = FormValidators.validateOtp(
+          _otp,
+          isHindi: AccessibilityController.instance.isHindi,
+        );
+      } else {
+        _otpError = null;
+      }
+    });
+  }
 
   void _onVerifyPressed() {
-    final cleanOtp = _otp.trim();
-    if (cleanOtp.length != 6) {
+    final a11y = AccessibilityController.instance;
+    final err = FormValidators.validateOtp(_otp, isHindi: a11y.isHindi);
+    if (err != null) {
+      setState(() => _otpError = err);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter 6-digit verification code')),
+        SnackBar(
+          content: Text(err),
+          backgroundColor: AppColors.absent,
+        ),
       );
       return;
     }
 
+    final cleanOtp = _otp.trim();
     context.read<AuthBloc>().add(
           VerifyOtpSubmitted(
             phoneNumber: widget.phoneNumber,
@@ -138,15 +160,20 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               // 6-digit OTP Input using Ux4gInputField
                               Ux4gInputField(
                                 value: _otp,
-                                onValueChange: (val) => setState(() => _otp = val),
+                                onValueChange: _validateOtp,
                                 label: a11y.tr('enter_code'),
                                 required: true,
                                 placeholder: '------',
                                 maxLength: 6,
                                 type: Ux4gInputFieldType.number,
+                                inputFormatters: FormValidators.otpFormatters,
                                 textAlign: TextAlign.center,
                                 size: Ux4gInputFieldSize.large,
                                 leadingIcon: Icons.lock_clock_outlined,
+                                status: _otpError != null
+                                    ? Ux4gInputFieldStatus.error
+                                    : Ux4gInputFieldStatus.defaultStatus,
+                                caption: _otpError,
                               ),
                               const SizedBox(height: 28),
 
