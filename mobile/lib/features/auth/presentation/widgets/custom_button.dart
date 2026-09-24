@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/ux4g/ux4g.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -35,13 +36,8 @@ class CustomButton extends StatelessWidget {
         ),
         onPressed: isLoading ? null : onPressed,
         child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
+            ? Ux4gSpinner.medium(
+                color: textColor ?? Colors.white,
               )
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,

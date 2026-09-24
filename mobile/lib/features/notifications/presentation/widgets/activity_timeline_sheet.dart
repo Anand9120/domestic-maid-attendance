@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/ux4g/ux4g.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../domain/entities/notification_entity.dart';
@@ -150,7 +151,13 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                 child: BlocBuilder<NotificationBloc, NotificationState>(
                   builder: (context, state) {
                     if (state is NotificationLoading) {
-                      return const Center(child: CircularProgressIndicator());
+                      return Ux4gLoadingIndicator(
+                        size: 32,
+                        color: widget.isContrast ? AppColors.darkPrimary : AppColors.primary,
+                        message: widget.a11y.isHindi
+                            ? 'गतिविधियां लोड हो रही हैं...'
+                            : 'Loading timeline activities...',
+                      );
                     }
 
                     if (state is NotificationLoaded) {

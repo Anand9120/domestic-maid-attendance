@@ -498,7 +498,18 @@ _Generated via Digital Civic Maid Attendance System_''';
                       return BlocBuilder<AttendanceBloc, AttendanceState>(
                         builder: (context, state) {
                           if (state is AttendanceLoading) {
-                            return const Center(child: CircularProgressIndicator());
+                            return Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 48),
+                                child: Ux4gLoadingIndicator(
+                                  size: 40,
+                                  color: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                  message: a11y.isHindi
+                                      ? 'मासिक उपस्थिति विवरण लोड हो रहा है...'
+                                      : 'Loading monthly attendance ledger...',
+                                ),
+                              ),
+                            );
                           }
 
                           if (state is MonthlyReportLoaded) {

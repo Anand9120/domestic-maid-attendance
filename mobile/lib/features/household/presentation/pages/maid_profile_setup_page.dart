@@ -399,10 +399,8 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                         ),
                                         icon: _isLinkingCode
-                                            ? const SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                            ? Ux4gSpinner.small(
+                                                color: isContrast ? const Color(0xFF0F172A) : Colors.white,
                                               )
                                             : const Icon(Icons.link_rounded, size: 18),
                                         label: const Text('Link', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -422,7 +420,9 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                             ),
                             const SizedBox(height: 8),
                             if (_isLoadingHouseholds)
-                              const Center(child: CircularProgressIndicator())
+                              const Ux4gLoadingIndicator(
+                                message: 'जुड़े हुए घर लोड हो रहे हैं... (Loading households...)',
+                              )
                             else if (_linkedHouseholds.isEmpty)
                               Container(
                                 padding: const EdgeInsets.all(16),
