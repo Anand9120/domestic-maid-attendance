@@ -18,4 +18,12 @@ linter:
   rules:
     prefer_const_constructors: true
     prefer_const_declarations: true
+    prefer_final_fields: true
+    unnecessary_const: true
+    unnecessary_new: true
+    use_key_in_widget_constructors: true
+    sized_box_for_whitespace: true
+    avoid_unnecessary_containers: true
+    prefer_const_constructors_in_immutables: true
+    avoid_relative_lib_imports: true
     avoid_print: false

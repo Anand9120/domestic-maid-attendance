@@ -712,7 +712,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                         builder: (_) => GeofenceMapSetupPage(employerId: widget.user.id),
                                       ),
                                     );
-                                    if (res == true) {
+                                    if (res == true && mounted) {
                                       _loadInitialData();
                                     }
                                   },

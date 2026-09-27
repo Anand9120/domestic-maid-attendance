@@ -112,7 +112,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+          color: isContrast ? AppColors.darkPresent : AppColors.present,
           width: isContrast ? 2 : 1,
         ),
       ),
@@ -130,12 +130,12 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: isContrast ? AppColors.darkPresentBg : const Color(0xFFE6F4EA),
+                      color: isContrast ? AppColors.darkPresentBg : AppColors.presentBg,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.verified_rounded,
-                      color: isContrast ? Colors.black : const Color(0xFF137333),
+                      color: isContrast ? Colors.black : AppColors.present,
                       size: 28,
                     ),
                   ),
@@ -149,7 +149,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+                            color: isContrast ? AppColors.darkPresent : AppColors.present,
                           ),
                         ),
                         Text(
@@ -165,7 +165,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+                      color: isContrast ? AppColors.darkPresent : AppColors.present,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -187,9 +187,9 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isContrast ? AppColors.hcSurface : const Color(0xFFF8F9FA),
+                  color: isContrast ? AppColors.hcSurface : AppColors.background,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isContrast ? AppColors.hcBorder : const Color(0xFFE8EAED)),
+                  border: Border.all(color: isContrast ? AppColors.hcBorder : AppColors.border),
                 ),
                 child: Column(
                   children: [
@@ -255,7 +255,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                 decoration: BoxDecoration(
                   color: isContrast ? AppColors.hcSurface : Colors.white,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: isContrast ? AppColors.hcBorder : const Color(0xFFE0E0E0)),
+                  border: Border.all(color: isContrast ? AppColors.hcBorder : AppColors.border),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +348,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+                            color: isContrast ? AppColors.darkPresent : AppColors.present,
                           ),
                         ),
                       ],
@@ -365,7 +365,7 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF25D366),
-                        foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
+                        foregroundColor: isContrast ? AppColors.darkBackground : Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
