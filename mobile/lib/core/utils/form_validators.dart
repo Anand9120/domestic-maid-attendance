@@ -332,4 +332,51 @@ class FormValidators {
 
     return null;
   }
+  /// Validates Latitude coordinate (-90.0 to +90.0)
+  static String? validateLatitude(String? value, {bool isHindi = false}) {
+    if (value == null || value.trim().isEmpty) {
+      return isHindi ? 'अक्षांश (Latitude) दर्ज करें' : 'Latitude is required';
+    }
+    final lat = double.tryParse(value.trim());
+    if (lat == null) {
+      return isHindi ? 'अमान्य अक्षांश संख्या' : 'Enter a valid decimal latitude';
+    }
+    if (lat < -90.0 || lat > 90.0) {
+      return isHindi
+          ? 'अक्षांश -90° और +90° के बीच होना चाहिए'
+          : 'Latitude must be between -90.0 and +90.0';
+    }
+    return null;
+  }
+
+  /// Validates Longitude coordinate (-180.0 to +180.0)
+  static String? validateLongitude(String? value, {bool isHindi = false}) {
+    if (value == null || value.trim().isEmpty) {
+      return isHindi ? 'देशांतर (Longitude) दर्ज करें' : 'Longitude is required';
+    }
+    final lon = double.tryParse(value.trim());
+    if (lon == null) {
+      return isHindi ? 'अमान्य देशांतर संख्या' : 'Enter a valid decimal longitude';
+    }
+    if (lon < -180.0 || lon > 180.0) {
+      return isHindi
+          ? 'देशांतर -180° और +180° के बीच होना चाहिए'
+          : 'Longitude must be between -180.0 and +180.0';
+    }
+    return null;
+  }
+
+  /// Validates 24-hour clock time (HH:mm format, 00:00 to 23:59)
+  static String? validateTime24h(String? value, {bool isHindi = false}) {
+    if (value == null || value.trim().isEmpty) {
+      return isHindi ? 'समय (HH:mm) दर्ज करें' : 'Time (HH:mm) is required';
+    }
+    final match = RegExp(r'^([01]\d|2[0-3]):([0-5]\d)$').firstMatch(value.trim());
+    if (match == null) {
+      return isHindi
+          ? 'अमान्य समय प्रारूप (HH:mm, उदा. 08:30)'
+          : 'Invalid time format (HH:mm, e.g. 08:30)';
+    }
+    return null;
+  }
 }

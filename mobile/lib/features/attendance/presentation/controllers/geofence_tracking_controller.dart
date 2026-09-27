@@ -161,6 +161,81 @@ class GeofenceTrackingController extends ChangeNotifier {
     _evaluateMultiHouseholdPosition(pos);
   }
 
+  /// QA Testing Simulation: Simulates domestic worker stepping inside the geofence
+  void simulateWalkIn({double distanceMeters = 15.0}) {
+    final latOffset = distanceMeters / 110540.0;
+    final pos = Position(
+      latitude: targetLat + latOffset,
+      longitude: targetLon,
+      timestamp: DateTime.now(),
+      accuracy: 6.0,
+      altitude: 10.0,
+      altitudeAccuracy: 1.0,
+      heading: 0.0,
+      headingAccuracy: 1.0,
+      speed: 1.1,
+      speedAccuracy: 0.2,
+    );
+    currentPosition = pos;
+    _evaluateMultiHouseholdPosition(pos);
+  }
+
+  /// QA Testing Simulation: Simulates domestic worker stepping outside the geofence
+  void simulateWalkOut({double distanceMeters = 120.0}) {
+    final latOffset = distanceMeters / 110540.0;
+    final pos = Position(
+      latitude: targetLat + latOffset,
+      longitude: targetLon,
+      timestamp: DateTime.now(),
+      accuracy: 8.0,
+      altitude: 10.0,
+      altitudeAccuracy: 1.0,
+      heading: 180.0,
+      headingAccuracy: 1.0,
+      speed: 1.2,
+      speedAccuracy: 0.2,
+    );
+    currentPosition = pos;
+    _evaluateMultiHouseholdPosition(pos);
+  }
+
+  /// QA Testing Simulation: Simulates high-speed transit (speed > 15 km/h) passing by
+  void simulateVehicularTransit({double speedKmh = 35.0}) {
+    final speedMs = speedKmh / 3.6;
+    final pos = Position(
+      latitude: targetLat,
+      longitude: targetLon,
+      timestamp: DateTime.now(),
+      accuracy: 12.0,
+      altitude: 10.0,
+      altitudeAccuracy: 1.0,
+      heading: 90.0,
+      headingAccuracy: 1.0,
+      speed: speedMs,
+      speedAccuracy: 0.5,
+    );
+    currentPosition = pos;
+    _evaluateMultiHouseholdPosition(pos);
+  }
+
+  /// QA Testing Simulation: Simulates weak/degraded GPS signal (e.g. inside basement)
+  void simulateDegradedGps({double accuracy = 65.0}) {
+    final pos = Position(
+      latitude: targetLat,
+      longitude: targetLon,
+      timestamp: DateTime.now(),
+      accuracy: accuracy,
+      altitude: 10.0,
+      altitudeAccuracy: 1.0,
+      heading: 0.0,
+      headingAccuracy: 1.0,
+      speed: 0.8,
+      speedAccuracy: 0.2,
+    );
+    currentPosition = pos;
+    _evaluateMultiHouseholdPosition(pos);
+  }
+
 
   Future<void> startTracking({
     required void Function(Position pos, int dwellSeconds, HouseholdEntity household) onCheckIn,

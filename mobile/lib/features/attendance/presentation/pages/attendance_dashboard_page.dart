@@ -1,3 +1,6 @@
+import '../../../household/presentation/pages/geofence_map_setup_page.dart';
+import '../widgets/maid_sos_panic_sheet.dart';
+import '../widgets/battery_optimization_sheet.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -379,6 +382,23 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                     );
                   },
                 ),
+              if (!isEmployer)
+                IconButton(
+                  icon: const Icon(Icons.emergency_rounded, color: Color(0xFFEF4444)),
+                  tooltip: a11y.isHindi ? 'आपातकालीन सहायता (SOS)' : 'Emergency Safety SOS',
+                  onPressed: () {
+                    MaidSosPanicSheet.show(
+                      context,
+                      currentPosition: _tracker.currentPosition,
+                      householdName: _targetHouseName,
+                    );
+                  },
+                ),
+              IconButton(
+                icon: const Icon(Icons.battery_saver_rounded),
+                tooltip: a11y.isHindi ? 'बैटरी अनुकूलन (Battery Setup)' : 'Battery Optimization Guide',
+                onPressed: () => BatteryOptimizationSheet.show(context),
+              ),
               NotificationBellAction(
                 userId: widget.user.id,
                 isContrast: isContrast,
@@ -425,6 +445,9 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                       },
                     ),
                   ),
+
+                // Physical Device QA Simulator Toolbar (Indoors desk testing)
+                _buildQaGpsSimulatorBar(isContrast, a11y),
 
                 Expanded(
                   child: BlocConsumer<AttendanceBloc, AttendanceState>(
@@ -674,6 +697,25 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                   color: AppColors.present,
                                   isContrast: isContrast,
                                   onTap: _showHouseholdInviteModal,
+                                ),
+                                const SizedBox(height: 12),
+                                _buildActionCard(
+                                  title: a11y.isHindi ? 'जियोफेंस एवं रडार परिधि' : 'Geofence Radar Calibration',
+                                  subtitle: a11y.isHindi ? 'घर का केंद्र, दायरा (25m-100m) व ड्वेल समय बदलें' : 'Calibrate premises GPS, radius (25m-100m) & dwell timer',
+                                  icon: Icons.radar_rounded,
+                                  color: const Color(0xFF0284C7),
+                                  isContrast: isContrast,
+                                  onTap: () async {
+                                    final res = await Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => GeofenceMapSetupPage(employerId: widget.user.id),
+                                      ),
+                                    );
+                                    if (res == true) {
+                                      _loadInitialData();
+                                    }
+                                  },
                                 ),
                               ],
                               const SizedBox(height: 16),
@@ -1040,6 +1082,92 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
           ],
         );
       },
+    );
+  }
+
+  void _loadInitialData() {
+    _fetchHouseholdConfig();
+    _checkTodayStatus();
+  }
+
+  Widget _buildQaGpsSimulatorBar(bool isContrast, AccessibilityController a11y) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: isContrast ? Colors.black54 : const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+      ),
+      child: ExpansionTile(
+        initiallyExpanded: false,
+        tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        dense: true,
+        iconColor: const Color(0xFF38BDF8),
+        collapsedIconColor: Colors.white70,
+        title: Row(
+          children: [
+            const Icon(Icons.science_rounded, size: 16, color: Color(0xFF38BDF8)),
+            const SizedBox(width: 8),
+            Text(
+              a11y.isHindi ? 'QA परीक्षण GPS सिम्युलेटर' : 'QA Physical Device GPS Simulator',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+        children: [
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            alignment: WrapAlignment.center,
+            children: [
+              _buildSimBtn(
+                label: '🟢 Walk-In (15m)',
+                color: const Color(0xFF22C55E),
+                onTap: () => _tracker.simulateWalkIn(),
+              ),
+              _buildSimBtn(
+                label: '🔴 Walk-Out (120m)',
+                color: const Color(0xFFEF4444),
+                onTap: () => _tracker.simulateWalkOut(),
+              ),
+              _buildSimBtn(
+                label: '🚗 Transit (35 km/h)',
+                color: const Color(0xFF3B82F6),
+                onTap: () => _tracker.simulateVehicularTransit(),
+              ),
+              _buildSimBtn(
+                label: '📶 Degraded (±65m)',
+                color: const Color(0xFFF59E0B),
+                onTap: () => _tracker.simulateDegradedGps(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimBtn({required String label, required Color color, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color, width: 1),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 }

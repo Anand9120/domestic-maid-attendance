@@ -1,3 +1,4 @@
+import 'live_gps_map_radar_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../../core/accessibility/accessibility_controller.dart';
@@ -103,6 +104,19 @@ class HardwareTelemetryCard extends StatelessWidget {
               fontSize: 11,
               color: isContrast ? Colors.white70 : AppColors.textSecondary,
             ),
+          ),
+          const SizedBox(height: 12),
+
+          // Live Sonar Radar & GPS Visualizer
+          LiveGpsMapRadarWidget(
+            targetLat: targetLat,
+            targetLon: targetLon,
+            houseName: targetHouseName,
+            geofenceRadiusMeters: geofenceRadiusMeters,
+            currentPosition: pos,
+            distanceMeters: currentDistanceMeters,
+            isInsideGeofence: isInsideGeofence,
+            isContrast: isContrast,
           ),
           const SizedBox(height: 14),
 

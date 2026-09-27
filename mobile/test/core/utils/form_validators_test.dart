@@ -94,4 +94,32 @@ void main() {
       expect(FormValidators.validateInviteCode('123'), contains('6'));
     });
   });
+
+  group('FormValidators - Coordinates & Time', () {
+    test('validates latitude bounds (-90 to +90)', () {
+      expect(FormValidators.validateLatitude('28.6315'), isNull);
+      expect(FormValidators.validateLatitude('-33.8688'), isNull);
+      expect(FormValidators.validateLatitude(''), contains('required'));
+      expect(FormValidators.validateLatitude('95.1234'), contains('between -90.0 and +90.0'));
+      expect(FormValidators.validateLatitude('abc'), contains('decimal'));
+    });
+
+    test('validates longitude bounds (-180 to +180)', () {
+      expect(FormValidators.validateLongitude('77.2167'), isNull);
+      expect(FormValidators.validateLongitude('-122.4194'), isNull);
+      expect(FormValidators.validateLongitude(''), contains('required'));
+      expect(FormValidators.validateLongitude('185.0000'), contains('between -180.0 and +180.0'));
+      expect(FormValidators.validateLongitude('xyz'), contains('decimal'));
+    });
+
+    test('validates 24-hour time format', () {
+      expect(FormValidators.validateTime24h('08:00'), isNull);
+      expect(FormValidators.validateTime24h('23:59'), isNull);
+      expect(FormValidators.validateTime24h('00:00'), isNull);
+      expect(FormValidators.validateTime24h(''), contains('required'));
+      expect(FormValidators.validateTime24h('24:00'), contains('Invalid time format'));
+      expect(FormValidators.validateTime24h('8:00'), contains('Invalid time format'));
+      expect(FormValidators.validateTime24h('12:60'), contains('Invalid time format'));
+    });
+  });
 }
