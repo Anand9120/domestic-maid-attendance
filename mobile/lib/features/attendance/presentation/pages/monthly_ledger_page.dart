@@ -23,6 +23,7 @@ import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
 import '../widgets/calendar_view.dart';
 import '../widgets/status_badge.dart';
+import '../widgets/bulk_backfill_dialog.dart';
 
 class MonthlyLedgerPage extends StatefulWidget {
   final int maidId;
@@ -422,6 +423,28 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
 _Generated via Digital Civic Maid Attendance System_''';
   }
 
+  void _showBulkBackfillDialog(MonthlyReportEntity report) {
+    showDialog(
+      context: context,
+      builder: (ctx) => BlocProvider.value(
+        value: context.read<AttendanceBloc>(),
+        child: BulkBackfillDialog(
+          employerId: 1,
+          householdId: 1,
+          maidId: widget.maidId,
+          maidName: widget.maidName,
+          year: _year,
+          month: _month,
+          existingLogs: report.dailyLogs,
+          onCompleted: () {
+            _loadReport();
+            _loadSalaryCalculation();
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _shareSalarySlipOnWhatsApp(MonthlyReportEntity report, double netPayable, double deductionAmount) async {
     final slipText = _generateSalarySlipText(report, netPayable, deductionAmount);
     final cleanPhone = _maidPhone.replaceAll(RegExp(r'[^0-9]'), '');
@@ -479,6 +502,16 @@ _Generated via Digital Civic Maid Attendance System_''';
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             actions: [
+              IconButton(
+                icon: const Icon(Icons.playlist_add_check_circle_rounded),
+                tooltip: 'Bulk Month Review (मासिक थोक सत्यापन)',
+                onPressed: () {
+                  final attState = context.read<AttendanceBloc>().state;
+                  if (attState is MonthlyReportLoaded) {
+                    _showBulkBackfillDialog(attState.report);
+                  }
+                },
+              ),
               IconButton(
                 icon: const Icon(Icons.refresh_rounded),
                 tooltip: 'Refresh Ledger',
@@ -678,6 +711,72 @@ _Generated via Digital Civic Maid Attendance System_''';
                                   isSettled: isSettled,
                                 ),
                                 const SizedBox(height: 18),
+
+                                // GPS-Off Unrecorded Days Helper Banner
+                                if (report.dailyLogs.length < report.totalWorkingDays) ...[
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 14),
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: isContrast ? Colors.amber.withOpacity(0.12) : const Color(0xFFFEF3C7),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isContrast ? Colors.amberAccent : const Color(0xFFF59E0B),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.shield_outlined,
+                                          color: isContrast ? Colors.amberAccent : const Color(0xFFB45309),
+                                          size: 22,
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                a11y.isHindi
+                                                    ? 'GPS बंद होने से छूटे हुए दिन?'
+                                                    : 'Unrecorded days due to GPS off?',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 13,
+                                                  color: isContrast ? Colors.white : const Color(0xFF78350F),
+                                                ),
+                                              ),
+                                              Text(
+                                                a11y.isHindi
+                                                    ? 'रोज़ फोन मांगने की जरूरत नहीं। 1-क्लिक में पूरे महीने का हिसाब सत्यापित करें।'
+                                                    : 'No need to ask for phone daily. Verify all days in 1-tap.',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  color: isContrast ? Colors.white70 : const Color(0xFF78350F),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                            foregroundColor: Colors.white,
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                          ),
+                                          onPressed: () => _showBulkBackfillDialog(report),
+                                          child: Text(
+                                            a11y.isHindi ? 'थोक पुष्टि' : 'Bulk Review',
+                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
 
                                 // Visual Calendar Card
                                 Container(
