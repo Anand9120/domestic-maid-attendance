@@ -35,7 +35,7 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
   String _notes = '';
   String _time = '08:00';
   String? _timeError;
-  final DateTime _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now();
 
   static const List<({String labelEn, String labelHi})> _presetReasons = [
     (labelEn: 'Keypad / Feature Phone (No GPS)', labelHi: 'कीपैड फोन (GPS अनुपलब्ध)'),
@@ -44,6 +44,46 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
     (labelEn: 'Cellular Network Glitch', labelHi: 'नेटवर्क / GPS सिग्नल समस्या'),
     (labelEn: 'Direct Verbal Confirmation', labelHi: 'नियोक्ता द्वारा प्रत्यक्ष पुष्टि'),
   ];
+
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Future<void> _selectDate(BuildContext context, bool isHindi) async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate.isAfter(now) ? now : _selectedDate,
+      firstDate: DateTime(now.year, now.month - 2, 1),
+      lastDate: now,
+      helpText: isHindi ? 'हाजिरी की तारीख चुनें' : 'Select Attendance Date',
+      cancelText: isHindi ? 'रद्द करें' : 'Cancel',
+      confirmText: isHindi ? 'चुनें' : 'Select',
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  String _formatDateDisplay(DateTime date, bool isHindi) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+
+    if (_isSameDay(date, now)) {
+      return isHindi
+          ? 'आज (${date.day}/${date.month}/${date.year})'
+          : 'Today (${date.day}/${date.month}/${date.year})';
+    } else if (_isSameDay(date, yesterday)) {
+      return isHindi
+          ? 'कल / बीता हुआ दिन (${date.day}/${date.month}/${date.year})'
+          : 'Yesterday (${date.day}/${date.month}/${date.year})';
+    } else {
+      return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+    }
+  }
 
   Future<void> _selectTime(BuildContext context) async {
     final parts = _time.split(':');
@@ -150,9 +190,10 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                               ),
                             ),
                             Text(
-                              '${widget.defaultMaidName} (${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year})',
+                              '${widget.defaultMaidName} • ${_formatDateDisplay(_selectedDate, isHindi)}',
                               style: TextStyle(
                                 fontSize: 12,
+                                fontWeight: FontWeight.w500,
                                 color: isContrast ? Colors.white70 : AppColors.textSecondary,
                               ),
                             ),
@@ -162,6 +203,147 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                     ],
                   ),
                   const SizedBox(height: 18),
+
+                  // Date Selection Section
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isHindi ? 'हाजिरी की तारीख चुनें' : 'Select Attendance Date',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                      if (!_isSameDay(_selectedDate, DateTime.now()))
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: isContrast ? Colors.amberAccent : Colors.amber.shade700,
+                              width: 0.8,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.history_rounded,
+                                size: 12,
+                                color: isContrast ? Colors.amberAccent : Colors.amber.shade800,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                isHindi ? 'पिछली तारीख' : 'Past Date Entry',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isContrast ? Colors.amberAccent : Colors.amber.shade900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Quick Date Presets (Today, Yesterday, Calendar Picker)
+                  Builder(
+                    builder: (context) {
+                      final now = DateTime.now();
+                      final yesterday = now.subtract(const Duration(days: 1));
+                      final isToday = _isSameDay(_selectedDate, now);
+                      final isYesterday = _isSameDay(_selectedDate, yesterday);
+                      final isCustom = !isToday && !isYesterday;
+
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ChoiceChip(
+                            avatar: const Icon(Icons.today_rounded, size: 16),
+                            label: Text(isHindi ? 'आज (Today)' : 'Today'),
+                            selected: isToday,
+                            selectedColor: isContrast
+                                ? AppColors.darkPrimary.withOpacity(0.3)
+                                : AppColors.primaryLight.withOpacity(0.2),
+                            side: BorderSide(
+                              color: isToday
+                                  ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                                  : (isContrast ? Colors.white24 : AppColors.border),
+                              width: isToday ? 1.5 : 1.0,
+                            ),
+                            labelStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isToday ? FontWeight.bold : FontWeight.w500,
+                              color: isToday
+                                  ? (isContrast ? Colors.white : AppColors.primary)
+                                  : (isContrast ? Colors.white70 : AppColors.textPrimary),
+                            ),
+                            onSelected: (selected) {
+                              if (selected) setState(() => _selectedDate = now);
+                            },
+                          ),
+                          ChoiceChip(
+                            avatar: const Icon(Icons.history_toggle_off_rounded, size: 16),
+                            label: Text(isHindi ? 'कल (Yesterday)' : 'Yesterday'),
+                            selected: isYesterday,
+                            selectedColor: isContrast
+                                ? AppColors.darkPrimary.withOpacity(0.3)
+                                : AppColors.primaryLight.withOpacity(0.2),
+                            side: BorderSide(
+                              color: isYesterday
+                                  ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                                  : (isContrast ? Colors.white24 : AppColors.border),
+                              width: isYesterday ? 1.5 : 1.0,
+                            ),
+                            labelStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isYesterday ? FontWeight.bold : FontWeight.w500,
+                              color: isYesterday
+                                  ? (isContrast ? Colors.white : AppColors.primary)
+                                  : (isContrast ? Colors.white70 : AppColors.textPrimary),
+                            ),
+                            onSelected: (selected) {
+                              if (selected) setState(() => _selectedDate = yesterday);
+                            },
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.calendar_month_rounded, size: 16),
+                            label: Text(
+                              isCustom
+                                  ? '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'
+                                  : (isHindi ? 'अन्य तारीख चुनें...' : 'Pick Other Date...'),
+                            ),
+                            backgroundColor: isCustom
+                                ? (isContrast
+                                    ? AppColors.darkPrimary.withOpacity(0.3)
+                                    : AppColors.primaryLight.withOpacity(0.2))
+                                : (isContrast ? Colors.white12 : const Color(0xFFF1F5F9)),
+                            side: BorderSide(
+                              color: isCustom
+                                  ? (isContrast ? AppColors.darkPrimary : AppColors.primary)
+                                  : (isContrast ? Colors.white24 : AppColors.border),
+                              width: isCustom ? 1.5 : 1.0,
+                            ),
+                            labelStyle: TextStyle(
+                              fontSize: 12,
+                              fontWeight: isCustom ? FontWeight.bold : FontWeight.w500,
+                              color: isCustom
+                                  ? (isContrast ? Colors.white : AppColors.primary)
+                                  : (isContrast ? Colors.white70 : AppColors.textPrimary),
+                            ),
+                            onPressed: () => _selectDate(context, isHindi),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
                   // Status Selector Label
                   Text(
