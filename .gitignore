@@ -64,3 +64,4 @@ key.properties
 .env
 .env.*
 *.env
+release/
