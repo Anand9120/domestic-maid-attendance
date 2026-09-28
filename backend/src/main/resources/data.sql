@@ -16,7 +16,7 @@ VALUES
 -- Household 1: Flat 402 (Sharma Residence)
 INSERT INTO household_locations (id, employer_id, house_name, address, latitude, longitude, geofence_radius_meters, dwell_time_minutes, invite_code, monthly_salary, allowed_leaves)
 VALUES 
-(1, 1, 'Sharma Residence - Flat 402', 'B-Block, Green Park Heights, New Delhi', 28.63150000, 77.21670000, 50, 3, 'SHARMA402', 5000.00, 2);
+(1, 1, 'Sharma Residence - Flat 402', 'B-Block, Green Park Heights, New Delhi', 28.63150000, 77.21670000, 50, 3, 'SHARMA402', 2000.00, 2);
 
 -- Household 2: Flat 105 (Verma Residence) - ~110m northeast of Flat 402
 INSERT INTO household_locations (id, employer_id, house_name, address, latitude, longitude, geofence_radius_meters, dwell_time_minutes, invite_code, monthly_salary, allowed_leaves)

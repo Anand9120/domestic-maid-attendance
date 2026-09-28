@@ -44,7 +44,7 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
   final int _month = DateTime.now().month;
 
   // Salary & Payout Configuration
-  double _baseSalary = 5000.0;
+  double _baseSalary = 2000.0;
   String _upiId = '';
   String _maidPhone = '';
   SalaryCalculationEntity? _latestCalculation;

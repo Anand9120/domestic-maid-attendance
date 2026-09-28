@@ -53,9 +53,7 @@ class _BulkBackfillDialogState extends State<BulkBackfillDialog> {
 
     final List<int> unrecorded = [];
     for (int day = 1; day <= daysInMonth; day++) {
-      final date = DateTime(widget.year, widget.month, day);
-      // Skip Sundays (standard rest day in domestic staffing)
-      if (date.weekday == DateTime.sunday) continue;
+      // Includes all days (Sundays included since morning shifts are active)
       if (!loggedDays.contains(day)) {
         unrecorded.add(day);
       }

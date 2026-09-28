@@ -106,7 +106,7 @@ public class SalarySettlementServiceImpl implements SalarySettlementService {
         int allowedLeaves = household.getAllowedLeaves() != null ? household.getAllowedLeaves() : 2;
         BigDecimal baseSalary = household.getMonthlySalary() != null && household.getMonthlySalary().compareTo(BigDecimal.ZERO) > 0
                 ? household.getMonthlySalary()
-                : BigDecimal.valueOf(5000.00);
+                : BigDecimal.valueOf(2000.00);
 
         BigDecimal dailyRate = baseSalary.divide(BigDecimal.valueOf(workingDays), 2, RoundingMode.HALF_UP);
 

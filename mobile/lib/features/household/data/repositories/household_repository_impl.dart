@@ -17,7 +17,7 @@ class HouseholdRepositoryImpl implements HouseholdRepository {
     geofenceRadiusMeters: 50,
     dwellTimeMinutes: 3,
     inviteCode: 'SHARMA402',
-    monthlySalary: 6000.0,
+    monthlySalary: 2000.0,
     allowedLeaves: 2,
   );
 
@@ -82,7 +82,7 @@ class HouseholdRepositoryImpl implements HouseholdRepository {
         geofenceRadiusMeters: geofenceRadiusMeters,
         dwellTimeMinutes: dwellTimeMinutes,
         inviteCode: 'SHARMA402',
-        monthlySalary: 6000.0,
+        monthlySalary: 2000.0,
         allowedLeaves: 2,
       );
     }
