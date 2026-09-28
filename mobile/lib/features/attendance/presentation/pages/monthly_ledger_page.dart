@@ -946,7 +946,47 @@ _Generated via Digital Civic Maid Attendance System_''';
                         );
                       }
 
-                      return const Center(child: Text('Loading monthly ledger...'));
+                      if (state is AttendanceFailure) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.cloud_off_rounded, size: 48, color: AppColors.absent),
+                                const SizedBox(height: 12),
+                                Text(
+                                  state.error,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: isContrast ? Colors.white70 : AppColors.textSecondary,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton.icon(
+                                  onPressed: _loadReport,
+                                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                                  label: Text(a11y.isHindi ? 'पुनः प्रयास करें' : 'Retry'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 48),
+                          child: Ux4gLoadingIndicator(
+                            size: 40,
+                            color: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                            message: a11y.isHindi
+                                ? 'मासिक उपस्थिति विवरण लोड हो रहा है...'
+                                : 'Loading monthly attendance ledger...',
+                          ),
+                        ),
+                      );
                     },
                   );
                 },

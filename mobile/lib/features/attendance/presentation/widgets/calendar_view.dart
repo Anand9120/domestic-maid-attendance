@@ -18,6 +18,7 @@ class MonthlyCalendarGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final daysInMonth = DateTime(year, month + 1, 0).day;
     final firstDayWeekday = DateTime(year, month, 1).weekday; // 1 = Mon, 7 = Sun
 
@@ -40,9 +41,9 @@ class MonthlyCalendarGrid extends StatelessWidget {
                     child: Text(
                       d,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textSecondary,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                         fontSize: 13,
                       ),
                     ),
@@ -70,29 +71,33 @@ class MonthlyCalendarGrid extends StatelessWidget {
             final log = dayLogMap[day];
             final isSunday = date.weekday == 7;
 
-            Color bgColor = Colors.white;
+            Color bgColor = isDark ? AppColors.darkSurface : Colors.white;
             Color dotColor = Colors.transparent;
-            Color textColor = isSunday ? AppColors.textMuted : AppColors.textPrimary;
+            Color textColor = isSunday
+                ? (isDark ? Colors.white38 : AppColors.textMuted)
+                : (isDark ? Colors.white : AppColors.textPrimary);
 
             if (log != null) {
               switch (log.status) {
                 case AttendanceStatus.present:
-                  bgColor = AppColors.presentBg;
-                  dotColor = AppColors.present;
+                  bgColor = isDark ? AppColors.darkPresent.withOpacity(0.2) : AppColors.presentBg;
+                  dotColor = isDark ? AppColors.darkPresent : AppColors.present;
                   break;
                 case AttendanceStatus.late:
-                  bgColor = AppColors.lateBg;
-                  dotColor = AppColors.late;
+                  bgColor = isDark ? Colors.amber.withOpacity(0.2) : AppColors.lateBg;
+                  dotColor = isDark ? Colors.amberAccent : AppColors.late;
                   break;
                 case AttendanceStatus.halfDay:
-                  bgColor = AppColors.halfDayBg;
-                  dotColor = AppColors.halfDay;
+                  bgColor = isDark ? AppColors.darkPrimary.withOpacity(0.2) : AppColors.halfDayBg;
+                  dotColor = isDark ? AppColors.darkPrimary : AppColors.halfDay;
                   break;
                 case AttendanceStatus.absent:
-                  bgColor = AppColors.absentBg;
-                  dotColor = AppColors.absent;
+                  bgColor = isDark ? AppColors.darkAbsent.withOpacity(0.2) : AppColors.absentBg;
+                  dotColor = isDark ? AppColors.darkAbsent : AppColors.absent;
                   break;
               }
+            } else if (isSunday) {
+              bgColor = isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFF1F5F9);
             }
 
             return InkWell(
@@ -103,7 +108,10 @@ class MonthlyCalendarGrid extends StatelessWidget {
                   color: bgColor,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: log != null ? dotColor.withOpacity(0.4) : AppColors.border,
+                    color: log != null
+                        ? dotColor.withOpacity(0.6)
+                        : (isDark ? AppColors.darkBorder : AppColors.border),
+                    width: log != null ? 1.5 : 1,
                   ),
                 ),
                 child: Column(
@@ -125,6 +133,16 @@ class MonthlyCalendarGrid extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: dotColor,
                           shape: BoxShape.circle,
+                        ),
+                      ),
+                    ] else if (isSunday) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'OFF',
+                        style: TextStyle(
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white30 : AppColors.textMuted,
                         ),
                       ),
                     ],
