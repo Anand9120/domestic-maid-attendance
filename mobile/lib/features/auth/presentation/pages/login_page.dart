@@ -218,7 +218,7 @@ class _LoginPageState extends State<LoginPage> {
                                       ],
                               ),
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
                                 children: [
                                   // Role Selector
                                   Text(

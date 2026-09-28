@@ -167,7 +167,7 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
         (widget.enabled ? defaultBgColor : onSurface.withValues(alpha: 0.05));
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Label Section
         if (widget.label != null) ...[
@@ -205,6 +205,7 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
 
         // Input Container
         Container(
+          width: double.infinity,
           height: widget.singleLine ? widget.size.height : null,
           constraints: widget.singleLine
               ? null

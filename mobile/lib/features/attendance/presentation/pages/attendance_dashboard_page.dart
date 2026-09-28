@@ -1140,8 +1140,10 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: const Color(0xFF38BDF8), width: 1),
       ),
-      child: ExpansionTile(
-        initiallyExpanded: false,
+      child: Material(
+        color: Colors.transparent,
+        child: ExpansionTile(
+          initiallyExpanded: false,
         tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         dense: true,
         iconColor: const Color(0xFF38BDF8),
@@ -1190,6 +1192,7 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             ],
           ),
         ],
+      ),
       ),
     );
   }

@@ -114,7 +114,9 @@ class _BulkBackfillDialogState extends State<BulkBackfillDialog> {
               width: 1.5,
             ),
           ),
-          child: Padding(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(
@@ -258,7 +260,9 @@ class _BulkBackfillDialogState extends State<BulkBackfillDialog> {
                     ),
                   ] else ...[
                     // Option 1: Mark all as present
-                    SwitchListTile.adaptive(
+                    Material(
+                      color: Colors.transparent,
+                      child: SwitchListTile.adaptive(
                       contentPadding: EdgeInsets.zero,
                       value: _markAllAsPresent,
                       activeColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
@@ -287,6 +291,7 @@ class _BulkBackfillDialogState extends State<BulkBackfillDialog> {
                           if (val) _selectedLeaveDays.clear();
                         });
                       },
+                    ),
                     ),
 
                     const Divider(height: 20),
@@ -399,6 +404,7 @@ class _BulkBackfillDialogState extends State<BulkBackfillDialog> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

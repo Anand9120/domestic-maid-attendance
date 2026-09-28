@@ -152,7 +152,9 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
               width: 1.5,
             ),
           ),
-          child: Padding(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(
@@ -208,14 +210,18 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        isHindi ? 'हाजिरी की तारीख चुनें' : 'Select Attendance Date',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: isContrast ? Colors.white : AppColors.textPrimary,
+                      Expanded(
+                        child: Text(
+                          isHindi ? 'हाजिरी की तारीख चुनें' : 'Select Attendance Date',
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isContrast ? Colors.white : AppColors.textPrimary,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       if (!_isSameDay(_selectedDate, DateTime.now()))
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -529,6 +535,7 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                 ],
               ),
             ),
+          ),
           ),
         );
       },

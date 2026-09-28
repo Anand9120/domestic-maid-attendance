@@ -44,7 +44,9 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
               width: 1.5,
             ),
           ),
-          child: Padding(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Padding(
             padding: const EdgeInsets.all(20),
             child: SingleChildScrollView(
               child: Column(
@@ -241,6 +243,7 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
                 ],
               ),
             ),
+          ),
           ),
         );
       },
