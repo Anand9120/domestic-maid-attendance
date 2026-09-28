@@ -33,6 +33,8 @@ class GeofenceTrackingController extends ChangeNotifier {
   bool isInsideGeofence = false;
   bool isMockGpsDetected = false;
   bool isLoadingGps = true;
+  bool isLocationServiceDisabled = false;
+  StreamSubscription<ServiceStatus>? _serviceStatusSubscription;
   String gpsStatusInfo = 'Acquiring GPS fix...';
 
   // Dwell & Work Session State per household (mapped by householdId)
@@ -547,12 +549,18 @@ class GeofenceTrackingController extends ChangeNotifier {
     return '${seconds}s';
   }
 
+  /// Helper to open Android location settings for the user
+  Future<void> requestEnableLocation() async {
+    await Geolocator.openLocationSettings();
+  }
+
   @override
   void dispose() {
     _dwellTimer?.cancel();
     _departureTimer?.cancel();
     _workElapsedTimer?.cancel();
     _positionSubscription?.cancel();
+    _serviceStatusSubscription?.cancel();
     super.dispose();
   }
 }

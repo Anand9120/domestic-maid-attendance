@@ -427,6 +427,48 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 // Top UX4G Civic Bar (Tricolor + GIGW Font/Contrast/Lang Controls)
                 const Ux4gCivicBar(),
 
+                // GPS Disabled Actionable Alert Banner
+                if (_tracker.isLocationServiceDisabled)
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isContrast ? AppColors.darkLateBg : const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFEF4444), width: 1.5),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_off_rounded, color: Color(0xFFDC2626), size: 24),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                a11y.isHindi ? 'GPS बंद है! (Location Disabled)' : 'GPS is Turned Off!',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF991B1B)),
+                              ),
+                              Text(
+                                a11y.isHindi ? 'स्वचालित हाजिरी के लिए कृपया GPS चालू करें।' : 'Please enable GPS for zero-touch attendance.',
+                                style: const TextStyle(fontSize: 11, color: Color(0xFFB91C1C)),
+                              ),
+                            ],
+                          ),
+                        ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            backgroundColor: const Color(0xFFDC2626),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          ),
+                          onPressed: () => _tracker.requestEnableLocation(),
+                          child: Text(a11y.isHindi ? 'चालू करें' : 'Enable'),
+                        ),
+                      ],
+                    ),
+                  ),
+
                 // Society Multi-Household Quick Selector Tabs
                 if (_tracker.assignedHouseholds.length > 1)
                   Padding(
