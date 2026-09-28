@@ -20,10 +20,10 @@ class GeofenceMapSetupPage extends StatefulWidget {
 class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  String _houseName = 'Sharma Residence - Flat 402';
-  String _address = 'Green Park Heights, New Delhi';
-  String _latStr = '28.6315000';
-  String _lonStr = '77.2167000';
+  String _houseName = 'Sudama Nagar Residence - 3962E';
+  String _address = '3962E, Sector E, Sudama Nagar, Indore, MP 452001';
+  String _latStr = '22.6914000';
+  String _lonStr = '75.8325000';
 
   String? _houseNameError;
   String? _addressError;

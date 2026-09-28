@@ -21,8 +21,8 @@ class GeofenceTrackingController extends ChangeNotifier {
   final Map<int, double> householdDistances = {};
 
   // Active Household Geofence Parameters
-  double targetLat = 28.6315000;
-  double targetLon = 77.2167000;
+  double targetLat = 22.6914000;
+  double targetLon = 75.8325000;
   double geofenceRadiusMeters = 50.0;
   int requiredDwellSeconds = 180;
 

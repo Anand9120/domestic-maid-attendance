@@ -764,6 +764,7 @@ _Generated via Digital Civic Maid Attendance System_''';
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
                                             foregroundColor: Colors.white,
+                                            minimumSize: const Size(80, 36),
                                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                           ),
