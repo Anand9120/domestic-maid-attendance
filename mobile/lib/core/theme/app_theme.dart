@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
+import '../ux4g/ux4g.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -13,6 +14,27 @@ class AppTheme {
         error: AppColors.absent,
       ),
       fontFamily: 'Roboto',
+      extensions: [
+        const Ux4gThemeColors(
+          primary: AppColors.primary,
+          onPrimary: Colors.white,
+          secondary: AppColors.secondary,
+          onSecondary: Colors.white,
+          background: AppColors.background,
+          onBackground: AppColors.textPrimary,
+          surface: AppColors.surface,
+          onSurface: AppColors.textPrimary,
+          error: AppColors.absent,
+          onError: Colors.white,
+          success: AppColors.present,
+          onSuccess: Colors.white,
+          warning: AppColors.halfDay,
+          onWarning: Colors.white,
+          info: Color(0xFF0284C7),
+          onInfo: Colors.white,
+        ),
+        defaultUx4gTypography,
+      ],
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -88,6 +110,27 @@ class AppTheme {
         onSurface: AppColors.darkTextPrimary,
       ),
       fontFamily: 'Roboto',
+      extensions: [
+        const Ux4gThemeColors(
+          primary: AppColors.darkPrimary,
+          onPrimary: Color(0xFF0F172A),
+          secondary: AppColors.darkSecondary,
+          onSecondary: Color(0xFF0F172A),
+          background: AppColors.darkBackground,
+          onBackground: AppColors.darkTextPrimary,
+          surface: AppColors.darkSurface,
+          onSurface: AppColors.darkTextPrimary,
+          error: AppColors.darkAbsent,
+          onError: Color(0xFF0F172A),
+          success: AppColors.darkPresent,
+          onSuccess: Color(0xFF0F172A),
+          warning: AppColors.darkPrimary,
+          onWarning: Color(0xFF0F172A),
+          info: AppColors.darkPrimary,
+          onInfo: Color(0xFF0F172A),
+        ),
+        defaultUx4gTypography,
+      ],
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkSurface,
         elevation: 0,
