@@ -16,7 +16,7 @@ VALUES
 -- Household 1: Flat 402 (Sharma Residence)
 INSERT INTO household_locations (id, employer_id, house_name, address, latitude, longitude, geofence_radius_meters, dwell_time_minutes, invite_code, monthly_salary, allowed_leaves)
 VALUES 
-(1, 1, 'Sudama Nagar Residence - 3962E', '3962E, Sector E, Sudama Nagar, Indore, MP 452001', 22.69140000, 75.83250000, 50, 3, 'SHARMA402', 2000.00, 2);
+(1, 1, 'Indore Residence - Central', 'Near MG Road / Rajwada Area, Indore, MP 452001', 22.72460800, 75.85792000, 50, 3, 'SHARMA402', 2000.00, 2);
 
 -- Household 2: Flat 105 (Verma Residence) - ~110m northeast of Flat 402
 INSERT INTO household_locations (id, employer_id, house_name, address, latitude, longitude, geofence_radius_meters, dwell_time_minutes, invite_code, monthly_salary, allowed_leaves)

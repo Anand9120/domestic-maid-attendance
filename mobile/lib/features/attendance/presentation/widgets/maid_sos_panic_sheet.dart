@@ -62,8 +62,8 @@ class MaidSosPanicSheet extends StatelessWidget {
     final isContrast = a11y.isHighContrast;
     final isHindi = a11y.isHindi;
 
-    final latStr = currentPosition?.latitude.toStringAsFixed(5) ?? '28.63150';
-    final lonStr = currentPosition?.longitude.toStringAsFixed(5) ?? '77.21670';
+    final latStr = currentPosition?.latitude.toStringAsFixed(5) ?? '22.72461';
+    final lonStr = currentPosition?.longitude.toStringAsFixed(5) ?? '75.85792';
 
     return Container(
       decoration: BoxDecoration(

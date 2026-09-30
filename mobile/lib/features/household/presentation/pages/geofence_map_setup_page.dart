@@ -20,10 +20,10 @@ class GeofenceMapSetupPage extends StatefulWidget {
 class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  String _houseName = 'Sudama Nagar Residence - 3962E';
-  String _address = '3962E, Sector E, Sudama Nagar, Indore, MP 452001';
-  String _latStr = '22.6914000';
-  String _lonStr = '75.8325000';
+  String _houseName = 'Indore Residence - Central';
+  String _address = 'Near MG Road / Rajwada Area, Indore, MP 452001';
+  String _latStr = '22.7246080';
+  String _lonStr = '75.8579200';
 
   String? _houseNameError;
   String? _addressError;
@@ -204,8 +204,8 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
         final isContrast = a11y.isHighContrast;
         final isHindi = a11y.isHindi;
 
-        final currentTargetLat = double.tryParse(_latStr) ?? 28.6315;
-        final currentTargetLon = double.tryParse(_lonStr) ?? 77.2167;
+        final currentTargetLat = double.tryParse(_latStr) ?? 22.724608;
+        final currentTargetLon = double.tryParse(_lonStr) ?? 75.857920;
 
         return Scaffold(
           backgroundColor: isContrast ? AppColors.hcBackground : AppColors.background,
@@ -362,7 +362,7 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
                                       },
                                       label: isHindi ? 'अक्षांश (Lat)' : 'Latitude',
                                       required: true,
-                                      placeholder: '28.6315',
+                                      placeholder: '22.724608',
                                       caption: _latError,
                                       status: _latError != null
                                           ? Ux4gInputFieldStatus.error
@@ -385,7 +385,7 @@ class _GeofenceMapSetupPageState extends State<GeofenceMapSetupPage> {
                                       },
                                       label: isHindi ? 'देशांतर (Lon)' : 'Longitude',
                                       required: true,
-                                      placeholder: '77.2167',
+                                      placeholder: '75.857920',
                                       caption: _lonError,
                                       status: _lonError != null
                                           ? Ux4gInputFieldStatus.error

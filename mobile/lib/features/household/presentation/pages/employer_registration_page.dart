@@ -45,8 +45,8 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
   // Household Details
   String _houseName = '';
   String _address = '';
-  double _latitude = 22.6914;
-  double _longitude = 75.8325;
+  double _latitude = 22.724608;
+  double _longitude = 75.857920;
   double _geofenceRadius = 50.0;
   double _dwellTimeMinutes = 3.0;
   String _inviteCode = '';
