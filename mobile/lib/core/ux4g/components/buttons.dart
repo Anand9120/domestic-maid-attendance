@@ -42,6 +42,7 @@ class Ux4gButton extends StatelessWidget {
   final double? height;
   final double? elevation;
   final TextStyle? textStyle;
+  final String? semanticLabel;
 
   const Ux4gButton({
     super.key,
@@ -67,6 +68,7 @@ class Ux4gButton extends StatelessWidget {
     this.height,
     this.elevation,
     this.textStyle,
+    this.semanticLabel,
   }) : assert(
          text != null ||
              child != null ||
@@ -85,8 +87,6 @@ class Ux4gButton extends StatelessWidget {
     final effectiveBgColor = backgroundColor ?? style.backgroundColor;
     final effectiveContentColor = contentColor ?? style.contentColor;
 
-    final onSurface =
-        ux4gColors?.onSurface ?? materialTheme.colorScheme.onSurface;
 
     final isDark = materialTheme.brightness == Brightness.dark;
 
@@ -251,9 +251,13 @@ class Ux4gOutlineButton extends Ux4gButton {
     Color? color,
     super.borderRadius,
     super.padding,
+    super.leadingIcon,
+    super.trailingIcon,
+    super.iconSize,
     super.width,
     super.height,
     super.textStyle,
+    super.semanticLabel,
   }) : super(
          variant: Ux4gButtonVariant.outline,
          contentColor: color,
@@ -273,9 +277,13 @@ class Ux4gTextButton extends Ux4gButton {
     Color? color,
     super.borderRadius,
     super.padding,
+    super.leadingIcon,
+    super.trailingIcon,
+    super.iconSize,
     super.width,
     super.height,
     super.textStyle,
+    super.semanticLabel,
   }) : super(variant: Ux4gButtonVariant.ghost, contentColor: color);
 }
 
@@ -285,14 +293,18 @@ class Ux4gIconButton extends StatelessWidget {
   final Ux4gButtonVariant variant;
   final double size;
   final bool enabled;
+  final String? semanticLabel;
+  final String? tooltip;
 
   const Ux4gIconButton({
     super.key,
     required this.icon,
     required this.onPressed,
     this.variant = Ux4gButtonVariant.primary,
-    this.size = 40,
+    this.size = 48,
     this.enabled = true,
+    this.semanticLabel,
+    this.tooltip,
   });
 
   @override
@@ -329,28 +341,40 @@ class Ux4gIconButton extends StatelessWidget {
         : Colors.transparent;
     final disabledFgColor = isDark ? Ux4gColors.neutral400 : Ux4gColors.neutral400;
 
-    return IconButton(
-      onPressed: enabled ? onPressed : null,
-      icon: Icon(icon, size: size * 0.6),
-      style: IconButton.styleFrom(
-        backgroundColor: bgColor,
-        foregroundColor: contentColor,
-        disabledBackgroundColor: disabledBgColor,
-        disabledForegroundColor: disabledFgColor,
-        fixedSize: Size(size, size),
-        side: !enabled && variant != Ux4gButtonVariant.ghost
-            ? BorderSide(
-                color: isDark ? Colors.transparent : Ux4gColors.neutral300,
-                width: 1.0,
-              )
-            : (variant == Ux4gButtonVariant.outline
+    final effectiveSize = size < 48 ? 48.0 : size;
+    final label = semanticLabel ?? tooltip ?? 'Action';
+
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: label,
+      child: Tooltip(
+        message: tooltip ?? label,
+        child: IconButton(
+          onPressed: enabled ? onPressed : null,
+          icon: Icon(icon, size: size * 0.55),
+          style: IconButton.styleFrom(
+            tapTargetSize: MaterialTapTargetSize.padded,
+            backgroundColor: bgColor,
+            foregroundColor: contentColor,
+            disabledBackgroundColor: disabledBgColor,
+            disabledForegroundColor: disabledFgColor,
+            fixedSize: Size(effectiveSize, effectiveSize),
+            side: !enabled && variant != Ux4gButtonVariant.ghost
                 ? BorderSide(
-                    color: primary,
+                    color: isDark ? Colors.transparent : Ux4gColors.neutral300,
                     width: 1.0,
                   )
-                : null),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(Ux4gRadius.radius8),
+                : (variant == Ux4gButtonVariant.outline
+                    ? BorderSide(
+                        color: primary,
+                        width: 1.0,
+                      )
+                    : null),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(Ux4gRadius.radius8),
+            ),
+          ),
         ),
       ),
     );

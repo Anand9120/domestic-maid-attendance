@@ -333,76 +333,42 @@ class _LoginPageState extends State<LoginPage> {
                                   const SizedBox(height: 16),
 
                                   // Register Employer Household
-                                  SizedBox(
+                                  Ux4gButton(
                                     width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      style: OutlinedButton.styleFrom(
-                                        minimumSize: const Size(double.infinity, 48),
-                                        side: BorderSide(
-                                          color: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                    size: Ux4gButtonSize.large,
+                                    variant: Ux4gButtonVariant.outline,
+                                    borderColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                    contentColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                    leadingIcon: Icons.add_home_work_rounded,
+                                    text: 'Register New Household (नया घर जोड़ें)',
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const EmployerRegistrationPage(),
                                         ),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      ),
-                                      icon: Icon(
-                                        Icons.add_home_work_rounded,
-                                        size: 18,
-                                        color: isContrast ? AppColors.darkPrimary : AppColors.primary,
-                                      ),
-                                      label: Text(
-                                        'Register New Household (नया घर जोड़ें)',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: isContrast ? AppColors.darkPrimary : AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const EmployerRegistrationPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                      );
+                                    },
                                   ),
-                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 12),
 
                                   // Maid Profile & Linking
-                                  SizedBox(
+                                  Ux4gButton(
                                     width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      style: OutlinedButton.styleFrom(
-                                        minimumSize: const Size(double.infinity, 48),
-                                        side: BorderSide(
-                                          color: isContrast ? Colors.white70 : Colors.grey.shade400,
+                                    size: Ux4gButtonSize.large,
+                                    variant: Ux4gButtonVariant.outline,
+                                    borderColor: isContrast ? Colors.white70 : Colors.grey.shade400,
+                                    contentColor: isContrast ? Colors.white : AppColors.textPrimary,
+                                    leadingIcon: Icons.person_add_alt_1_rounded,
+                                    text: 'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => const MaidProfileSetupPage(),
                                         ),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                      ),
-                                      icon: Icon(
-                                        Icons.person_add_alt_1_rounded,
-                                        size: 18,
-                                        color: isContrast ? Colors.white : AppColors.textPrimary,
-                                      ),
-                                      label: Text(
-                                        'Maid Profile & Onboarding (सहायिका प्रोफ़ाइल)',
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: isContrast ? Colors.white : AppColors.textPrimary,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => const MaidProfileSetupPage(),
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),

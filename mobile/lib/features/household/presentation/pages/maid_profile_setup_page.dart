@@ -520,19 +520,14 @@ class _MaidProfileSetupPageState extends State<MaidProfileSetupPage> {
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      ElevatedButton.icon(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
-                                          foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
-                                          minimumSize: const Size(120, 48),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        icon: _isLinkingCode
-                                            ? Ux4gSpinner.small(
-                                                color: isContrast ? const Color(0xFF0F172A) : Colors.white,
-                                              )
-                                            : const Icon(Icons.link_rounded, size: 18),
-                                        label: const Text('Link', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      Ux4gButton(
+                                        size: Ux4gButtonSize.large,
+                                        variant: Ux4gButtonVariant.primary,
+                                        backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
+                                        contentColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
+                                        leadingIcon: Icons.link_rounded,
+                                        isLoading: _isLinkingCode,
+                                        text: 'Link',
                                         onPressed: _isLinkingCode ? null : _linkHouseholdByInviteCode,
                                       ),
                                     ],

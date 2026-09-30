@@ -106,16 +106,12 @@ class _ActivityTimelineSheetState extends State<ActivityTimelineSheet> {
                         ],
                       ),
                     ),
-                    TextButton.icon(
-                      icon: const Icon(Icons.done_all_rounded, size: 16),
-                      label: Text(
-                        widget.a11y.tr('mark_all_read'),
-                        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
-                      ),
-                      style: TextButton.styleFrom(
-                        foregroundColor: widget.isContrast ? AppColors.darkPrimary : AppColors.primary,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                      ),
+                    Ux4gButton(
+                      variant: Ux4gButtonVariant.ghost,
+                      size: Ux4gButtonSize.small,
+                      leadingIcon: Icons.done_all_rounded,
+                      text: widget.a11y.tr('mark_all_read'),
+                      contentColor: widget.isContrast ? AppColors.darkPrimary : AppColors.primary,
                       onPressed: () {
                         context.read<NotificationBloc>().add(
                               MarkAllNotificationsReadEvent(userId: widget.userId),

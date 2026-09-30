@@ -172,10 +172,15 @@ class MaidSosPanicSheet extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  tooltip: isHindi ? 'SMS द्वारा स्थान भेजें' : 'Send location via SMS',
-                  icon: const Icon(Icons.send_rounded, color: Color(0xFFDC2626)),
-                  onPressed: () => _shareSmsEmergency(latStr, lonStr),
+                Semantics(
+                  button: true,
+                  label: isHindi ? 'SMS द्वारा स्थान भेजें' : 'Send location via SMS',
+                  child: IconButton(
+                    tooltip: isHindi ? 'SMS द्वारा स्थान भेजें' : 'Send location via SMS',
+                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                    icon: const Icon(Icons.send_rounded, color: Color(0xFFDC2626)),
+                    onPressed: () => _shareSmsEmergency(latStr, lonStr),
+                  ),
                 ),
               ],
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../core/constants/app_colors.dart';
 import '../../../../core/ux4g/ux4g.dart';
 
 class CustomButton extends StatelessWidget {
@@ -22,40 +21,17 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
+    return Ux4gButton(
       width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
-          foregroundColor: textColor ?? Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-        onPressed: isLoading ? null : onPressed,
-        child: isLoading
-            ? Ux4gSpinner.medium(
-                color: textColor ?? Colors.white,
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-      ),
+      size: Ux4gButtonSize.large,
+      variant: Ux4gButtonVariant.primary,
+      backgroundColor: backgroundColor,
+      contentColor: textColor,
+      leadingIcon: icon,
+      text: text,
+      isLoading: isLoading,
+      onPressed: onPressed,
+      borderRadius: 14,
     );
   }
 }

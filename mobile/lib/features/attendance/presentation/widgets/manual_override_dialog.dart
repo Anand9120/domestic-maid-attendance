@@ -440,13 +440,18 @@ class _ManualOverrideDialogState extends State<ManualOverrideDialog> {
                       const SizedBox(width: 8),
                       Padding(
                         padding: const EdgeInsets.only(top: 24),
-                        child: IconButton.outlined(
-                          tooltip: isHindi ? 'घड़ी से समय चुनें' : 'Pick time from clock',
-                          icon: const Icon(Icons.schedule_rounded),
-                          onPressed: () => _selectTime(context),
-                          style: IconButton.styleFrom(
-                            side: BorderSide(color: isContrast ? Colors.white38 : AppColors.border),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        child: Semantics(
+                          button: true,
+                          label: isHindi ? 'घड़ी से समय चुनें' : 'Pick time from clock',
+                          child: IconButton.outlined(
+                            tooltip: isHindi ? 'घड़ी से समय चुनें' : 'Pick time from clock',
+                            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                            icon: const Icon(Icons.schedule_rounded),
+                            onPressed: () => _selectTime(context),
+                            style: IconButton.styleFrom(
+                              side: BorderSide(color: isContrast ? Colors.white38 : AppColors.border),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
                       ),

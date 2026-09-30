@@ -136,9 +136,13 @@ class Ux4gStatusBanner extends StatelessWidget {
     resolvedBackgroundColor = backgroundColor ?? resolvedBackgroundColor;
     resolvedBorderColor = borderColor ?? resolvedBorderColor;
 
-    return Container(
-      width: width ?? double.infinity,
-      height: height,
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: "$title. ${subtitle ?? ""}",
+      child: Container(
+        width: width ?? double.infinity,
+        height: height,
       constraints: BoxConstraints(minHeight: height ?? 48),
       padding: padding,
       margin: margin,
@@ -219,7 +223,8 @@ class Ux4gStatusBanner extends StatelessWidget {
           ],
         ],
       ),
-    );
+    ),
+  );
   }
 }
 

@@ -119,7 +119,9 @@ class Ux4gCivicBar extends StatelessWidget {
                       onTap: () => controller.toggleHighContrast(),
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        constraints: const BoxConstraints(minWidth: 40, minHeight: 38),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                         decoration: BoxDecoration(
                           color: isContrast ? AppColors.darkPrimary : Colors.white12,
                           borderRadius: BorderRadius.circular(4),
@@ -145,7 +147,9 @@ class Ux4gCivicBar extends StatelessWidget {
                       onTap: () => controller.toggleLocale(),
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        constraints: const BoxConstraints(minWidth: 54, minHeight: 38),
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
                           color: isContrast ? AppColors.darkSecondary : const Color(0xFFE05A1B),
                           borderRadius: BorderRadius.circular(4),
@@ -184,7 +188,9 @@ class Ux4gCivicBar extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(4),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+          constraints: const BoxConstraints(minWidth: 36, minHeight: 38),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
             color: isSelected
                 ? (isContrast ? AppColors.darkPrimary : Colors.white)

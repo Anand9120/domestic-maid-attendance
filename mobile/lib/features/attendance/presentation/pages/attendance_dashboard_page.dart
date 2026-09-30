@@ -427,43 +427,23 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                 // Top UX4G Civic Bar (Tricolor + GIGW Font/Contrast/Lang Controls)
                 const Ux4gCivicBar(),
 
-                // GPS Disabled Actionable Alert Banner
+                // Critical GPS Warning Banner (UX4G Standard)
                 if (_tracker.isLocationServiceDisabled)
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isContrast ? AppColors.darkLateBg : const Color(0xFFFEF2F2),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFEF4444), width: 1.5),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.location_off_rounded, color: Color(0xFFDC2626), size: 24),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                a11y.isHindi ? 'GPS बंद है! (Location Disabled)' : 'GPS is Turned Off!',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF991B1B)),
-                              ),
-                              Text(
-                                a11y.isHindi ? 'स्वचालित हाजिरी के लिए कृपया GPS चालू करें।' : 'Please enable GPS for zero-touch attendance.',
-                                style: const TextStyle(fontSize: 11, color: Color(0xFFB91C1C)),
-                              ),
-                            ],
-                          ),
-                        ),
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            backgroundColor: const Color(0xFFDC2626),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                          ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    child: Ux4gStatusBanner(
+                      variant: Ux4gBannerVariant.errorLight,
+                      title: a11y.isHindi ? 'GPS बंद है! (Location Disabled)' : 'GPS is Turned Off!',
+                      subtitle: a11y.isHindi ? 'स्वचालित हाजिरी के लिए कृपया GPS चालू करें।' : 'Please enable GPS for zero-touch attendance.',
+                      leadingIcon: const Icon(Icons.location_off_rounded, color: Color(0xFFDC2626), size: 24),
+                      actions: [
+                        Ux4gButton(
+                          size: Ux4gButtonSize.small,
+                          variant: Ux4gButtonVariant.primary,
+                          backgroundColor: const Color(0xFFDC2626),
+                          contentColor: Colors.white,
                           onPressed: () => _tracker.requestEnableLocation(),
-                          child: Text(a11y.isHindi ? 'चालू करें' : 'Enable'),
+                          text: a11y.isHindi ? 'चालू करें' : 'Enable',
                         ),
                       ],
                     ),
@@ -1094,21 +1074,24 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: 'Copy Code',
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(4),
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(Icons.copy_rounded, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 20),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: _inviteCode));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Invite code "$_inviteCode" copied!'),
-                              backgroundColor: AppColors.present,
-                            ),
-                          );
-                        },
+                      Semantics(
+                        button: true,
+                        label: 'Copy invite code',
+                        child: IconButton(
+                          tooltip: 'Copy Code',
+                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                          padding: const EdgeInsets.all(12),
+                          icon: Icon(Icons.copy_rounded, color: isContrast ? AppColors.darkPrimary : AppColors.primary, size: 22),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: _inviteCode));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Invite code "$_inviteCode" copied!'),
+                                backgroundColor: AppColors.present,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -1117,8 +1100,8 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
             ),
           ),
           actions: [
-            TextButton(
-              child: const Text('Close'),
+            Ux4gTextButton(
+              text: 'Close',
               onPressed: () => Navigator.of(ctx).pop(),
             ),
           ],
@@ -1198,19 +1181,27 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
   }
 
   Widget _buildSimBtn({required String label, required Color color, required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.2),
+    return Semantics(
+      button: true,
+      label: label,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color, width: 1),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+          child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: color, width: 1),
+            ),
+            child: Text(
+              label,
+              style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          ),
         ),
       ),
     );

@@ -206,10 +206,11 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
         // Input Container
         Container(
           width: double.infinity,
-          height: widget.singleLine ? widget.size.height : null,
-          constraints: widget.singleLine
-              ? null
-              : const BoxConstraints(minHeight: 100),
+          constraints: BoxConstraints(
+            minHeight: widget.singleLine
+                ? (widget.size.height < 48 ? 48.0 : widget.size.height)
+                : 100.0,
+          ),
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(Ux4gRadius.radius8),
@@ -307,23 +308,39 @@ class _Ux4gInputFieldState extends State<Ux4gInputField> {
 
               // Trailing Icon or Eye Toggle
               if (widget.type == Ux4gInputFieldType.password) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: () => setState(() => _obscureText = !_obscureText),
-                  child: Icon(
-                    _obscureText ? Icons.visibility_off : Icons.visibility,
-                    size: 20,
-                    color: onSurface.withValues(alpha: 0.5),
+                const SizedBox(width: 4),
+                Semantics(
+                  button: true,
+                  label: _obscureText ? "Show password" : "Hide password",
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => setState(() => _obscureText = !_obscureText),
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        size: 20,
+                        color: onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
                   ),
                 ),
               ] else if (widget.trailingIcon != null) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: widget.onTrailingIconPressed,
-                  child: Icon(
-                    widget.trailingIcon,
-                    size: 20,
-                    color: onSurface.withValues(alpha: 0.5),
+                const SizedBox(width: 4),
+                Semantics(
+                  button: true,
+                  label: "Action",
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: widget.onTrailingIconPressed,
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Icon(
+                        widget.trailingIcon,
+                        size: 20,
+                        color: onSurface.withValues(alpha: 0.6),
+                      ),
+                    ),
                   ),
                 ),
               ],

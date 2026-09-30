@@ -100,9 +100,15 @@ class MonthlyCalendarGrid extends StatelessWidget {
               bgColor = isDark ? Colors.white.withOpacity(0.04) : const Color(0xFFF1F5F9);
             }
 
-            return InkWell(
-              onTap: () => onDateSelected?.call(date, log),
-              borderRadius: BorderRadius.circular(10),
+            final statusText = log != null
+                ? log.status.name
+                : (isSunday ? "Sunday Off" : "Not recorded");
+            return Semantics(
+              button: true,
+              label: "Day $day, $statusText",
+              child: InkWell(
+                onTap: () => onDateSelected?.call(date, log),
+                borderRadius: BorderRadius.circular(10),
               child: Container(
                 decoration: BoxDecoration(
                   color: bgColor,
@@ -149,8 +155,9 @@ class MonthlyCalendarGrid extends StatelessWidget {
                   ],
                 ),
               ),
-            );
-          },
+            ),
+          );
+        },
         ),
       ],
     );

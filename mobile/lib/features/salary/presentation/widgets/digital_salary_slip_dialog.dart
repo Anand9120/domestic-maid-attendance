@@ -1,3 +1,4 @@
+import '../../../../core/ux4g/ux4g.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -358,41 +359,45 @@ _प्रमाणित डिजिटल वेतन पर्ची - Dome
               ),
               const SizedBox(height: 18),
 
-              // Actions
+              // Actions (UX4G Compliant)
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF25D366),
-                        foregroundColor: isContrast ? AppColors.darkBackground : Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      icon: const Icon(Icons.share_rounded, size: 18),
-                      label: const Text('WhatsApp पर भेजें', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: Ux4gButton(
+                      size: Ux4gButtonSize.medium,
+                      variant: Ux4gButtonVariant.primary,
+                      backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF25D366),
+                      contentColor: isContrast ? AppColors.darkBackground : Colors.white,
+                      leadingIcon: Icons.share_rounded,
+                      text: 'WhatsApp पर भेजें',
                       onPressed: () => _shareOnWhatsApp(context),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded),
-                    tooltip: 'रसीद कॉपी करें (Copy)',
-                    onPressed: () async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      await Clipboard.setData(ClipboardData(text: _generateShareableText()));
-                      messenger.showSnackBar(
-                        const SnackBar(
-                          content: Text('Digital salary slip copied to clipboard!'),
-                          backgroundColor: AppColors.present,
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 6),
+                  Semantics(
+                    button: true,
+                    label: 'रसीद कॉपी करें (Copy)',
+                    child: IconButton(
+                      icon: const Icon(Icons.copy_rounded),
+                      tooltip: 'रसीद कॉपी करें (Copy)',
+                      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                      padding: const EdgeInsets.all(12),
+                      onPressed: () async {
+                        final messenger = ScaffoldMessenger.of(context);
+                        await Clipboard.setData(ClipboardData(text: _generateShareableText()));
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Digital salary slip copied to clipboard!'),
+                            backgroundColor: AppColors.present,
+                          ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(width: 4),
-                  TextButton(
+                  Ux4gTextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Close'),
+                    text: 'Close',
                   ),
                 ],
               ),

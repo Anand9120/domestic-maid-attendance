@@ -101,11 +101,16 @@ class Ux4gCard extends StatelessWidget {
             ? BorderSide(color: borderColor, width: borderWidth)
             : BorderSide.none,
       ),
-      child: InkWell(
-        onTap: isClickable ? onPressed : null,
-        child: child != null
-            ? SizedBox(width: double.infinity, child: content)
-            : content,
+      child: Semantics(
+        button: isClickable,
+        enabled: isClickable,
+        label: title,
+        child: InkWell(
+          onTap: isClickable ? onPressed : null,
+          child: child != null
+              ? SizedBox(width: double.infinity, child: content)
+              : content,
+        ),
       ),
     );
   }

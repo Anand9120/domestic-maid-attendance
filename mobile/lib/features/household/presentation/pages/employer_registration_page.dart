@@ -270,21 +270,24 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
                         ),
                       ),
                       const SizedBox(width: 8),
-                      IconButton(
-                        tooltip: 'Copy Code',
-                        constraints: const BoxConstraints(),
-                        padding: const EdgeInsets.all(4),
-                        visualDensity: VisualDensity.compact,
-                        icon: const Icon(Icons.copy_rounded, color: AppColors.primary, size: 20),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: code));
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Invite code "$code" copied to clipboard!'),
-                              backgroundColor: AppColors.present,
-                            ),
-                          );
-                        },
+                      Semantics(
+                        button: true,
+                        label: 'Copy invite code',
+                        child: IconButton(
+                          tooltip: 'Copy Code',
+                          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                          padding: const EdgeInsets.all(12),
+                          icon: const Icon(Icons.copy_rounded, color: AppColors.primary, size: 22),
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: code));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Invite code "$code" copied to clipboard!'),
+                                backgroundColor: AppColors.present,
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   ),
@@ -293,14 +296,11 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
             ),
           ),
           actions: [
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-              ),
-              icon: const Icon(Icons.dashboard_rounded, size: 18),
-              label: const Text('Go to Dashboard'),
+            Ux4gButton(
+              size: Ux4gButtonSize.large,
+              variant: Ux4gButtonVariant.primary,
+              leadingIcon: Icons.dashboard_rounded,
+              text: 'Go to Dashboard',
               onPressed: () {
                 Navigator.of(ctx).pop();
                 Navigator.pushReplacement(
@@ -908,31 +908,53 @@ class _EmployerRegistrationPageState extends State<EmployerRegistrationPage> {
             ),
           ),
           const SizedBox(height: 8),
-          InkWell(
-            onTap: () async {
-              final picked = await showTimePicker(context: context, initialTime: start);
-              if (picked != null) onPickStart(picked);
-            },
-            child: Row(
-              children: [
-                const Icon(Icons.alarm, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text('In: ${start.format(context)}', style: const TextStyle(fontSize: 12)),
-              ],
+          Semantics(
+            button: true,
+            label: 'Select $label In Time, current: ${start.format(context)}',
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(6),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: start);
+                  if (picked != null) onPickStart(picked);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.alarm, size: 18, color: AppColors.textSecondary),
+                      const SizedBox(width: 6),
+                      Text('In: ${start.format(context)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 6),
-          InkWell(
-            onTap: () async {
-              final picked = await showTimePicker(context: context, initialTime: end);
-              if (picked != null) onPickEnd(picked);
-            },
-            child: Row(
-              children: [
-                const Icon(Icons.alarm_off, size: 16, color: AppColors.textSecondary),
-                const SizedBox(width: 4),
-                Text('Out: ${end.format(context)}', style: const TextStyle(fontSize: 12)),
-              ],
+          const SizedBox(height: 4),
+          Semantics(
+            button: true,
+            label: 'Select $label Out Time, current: ${end.format(context)}',
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 44),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(6),
+                onTap: () async {
+                  final picked = await showTimePicker(context: context, initialTime: end);
+                  if (picked != null) onPickEnd(picked);
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.alarm_off, size: 18, color: AppColors.textSecondary),
+                      const SizedBox(width: 6),
+                      Text('Out: ${end.format(context)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

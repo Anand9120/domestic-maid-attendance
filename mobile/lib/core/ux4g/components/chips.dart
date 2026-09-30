@@ -84,41 +84,50 @@ class Ux4gChoiceChip extends StatelessWidget {
         : (unselectedTextColor ??
               (ux4gColors?.onSurface ?? materialTheme.colorScheme.onSurface));
 
-    return InkWell(
-      onTap: enabled ? onClick : null,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: Opacity(
-        opacity: enabled ? 1.0 : 0.5,
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: paddingH,
-            vertical: paddingV,
-          ),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: borderColor, width: borderWidth),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (leadingContent != null) ...[
-                leadingContent!,
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: Text(
-                  text,
-                  style: textStyle.copyWith(color: textColor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: text,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+        child: InkWell(
+          onTap: enabled ? onClick : null,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Opacity(
+            opacity: enabled ? 1.0 : 0.5,
+            child: Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: paddingH,
+                vertical: paddingV,
               ),
-              if (trailingContent != null) ...[
-                const SizedBox(width: 8),
-                trailingContent!,
-              ],
-            ],
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(borderRadius),
+                border: Border.all(color: borderColor, width: borderWidth),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (leadingContent != null) ...[
+                    leadingContent!,
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: textStyle.copyWith(color: textColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (trailingContent != null) ...[
+                    const SizedBox(width: 8),
+                    trailingContent!,
+                  ],
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -204,35 +213,44 @@ class Ux4gFilterChip extends StatelessWidget {
         : (unselectedTextColor ??
               (ux4gColors?.onSurface ?? materialTheme.colorScheme.onSurface));
 
-    return InkWell(
-      onTap: enabled ? onClick : null,
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: Opacity(
-        opacity: enabled ? 1.0 : 0.5,
-        child: Container(
-          height: height,
-          padding: EdgeInsets.symmetric(horizontal: paddingH),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(color: borderColor, width: borderWidth),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (leadingContent != null) ...[
-                leadingContent!,
-                const SizedBox(width: 8),
-              ],
-              Flexible(
-                child: Text(
-                  text,
-                  style: textStyle.copyWith(color: textColor),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+    return Semantics(
+      button: true,
+      selected: selected,
+      enabled: enabled,
+      label: text,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
+        child: InkWell(
+          onTap: enabled ? onClick : null,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Opacity(
+            opacity: enabled ? 1.0 : 0.5,
+            child: Container(
+              height: height,
+              padding: EdgeInsets.symmetric(horizontal: paddingH),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(borderRadius),
+                border: Border.all(color: borderColor, width: borderWidth),
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (leadingContent != null) ...[
+                    leadingContent!,
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      text,
+                      style: textStyle.copyWith(color: textColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -339,12 +357,21 @@ class Ux4gInputChip extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            GestureDetector(
-              onTap: enabled ? onDismiss : null,
-              child: Icon(
-                Icons.close,
-                size: iconSize,
-                color: finalTextColor.withValues(alpha: 0.8),
+            Semantics(
+              button: true,
+              label: "Remove $text",
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                child: GestureDetector(
+                  onTap: enabled ? onDismiss : null,
+                  child: Center(
+                    child: Icon(
+                      Icons.close,
+                      size: iconSize,
+                      color: finalTextColor.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],

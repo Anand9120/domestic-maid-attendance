@@ -154,27 +154,24 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
               style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              autofocus: true,
+            Ux4gInputField(
+              value: controller.text,
+              onValueChange: (val) => controller.text = val,
+              type: Ux4gInputFieldType.number,
+              label: 'Monthly Salary (रुपये)',
+              placeholder: '5000',
+              prefixText: '₹ ',
               maxLength: 7,
               inputFormatters: FormValidators.salaryFormatters,
-              decoration: const InputDecoration(
-                prefixText: '₹ ',
-                labelText: 'Monthly Salary (रुपये)',
-                counterText: '',
-                border: OutlineInputBorder(),
-              ),
             ),
           ],
         ),
         actions: [
-          TextButton(
+          Ux4gTextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            text: 'Cancel',
           ),
-          ElevatedButton(
+          Ux4gButton(
             onPressed: () {
               final err = FormValidators.validateSalary(controller.text);
               if (err != null) {
@@ -189,7 +186,7 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
               }
               Navigator.pop(ctx);
             },
-            child: const Text('Save'),
+            text: 'Save',
           ),
         ],
       ),
@@ -355,18 +352,23 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
                         ],
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.copy_rounded, size: 18),
-                      tooltip: 'Copy UPI ID',
-                      onPressed: _upiId.isEmpty ? null : () {
-                        Clipboard.setData(ClipboardData(text: _upiId));
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Copied UPI ID: $_upiId'),
-                            backgroundColor: AppColors.present,
-                          ),
-                        );
-                      },
+                    Semantics(
+                      button: true,
+                      label: 'Copy UPI ID',
+                      child: IconButton(
+                        icon: const Icon(Icons.copy_rounded, size: 20),
+                        tooltip: 'Copy UPI ID',
+                        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                        onPressed: _upiId.isEmpty ? null : () {
+                          Clipboard.setData(ClipboardData(text: _upiId));
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Copied UPI ID: $_upiId'),
+                              backgroundColor: AppColors.present,
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -375,13 +377,12 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
           ),
         ),
         actions: [
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
-              foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
-            ),
-            icon: const Icon(Icons.check_circle_outline, size: 16),
-            label: const Text('Record Settlement (निपटान दर्ज करें)'),
+          Ux4gButton(
+            size: Ux4gButtonSize.medium,
+            backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+            contentColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
+            leadingIcon: Icons.check_circle_outline,
+            text: 'Record Settlement (निपटान दर्ज करें)',
             onPressed: () {
               Navigator.pop(ctx);
               if (_latestCalculation != null) {
@@ -389,9 +390,9 @@ class _MonthlyLedgerPageState extends State<MonthlyLedgerPage> {
               }
             },
           ),
-          TextButton(
+          Ux4gTextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            text: 'Close',
           ),
         ],
       ),
@@ -712,67 +713,29 @@ _Generated via Digital Civic Maid Attendance System_''';
                                 ),
                                 const SizedBox(height: 18),
 
-                                // GPS-Off Unrecorded Days Helper Banner
+                                // GPS-Off Unrecorded Days Helper Banner (UX4G Standard)
                                 if (report.dailyLogs.length < report.totalWorkingDays) ...[
-                                  Container(
-                                    margin: const EdgeInsets.only(bottom: 14),
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: isContrast ? Colors.amber.withOpacity(0.12) : const Color(0xFFFEF3C7),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isContrast ? Colors.amberAccent : const Color(0xFFF59E0B),
-                                        width: 1,
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 14),
+                                    child: Ux4gStatusBanner(
+                                      variant: Ux4gBannerVariant.warningLight,
+                                      title: a11y.isHindi
+                                          ? 'GPS बंद होने से छूटे हुए दिन?'
+                                          : 'Unrecorded days due to GPS off?',
+                                      subtitle: a11y.isHindi
+                                          ? 'रोज़ फोन मांगने की जरूरत नहीं। 1-क्लिक में पूरे महीने का हिसाब सत्यापित करें।'
+                                          : 'No need to ask for phone daily. Verify all days in 1-tap.',
+                                      leadingIcon: Icon(
+                                        Icons.shield_outlined,
+                                        color: isContrast ? Colors.amberAccent : const Color(0xFFB45309),
+                                        size: 22,
                                       ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(
-                                          Icons.shield_outlined,
-                                          color: isContrast ? Colors.amberAccent : const Color(0xFFB45309),
-                                          size: 22,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                a11y.isHindi
-                                                    ? 'GPS बंद होने से छूटे हुए दिन?'
-                                                    : 'Unrecorded days due to GPS off?',
-                                                style: TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  fontSize: 13,
-                                                  color: isContrast ? Colors.white : const Color(0xFF78350F),
-                                                ),
-                                              ),
-                                              Text(
-                                                a11y.isHindi
-                                                    ? 'रोज़ फोन मांगने की जरूरत नहीं। 1-क्लिक में पूरे महीने का हिसाब सत्यापित करें।'
-                                                    : 'No need to ask for phone daily. Verify all days in 1-tap.',
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: isContrast ? Colors.white70 : const Color(0xFF78350F),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        ElevatedButton(
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: isContrast ? AppColors.darkPrimary : AppColors.primary,
-                                            foregroundColor: Colors.white,
-                                            minimumSize: const Size(80, 36),
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                          ),
+                                      actions: [
+                                        Ux4gButton(
+                                          size: Ux4gButtonSize.small,
+                                          variant: Ux4gButtonVariant.primary,
                                           onPressed: () => _showBulkBackfillDialog(report),
-                                          child: Text(
-                                            a11y.isHindi ? 'थोक पुष्टि' : 'Bulk Review',
-                                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                                          ),
+                                          text: a11y.isHindi ? 'थोक पुष्टि' : 'Bulk Review',
                                         ),
                                       ],
                                     ),
@@ -964,10 +927,10 @@ _Generated via Digital Civic Maid Attendance System_''';
                                   ),
                                 ),
                                 const SizedBox(height: 16),
-                                ElevatedButton.icon(
+                                Ux4gButton(
                                   onPressed: _loadReport,
-                                  icon: const Icon(Icons.refresh_rounded, size: 18),
-                                  label: Text(a11y.isHindi ? 'पुनः प्रयास करें' : 'Retry'),
+                                  leadingIcon: Icons.refresh_rounded,
+                                  text: a11y.isHindi ? 'पुनः प्रयास करें' : 'Retry',
                                 ),
                               ],
                             ),
@@ -1219,142 +1182,65 @@ _Generated via Digital Civic Maid Attendance System_''';
       children: [
         if (isSettled) ...[
           // View Digital Slip Button
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
-                foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              ),
-              onPressed: () {
-                if (_latestSettlement != null) {
-                  showDialog(
-                    context: context,
-                    builder: (_) => DigitalSalarySlipDialog(settlement: _latestSettlement!),
-                  );
-                } else {
-                  _viewSalaryReceipt(1);
-                }
-              },
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.receipt_long_rounded, size: 20),
-                  SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      'डिजिटल वेतन पर्ची देखें (View Digital Slip)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          Ux4gButton(
+            size: Ux4gButtonSize.large,
+            variant: Ux4gButtonVariant.primary,
+            backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+            contentColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
+            leadingIcon: Icons.receipt_long_rounded,
+            text: 'डिजिटल वेतन पर्ची देखें (View Digital Slip)',
+            onPressed: () {
+              if (_latestSettlement != null) {
+                showDialog(
+                  context: context,
+                  builder: (_) => DigitalSalarySlipDialog(settlement: _latestSettlement!),
+                );
+              } else {
+                _viewSalaryReceipt(1);
+              }
+            },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
         ] else ...[
           // 1-Tap UPI Payment Button
-          SizedBox(
-            height: 48,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
-                foregroundColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                elevation: 2,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              ),
-              onPressed: () => _payViaUpi(netPayable),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.flash_on_rounded, size: 20),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          Ux4gButton(
+            size: Ux4gButtonSize.large,
+            variant: Ux4gButtonVariant.primary,
+            backgroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF137333),
+            contentColor: isContrast ? const Color(0xFF0F172A) : Colors.white,
+            leadingIcon: Icons.flash_on_rounded,
+            text: '1-Tap Pay ₹${netPayable.toInt()} via UPI (GPay/PhonePe)',
+            onPressed: () => _payViaUpi(netPayable),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
 
           // Settle Confirmation Button
-          SizedBox(
-            height: 44,
-            child: OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: isContrast ? AppColors.darkBorderHighlight : const Color(0xFF137333)),
-                foregroundColor: isContrast ? AppColors.darkPrimary : const Color(0xFF137333),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-              ),
-              onPressed: () {
-                if (_latestCalculation != null) {
-                  _showSettleDialog(_latestCalculation!);
-                }
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.assignment_turned_in_rounded, size: 18),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      a11y.tr('settle_salary'),
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          Ux4gButton(
+            size: Ux4gButtonSize.large,
+            variant: Ux4gButtonVariant.outline,
+            borderColor: isContrast ? AppColors.darkBorderHighlight : const Color(0xFF137333),
+            contentColor: isContrast ? AppColors.darkPrimary : const Color(0xFF137333),
+            leadingIcon: Icons.assignment_turned_in_rounded,
+            text: a11y.tr('settle_salary'),
+            onPressed: () {
+              if (_latestCalculation != null) {
+                _showSettleDialog(_latestCalculation!);
+              }
+            },
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
         ],
 
         // WhatsApp Share Salary Slip Button
-        SizedBox(
-          height: 48,
-          child: OutlinedButton(
-            style: OutlinedButton.styleFrom(
-              backgroundColor: isContrast ? AppColors.hcSurface : const Color(0xFFE8F5E9),
-              foregroundColor: isContrast ? AppColors.darkPresent : const Color(0xFF2E7D32),
-              side: BorderSide(
-                color: isContrast ? AppColors.darkPresent : const Color(0xFF4CAF50),
-                width: 1.5,
-              ),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-            ),
-            onPressed: () => _shareSalarySlipOnWhatsApp(report, netPayable, deductionAmount),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.share_rounded, size: 18),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    '${a11y.tr("share_salary_slip")} (WhatsApp)',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        Ux4gButton(
+          size: Ux4gButtonSize.large,
+          variant: Ux4gButtonVariant.outline,
+          borderColor: isContrast ? AppColors.darkPresent : const Color(0xFF2E7D32),
+          contentColor: isContrast ? AppColors.darkPresent : const Color(0xFF2E7D32),
+          backgroundColor: isContrast ? AppColors.hcSurface : const Color(0xFFE8F5E9),
+          leadingIcon: Icons.share_rounded,
+          text: '${a11y.tr("share_salary_slip")} (WhatsApp)',
+          onPressed: () => _shareSalarySlipOnWhatsApp(report, netPayable, deductionAmount),
         ),
       ],
     );

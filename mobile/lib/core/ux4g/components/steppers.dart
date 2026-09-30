@@ -920,18 +920,24 @@ class _StepperIconButton extends StatelessWidget {
         ? primary.withValues(alpha: 0.12)
         : onSurface.withValues(alpha: 0.2);
 
-    return GestureDetector(
-      onTap: enabled ? onClick : null,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: surface,
-          shape: BoxShape.circle,
-          border: Border.all(color: borderColor),
+    final isLeft = icon == Ux4gIcons.arrowLeft;
+    return Semantics(
+      button: true,
+      enabled: enabled,
+      label: isLeft ? "Previous step" : "Next step",
+      child: GestureDetector(
+        onTap: enabled ? onClick : null,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: surface,
+            shape: BoxShape.circle,
+            border: Border.all(color: borderColor),
+          ),
+          alignment: Alignment.center,
+          child: Icon(icon, size: 20, color: contentColor),
         ),
-        alignment: Alignment.center,
-        child: Icon(icon, size: 20, color: contentColor),
       ),
     );
   }

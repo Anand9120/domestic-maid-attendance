@@ -182,16 +182,21 @@ class _SettlePaymentConfirmationDialogState extends State<SettlePaymentConfirmat
                       const SizedBox(width: 8),
                       Padding(
                         padding: const EdgeInsets.only(top: 24),
-                        child: IconButton.outlined(
-                          tooltip: isHindi ? 'स्वतः UTR कोड उत्पन्न करें' : 'Generate UTR reference',
-                          icon: const Icon(Icons.auto_awesome, size: 20),
-                          onPressed: () {
-                            final timestamp = DateTime.now().millisecondsSinceEpoch.toString().substring(6);
-                            setState(() => _transactionRef = 'UTR-$timestamp');
-                          },
-                          style: IconButton.styleFrom(
-                            side: BorderSide(color: isContrast ? Colors.white38 : AppColors.border),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        child: Semantics(
+                          button: true,
+                          label: isHindi ? 'स्वतः UTR कोड उत्पन्न करें' : 'Generate UTR reference',
+                          child: IconButton.outlined(
+                            tooltip: isHindi ? 'स्वतः UTR कोड उत्पन्न करें' : 'Generate UTR reference',
+                            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                            icon: const Icon(Icons.auto_awesome, size: 20),
+                            onPressed: () {
+                              final timestamp = DateTime.now().millisecondsSinceEpoch.toString().substring(6);
+                              setState(() => _transactionRef = 'UTR-$timestamp');
+                            },
+                            style: IconButton.styleFrom(
+                              side: BorderSide(color: isContrast ? Colors.white38 : AppColors.border),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
                       ),
