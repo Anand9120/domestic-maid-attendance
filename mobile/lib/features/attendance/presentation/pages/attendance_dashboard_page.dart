@@ -1,3 +1,4 @@
+import '../widgets/system_status_sheet.dart';
 import '../../../household/presentation/pages/geofence_map_setup_page.dart';
 import '../widgets/maid_sos_panic_sheet.dart';
 import '../widgets/battery_optimization_sheet.dart';
@@ -740,6 +741,17 @@ class _AttendanceDashboardPageState extends State<AttendanceDashboardPage> {
                                   },
                                 ),
                               ],
+                              const SizedBox(height: 12),
+                              _buildActionCard(
+                                title: a11y.isHindi ? 'सिस्टम स्थिति एवं सुरक्षा मानक' : 'System Diagnostics & Security',
+                                subtitle: a11y.isHindi
+                                    ? 'लाइव क्लाउड बैकएंड, GIGW 3.0 व आपातकालीन हेल्पलाइन'
+                                    : 'Live Cloud Health, GIGW 3.0 & Emergency Helplines',
+                                icon: Icons.verified_user_rounded,
+                                color: const Color(0xFF0F766E),
+                                isContrast: isContrast,
+                                onTap: () => SystemStatusSheet.show(context),
+                              ),
                               const SizedBox(height: 16),
 
                               // Recent Attendance Log Card

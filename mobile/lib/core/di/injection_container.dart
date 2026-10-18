@@ -110,6 +110,7 @@ class ServiceLocator {
   late final SalaryBloc salaryBloc;
 
   bool _initialized = false;
+  bool get isInitialized => _initialized;
 
 
   Future<void> init() async {

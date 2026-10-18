@@ -36,6 +36,7 @@ Informal domestic employment suffers from lack of attendance transparency, manua
 - **Geofenced Verification**: Enforces a strict 50-meter household boundary using Haversine calculation with dwell-time validation.
 - **Anti-Fraud Security**: Rejects fake GPS / mock location apps.
 - **Offline-First Resilience**: Mobile clients buffer arrival events locally using Hive DB during network drops, ensuring zero data loss and background synchronization upon reconnect.
+- **Live System Diagnostics & Emergency Directory**: In-app live telemetry sheet verifying cloud `/health` latency, anti-spoof integrity, and one-tap national emergency dispatch (112, 181, 1091).
 - **24/7 Cloud Availability ($0 Cost)**: The containerized Spring Boot backend is deployed to **Render Cloud**, paired with synthetic heartbeat pings via **UptimeRobot** to eliminate cold-start sleep latency without incurring hosting fees.
 
 ---

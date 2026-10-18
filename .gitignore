@@ -65,3 +65,6 @@ key.properties
 .env.*
 *.env
 release/
+
+# Local Documents & Resumes
+*.pdf
